@@ -450,95 +450,13 @@ if(UNIX)
   )
 endif()
 
-set(NVIM_EXEC_LINK_LIBRARIES ${NVIM_LINK_LIBRARIES} ${LUA_PREFERRED_LIBRARIES})
-
 # Add IPO flags (for LTO), or error if CMake does not know the flags. #8654
 if(POLICY CMP0069)
   cmake_policy(SET CMP0069 NEW)
 endif()
 
-add_executable(nvim ${NVIM_GENERATED_FOR_SOURCES} ${NVIM_GENERATED_FOR_HEADERS}
-  ${NVIM_GENERATED_SOURCES} ${NVIM_SOURCES} ${NVIM_HEADERS}
-  ${XDIFF_SOURCES} ${XDIFF_HEADERS} ${TREESITTER_SOURCES})
-target_link_libraries(nvim ${NVIM_EXEC_LINK_LIBRARIES})
-install_helper(TARGETS nvim)
-
-set_property(TARGET nvim APPEND PROPERTY
-             INCLUDE_DIRECTORIES ${LUA_PREFERRED_INCLUDE_DIRS})
-set_property(TARGET nvim PROPERTY ENABLE_EXPORTS TRUE)
-
-if(ENABLE_LTO AND (POLICY CMP0069))
-  include(CheckIPOSupported)
-  check_ipo_supported(RESULT IPO_SUPPORTED)
-  if(IPO_SUPPORTED AND (NOT CMAKE_BUILD_TYPE MATCHES Debug))
-    set_property(TARGET nvim PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
-  endif()
-endif()
-
-if(WIN32)
-  # Copy DLLs and third-party tools to bin/ and install them along with nvim
-  add_custom_target(nvim_runtime_deps ALL
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_BINARY_DIR}/windows_runtime_deps/
-      ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
-  install(DIRECTORY ${PROJECT_BINARY_DIR}/windows_runtime_deps/
-    DESTINATION ${CMAKE_INSTALL_BINDIR})
-
-  add_custom_target(nvim_dll_deps DEPENDS nvim
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/windows_runtime_deps
-    COMMAND ${CMAKE_COMMAND}
-      "-DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}"
-      -DBINARY="${PROJECT_BINARY_DIR}/bin/nvim${CMAKE_EXECUTABLE_SUFFIX}"
-      -DDST=${PROJECT_BINARY_DIR}/windows_runtime_deps
-      -P ${PROJECT_SOURCE_DIR}/cmake/WindowsDllCopy.cmake)
-  add_dependencies(nvim_runtime_deps nvim_dll_deps)
-
-  # A CMake script is used for copying the files to avoid the
-  # "command line is too long" error that occurs when Ninja tries running
-  # a command that exceeds the length limit (8191 characters) on Windows.
-  # See https://developercommunity.visualstudio.com/content/problem/212207/file-open-cmake-the-command-line-is-too-long.html
-  set(EXTERNAL_BLOBS_SCRIPT
-    "file(MAKE_DIRECTORY \"${PROJECT_BINARY_DIR}/windows_runtime_deps/platforms\")")
-  foreach(DEP_FILE IN ITEMS
-                      ca-bundle.crt
-                      cat.exe
-                      curl.exe
-                      diff.exe
-                      tee.exe
-                      tidy.exe
-                      win32yank.exe
-                      winpty-agent.exe
-                      xxd.exe
-
-                      D3Dcompiler_47.dll
-                      libEGL.dll
-                      libgcc_s_dw2-1.dll
-                      libGLESV2.dll
-                      libstdc++-6.dll
-                      libwinpthread-1.dll
-                      nvim-qt.exe
-                      Qt5Core.dll
-                      Qt5Gui.dll
-                      Qt5Network.dll
-                      Qt5Svg.dll
-                      Qt5Widgets.dll
-                      winpty.dll
-
-                      platforms/qwindows.dll
-                      )
-    get_filename_component(DEP_FILE_DIR ${DEP_FILE} DIRECTORY)
-    set(EXTERNAL_BLOBS_SCRIPT "${EXTERNAL_BLOBS_SCRIPT}\n"
-      "file(COPY \"${DEPS_PREFIX}/bin/${DEP_FILE}\"
-         DESTINATION \"${PROJECT_BINARY_DIR}/windows_runtime_deps/${DEP_FILE_DIR}\")")
-  endforeach()
-  file(WRITE ${PROJECT_BINARY_DIR}/external_blobs.cmake ${EXTERNAL_BLOBS_SCRIPT})
-  add_custom_target(external_blobs
-    COMMAND ${CMAKE_COMMAND} -P ${PROJECT_BINARY_DIR}/external_blobs.cmake)
-  set_target_properties(external_blobs PROPERTIES FOLDER deps)
-  add_dependencies(nvim_runtime_deps external_blobs)
-else()
-  add_custom_target(nvim_runtime_deps)  # Stub target to avoid CMP0046.
-endif()
-set_target_properties(nvim_runtime_deps PROPERTIES FOLDER deps)
+add_executable(nvim IMPORTED GLOBAL)
+set_property(TARGET nvim PROPERTY IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/target/debug/nvim)
 
 add_library(
   libnvim
@@ -589,30 +507,6 @@ else()
     TARGET nvim-test
     APPEND_STRING PROPERTY COMPILE_FLAGS " -DUNIT_TESTING "
   )
-endif()
-
-if(CLANG_ASAN_UBSAN)
-  message(STATUS "Enabling Clang address sanitizer and undefined behavior sanitizer for nvim.")
-  check_c_compiler_flag(-fno-sanitize-recover=all SANITIZE_RECOVER_ALL)
-  if(SANITIZE_RECOVER_ALL)
-    set(SANITIZE_RECOVER -fno-sanitize-recover=all)     # Clang 3.6+
-  else()
-    set(SANITIZE_RECOVER -fno-sanitize-recover)         # Clang 3.5-
-  endif()
-  set_property(TARGET nvim APPEND PROPERTY COMPILE_DEFINITIONS EXITFREE)
-  set_property(TARGET nvim APPEND PROPERTY COMPILE_OPTIONS ${SANITIZE_RECOVER} -fno-omit-frame-pointer -fno-optimize-sibling-calls -fsanitize=address -fsanitize=undefined -fsanitize-blacklist=${PROJECT_SOURCE_DIR}/src/.asan-blacklist)
-  set_property(TARGET nvim APPEND_STRING PROPERTY LINK_FLAGS "-fsanitize=address -fsanitize=undefined ")
-elseif(CLANG_MSAN)
-  message(STATUS "Enabling Clang memory sanitizer for nvim.")
-  set_property(TARGET nvim APPEND PROPERTY COMPILE_DEFINITIONS EXITFREE)
-  set_property(TARGET nvim APPEND PROPERTY COMPILE_OPTIONS -fsanitize=memory -fsanitize-memory-track-origins -fno-omit-frame-pointer -fno-optimize-sibling-calls)
-  set_property(TARGET nvim APPEND_STRING PROPERTY LINK_FLAGS "-fsanitize=memory -fsanitize-memory-track-origins ")
-elseif(CLANG_TSAN)
-  message(STATUS "Enabling Clang thread sanitizer for nvim.")
-  set_property(TARGET nvim APPEND PROPERTY COMPILE_DEFINITIONS EXITFREE)
-  set_property(TARGET nvim APPEND PROPERTY COMPILE_OPTIONS -fsanitize=thread)
-  set_property(TARGET nvim APPEND PROPERTY COMPILE_OPTIONS -fPIE)
-  set_property(TARGET nvim APPEND_STRING PROPERTY LINK_FLAGS "-fsanitize=thread ")
 endif()
 
 function(get_test_target prefix sfile relative_path_var target_var)

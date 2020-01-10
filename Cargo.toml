@@ -1,0 +1,12 @@
+[package]
+name = "nvim"
+version = "0.1.0"
+authors = ["vold-dev <matt@vole.dev>"]
+edition = "2018"
+build="build.rs"
+
+[dependencies]
+libc = "0.2.0"
+
+[build-dependencies.cmake]
+path = "rust-deps/cmake"

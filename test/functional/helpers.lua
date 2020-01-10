@@ -42,10 +42,7 @@ module.nvim_argv = {
   module.nvim_prog, '-u', 'NONE', '-i', 'NONE',
   '--cmd', module.nvim_set, '--embed'}
 -- Directory containing nvim.
-module.nvim_dir = module.nvim_prog:gsub("[/\\][^/\\]+$", "")
-if module.nvim_dir == module.nvim_prog then
-  module.nvim_dir = "."
-end
+module.nvim_dir = global_helpers.test_build_dir .. '/bin'
 
 local tmpname = global_helpers.tmpname
 local iswin = global_helpers.iswin

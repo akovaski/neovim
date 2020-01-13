@@ -10,7 +10,6 @@
 
 #ifdef INCLUDE_GENERATED_DECLARATIONS
 # include "os/fs.h.generated.h"
-# include "os/mem.h.generated.h"
 # include "os/env.h.generated.h"
 # include "os/users.h.generated.h"
 # include "os/stdpaths.h.generated.h"

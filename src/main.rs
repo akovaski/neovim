@@ -2,6 +2,7 @@ use libc::{c_char, c_int};
 use std::ffi::CString;
 
 mod math;
+mod viml;
 
 extern "C" {
     fn nvim_main(argc: c_int, argv: *const *const c_char) -> c_int;

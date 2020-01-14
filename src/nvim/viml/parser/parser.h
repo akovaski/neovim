@@ -237,8 +237,6 @@ static inline void viml_parser_highlight(ParserState *const pstate,
   }));
 }
 
-#ifdef INCLUDE_GENERATED_DECLARATIONS
-# include "viml/parser/parser.h.generated.h"
-#endif
+void parser_simple_get_line(void *cookie, ParserLine *ret_pline);
 
 #endif  // NVIM_VIML_PARSER_PARSER_H

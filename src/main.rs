@@ -1,6 +1,9 @@
+#![feature(extern_types)]
+
 use libc::{c_char, c_int};
 use std::ffi::CString;
 
+mod eval;
 mod math;
 mod viml;
 

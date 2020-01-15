@@ -1,9 +1,13 @@
 #![feature(extern_types)]
+#![feature(c_variadic)]
+#![allow(non_camel_case_types)]
 
 use libc::{c_char, c_int};
 use std::ffi::CString;
 
 mod eval;
+mod event;
+mod lib;
 mod math;
 mod viml;
 

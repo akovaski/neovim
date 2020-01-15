@@ -17,7 +17,4 @@ struct signal_watcher {
   MultiQueue *events;
 };
 
-#ifdef INCLUDE_GENERATED_DECLARATIONS
-# include "event/signal.h.generated.h"
-#endif
 #endif  // NVIM_EVENT_SIGNAL_H

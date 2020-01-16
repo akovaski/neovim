@@ -1,14 +1,18 @@
-use super::*;
+use crate::event::defs::*;
+use crate::event::multiqueue::*;
 use crate::lib::uv;
-use libc;
+
+extern "C" {
+    pub fn loop_schedule_deferred(loop_0: *mut Loop, event: Event);
+}
 
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct Loop {
     pub uv: uv::uv_loop_t,
-    pub events: *mut multiqueue::MultiQueue,
-    pub thread_events: *mut multiqueue::MultiQueue,
-    pub fast_events: *mut multiqueue::MultiQueue,
+    pub events: *mut MultiQueue,
+    pub thread_events: *mut MultiQueue,
+    pub fast_events: *mut MultiQueue,
     pub children: *mut kl_WatcherPtr_t,
     pub children_watcher: uv::uv_signal_t,
     pub children_kill_timer: uv::uv_timer_t,

@@ -1,31 +1,29 @@
-extern crate libc;
-use libc::c_int;
 use std::num::FpCategory;
 
 extern "C" {
-    static rust_ffi_fp_nan: c_int;
-    static rust_ffi_fp_infinite: c_int;
-    static rust_ffi_fp_zero: c_int;
-    static rust_ffi_fp_subnormal: c_int;
-    static rust_ffi_fp_normal: c_int;
+    static rust_ffi_fp_nan: libc::c_int;
+    static rust_ffi_fp_infinite: libc::c_int;
+    static rust_ffi_fp_zero: libc::c_int;
+    static rust_ffi_fp_subnormal: libc::c_int;
+    static rust_ffi_fp_normal: libc::c_int;
 }
 
 #[no_mangle]
-extern "C" fn xisnan(d: f64) -> c_int {
+extern "C" fn xisnan(d: f64) -> libc::c_int {
     match d.is_nan() {
         true => 1,
         false => 0,
     }
 }
 #[no_mangle]
-extern "C" fn xisinf(d: f64) -> c_int {
+extern "C" fn xisinf(d: f64) -> libc::c_int {
     match d.is_infinite() {
         true => 1,
         false => 0,
     }
 }
 #[no_mangle]
-extern "C" fn xfpclassify(d: f64) -> c_int {
+extern "C" fn xfpclassify(d: f64) -> libc::c_int {
     unsafe {
         match d.classify() {
             FpCategory::Nan => rust_ffi_fp_nan,

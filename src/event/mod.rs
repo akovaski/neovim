@@ -1,4 +1,5 @@
-mod defs;
-mod r#loop;
-mod multiqueue;
-mod signal;
+#[macro_use]
+pub mod defs;
+pub mod r#loop;
+pub mod multiqueue;
+pub mod signal;

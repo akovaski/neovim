@@ -1,6 +1,5 @@
 use super::*;
 use crate::lib::uv;
-use libc;
 
 #[repr(C)]
 pub struct SignalWatcher {

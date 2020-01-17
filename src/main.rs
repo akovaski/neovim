@@ -35,6 +35,7 @@ mod sign_defs;
 mod syntax_defs;
 mod terminal;
 mod types;
+mod ugrid;
 mod undo_defs;
 mod viml;
 

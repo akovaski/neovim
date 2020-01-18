@@ -17,4 +17,9 @@ struct signal_watcher {
   MultiQueue *events;
 };
 
+void signal_watcher_init(Loop *loop, SignalWatcher *watcher, void *data);
+void signal_watcher_start(SignalWatcher *watcher, signal_cb cb, int signum);
+void signal_watcher_stop(SignalWatcher *watcher);
+void signal_watcher_close(SignalWatcher *watcher, signal_close_cb cb);
+
 #endif  // NVIM_EVENT_SIGNAL_H

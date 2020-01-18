@@ -32,4 +32,11 @@ struct ugrid {
     } \
   } while (0)
 
+void ugrid_init(UGrid *grid);
+void ugrid_free(UGrid *grid);
+void ugrid_resize(UGrid *grid, int width, int height);
+void ugrid_clear(UGrid *grid);
+void ugrid_clear_chunk(UGrid *grid, int row, int col, int endcol, sattr_T attr);
+void ugrid_goto(UGrid *grid, int row, int col);
+void ugrid_scroll(UGrid *grid, int top, int bot, int left, int right, int count);
 #endif  // NVIM_UGRID_H

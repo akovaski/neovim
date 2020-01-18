@@ -7,6 +7,8 @@ use std::ffi::CString;
 
 #[macro_use]
 mod event;
+#[macro_use]
+mod log;
 mod aucmd;
 mod auevents;
 mod buffer_defs;
@@ -28,10 +30,12 @@ mod memline_defs;
 mod memory;
 mod option_defs;
 mod os;
+mod path;
 mod pos;
 mod profile;
 mod regexp_defs;
 mod sign_defs;
+mod strings;
 mod syntax_defs;
 mod terminal;
 mod types;

@@ -106,13 +106,13 @@ pub unsafe extern "C" fn ugrid_scroll(
             (*(*grid).cells.offset((i + count) as isize)).offset(left as isize);
         c_assert!(right >= left && left >= 0);
         memcpy(
-            target_row as *mut libc::c_void,
-            source_row as *const libc::c_void,
+            target_row,
+            source_row,
             std::mem::size_of::<UCell>().wrapping_mul(
                 (right as libc::size_t)
                     .wrapping_sub(left as libc::size_t)
                     .wrapping_add(1),
-            ) as libc::c_ulong,
+            ),
         );
         i += step
     }

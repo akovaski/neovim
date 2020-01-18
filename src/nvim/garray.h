@@ -31,9 +31,18 @@ typedef struct growarray {
 #define GA_APPEND_VIA_PTR(item_type, gap) \
   ga_append_via_ptr(gap, sizeof(item_type))
 
-#ifdef INCLUDE_GENERATED_DECLARATIONS
-# include "garray.h.generated.h"
-#endif
+void ga_clear(garray_T *gap);
+void ga_clear_strings(garray_T *gap);
+void ga_init(garray_T *gap, int itemsize, int growsize);
+void ga_set_growsize(garray_T *gap, int growsize);
+void ga_grow(garray_T *gap, int n);
+void ga_remove_duplicate_strings(garray_T *gap);
+char_u *ga_concat_strings_sep(const garray_T *gap, const char *sep);
+char_u* ga_concat_strings(const garray_T *gap);
+void ga_concat(garray_T *gap, const char_u *restrict s);
+void ga_concat_len(garray_T *const gap, const char *restrict s,
+                   const size_t len);
+void ga_append(garray_T *gap, char c);
 
 static inline void *ga_append_via_ptr(garray_T *gap, size_t item_size)
 {

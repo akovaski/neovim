@@ -42,6 +42,7 @@ mod types;
 mod ugrid;
 mod undo_defs;
 mod viml;
+mod xdiff;
 
 use crate::event::r#loop::Loop;
 

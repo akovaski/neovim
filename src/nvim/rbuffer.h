@@ -84,8 +84,19 @@ struct rbuffer {
   char start_ptr[];
 };
 
-#ifdef INCLUDE_GENERATED_DECLARATIONS
-# include "rbuffer.h.generated.h"
-#endif
+RBuffer *rbuffer_new(size_t capacity);
+void rbuffer_free(RBuffer *buf);
+size_t rbuffer_size(RBuffer *buf);
+size_t rbuffer_capacity(RBuffer *buf);
+size_t rbuffer_space(RBuffer *buf);
+char *rbuffer_write_ptr(RBuffer *buf, size_t *write_count);
+void rbuffer_reset(RBuffer *buf);
+void rbuffer_produced(RBuffer *buf, size_t count);
+char *rbuffer_read_ptr(RBuffer *buf, size_t *read_count);
+void rbuffer_consumed(RBuffer *buf, size_t count);
+size_t rbuffer_write(RBuffer *buf, const char *src, size_t src_size);
+size_t rbuffer_read(RBuffer *buf, char *dst, size_t dst_size);
+char *rbuffer_get(RBuffer *buf, size_t index);
+int rbuffer_cmp(RBuffer *buf, const char *str, size_t count);
 
 #endif  // NVIM_RBUFFER_H

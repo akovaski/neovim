@@ -1,6 +1,7 @@
 #![feature(extern_types)]
 #![feature(c_variadic)]
-#![allow(non_camel_case_types)]
+#![feature(ptr_offset_from)]
+#![allow(non_camel_case_types, non_snake_case)]
 
 use libc::{c_char, c_int};
 use std::ffi::CString;
@@ -9,6 +10,9 @@ use std::ffi::CString;
 mod event;
 #[macro_use]
 mod log;
+#[macro_use]
+mod rbuffer;
+
 mod aucmd;
 mod auevents;
 mod buffer_defs;

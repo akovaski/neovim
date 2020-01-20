@@ -16,7 +16,9 @@ struct time_watcher {
   bool blockable;
 };
 
-#ifdef INCLUDE_GENERATED_DECLARATIONS
-# include "event/time.h.generated.h"
-#endif
+void time_watcher_init(Loop *loop, TimeWatcher *watcher, void *data);
+void time_watcher_start(TimeWatcher *watcher, time_cb cb, uint64_t timeout,
+    uint64_t repeat);
+void time_watcher_stop(TimeWatcher *watcher);
+void time_watcher_close(TimeWatcher *watcher, time_cb cb);
 #endif  // NVIM_EVENT_TIME_H

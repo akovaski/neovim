@@ -45,3 +45,15 @@ pub struct kmp_WatcherPtr_t {
     pub max: libc::size_t,
     pub buf: *mut *mut kl1_WatcherPtr,
 }
+
+pub unsafe fn CREATE_EVENT(
+    multiqueue: *mut MultiQueue,
+    handler: valid_argv_callback,
+    args: &[*mut libc::c_void],
+) {
+    if !multiqueue.is_null() {
+        multiqueue_put(multiqueue, Some(handler), args);
+    } else {
+        handler(args.as_ptr() as *mut *mut libc::c_void);
+    };
+}

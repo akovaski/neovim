@@ -35,7 +35,6 @@ use std::ptr;
 ///
 /// Note that the rbuffer_{produced,consumed} calls are necessary or these macros
 /// create infinite loops
-#[macro_export]
 macro_rules! RBUFFER_UNTIL_EMPTY {
     ( $buf:ident, $rptr:ident, $rcnt:ident, $loop_inner:expr) => {
         let mut $rcnt: libc::size_t = 0;

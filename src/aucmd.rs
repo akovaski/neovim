@@ -1,12 +1,4 @@
-use crate::auevents::*;
-use crate::eval::typval::*;
-use crate::eval::*;
-use crate::event::r#loop::*;
-use crate::event::*;
-use crate::fileio::*;
-use crate::globals::*;
-use crate::main_loop;
-use crate::memory::*;
+use crate::*;
 use std::ptr;
 
 #[no_mangle]
@@ -53,11 +45,7 @@ pub unsafe extern "C" fn aucmd_schedule_focusgained(gained: bool) {
     *gainedp = gained;
     loop_schedule_deferred(
         &mut main_loop,
-        defs::event_create(
-            Some(focusgained_event as unsafe extern "C" fn(_: *mut *mut libc::c_void) -> ()),
-            1,
-            gainedp,
-        ),
+        event_create(Some(focusgained_event), vargs!(gainedp)),
     );
 }
 unsafe extern "C" fn do_autocmd_focusgained(gained: bool) {

@@ -1,7 +1,7 @@
 pub mod gc;
+pub use gc::*;
 pub mod typval;
-
-use crate::eval::typval::dict_T;
+pub use typval::*;
 
 extern "C" {
     pub fn get_vim_var_dict(idx: VimVar) -> *mut dict_T;

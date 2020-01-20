@@ -8,6 +8,14 @@ extern "C" {
         signum: libc::c_int,
     ) -> libc::c_int;
     pub fn uv_signal_stop(handle: *mut uv_signal_t) -> libc::c_int;
+    pub fn uv_timer_init(_: *mut uv_loop_t, handle: *mut uv_timer_t) -> libc::c_int;
+    pub fn uv_timer_start(
+        handle: *mut uv_timer_t,
+        cb: uv_timer_cb,
+        timeout: u64,
+        repeat: u64,
+    ) -> libc::c_int;
+    pub fn uv_timer_stop(handle: *mut uv_timer_t) -> libc::c_int;
 }
 
 #[derive(Copy, Clone)]

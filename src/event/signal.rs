@@ -1,5 +1,4 @@
-use super::*;
-use crate::lib::uv;
+use crate::*;
 
 #[repr(C)]
 pub struct SignalWatcher {
@@ -71,11 +70,7 @@ unsafe extern "C" fn signal_watcher_cb(handle: *mut uv::uv_signal_t, _signum: li
     if !(*watcher).events.is_null() {
         multiqueue::multiqueue_put_event(
             (*watcher).events,
-            defs::event_create(
-                Some(signal_event as unsafe extern "C" fn(_: *mut *mut libc::c_void) -> ()),
-                1 as libc::c_int,
-                watcher,
-            ),
+            event_create(Some(signal_event), vargs!(watcher)),
         );
     } else {
         let mut argv: [*mut libc::c_void; 1] = [watcher as *mut libc::c_void];

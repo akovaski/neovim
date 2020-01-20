@@ -19,7 +19,6 @@ pub const WARN_LOG_LEVEL: libc::c_int = 2;
 #[allow(dead_code)]
 pub const ERROR_LOG_LEVEL: libc::c_int = 3;
 
-#[macro_export]
 macro_rules! WLOG {
     ($s:expr ,$($x:expr),+) => {
         logmsg(WARN_LOG_LEVEL,

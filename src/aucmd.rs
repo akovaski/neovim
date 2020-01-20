@@ -1,7 +1,6 @@
 use crate::auevents::*;
 use crate::eval::typval::*;
 use crate::eval::*;
-use crate::event::defs::*;
 use crate::event::r#loop::*;
 use crate::event::*;
 use crate::fileio::*;

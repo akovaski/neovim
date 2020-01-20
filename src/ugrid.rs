@@ -1,4 +1,3 @@
-use crate::event::defs::*;
 use crate::grid_defs::schar_T;
 use crate::memory::*;
 use std::ptr;

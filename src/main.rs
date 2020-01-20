@@ -7,7 +7,7 @@ use libc::{c_char, c_int};
 use std::ffi::CString;
 
 #[macro_use]
-mod event;
+mod c_helpers;
 #[macro_use]
 mod log;
 #[macro_use]
@@ -18,6 +18,7 @@ mod auevents;
 mod buffer_defs;
 mod bufhl_defs;
 mod eval;
+mod event;
 mod fileio;
 mod fmark_defs;
 mod garray;

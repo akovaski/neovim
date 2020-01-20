@@ -1,4 +1,3 @@
-#[macro_use]
 pub mod defs;
 pub mod r#loop;
 pub mod multiqueue;

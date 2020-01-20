@@ -12,7 +12,6 @@
 //!
 //! Reference: http://en.wikipedia.org/wiki/Circular_buffer
 
-use crate::event::defs::*;
 use crate::memory::*;
 use std::cmp::min;
 use std::ptr;

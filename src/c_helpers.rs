@@ -6,6 +6,7 @@ extern "C" {
         __line: libc::c_uint,
         __function: *const libc::c_char,
     ) -> !;
+    pub fn abort() -> !;
 }
 
 macro_rules! vargs {

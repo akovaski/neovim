@@ -83,9 +83,13 @@ typedef struct loop {
     } \
   } while (0)
 
-
-#ifdef INCLUDE_GENERATED_DECLARATIONS
-# include "event/loop.h.generated.h"
-#endif
+void loop_init(Loop *loop, void *data);
+bool loop_poll_events(Loop *loop, int ms);
+void loop_schedule_fast(Loop *loop, Event event);
+void loop_schedule_deferred(Loop *loop, Event event);
+void loop_on_put(MultiQueue *queue, void *data);
+bool loop_close(Loop *loop, bool wait);
+void loop_purge(Loop *loop);
+size_t loop_size(Loop *loop);
 
 #endif  // NVIM_EVENT_LOOP_H

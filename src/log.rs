@@ -9,6 +9,7 @@ extern "C" {
         fmt: *const libc::c_char,
         _: ...
     ) -> bool;
+    pub fn log_uv_handles(loop_0: *mut libc::c_void);
 }
 
 #[allow(dead_code)]
@@ -20,7 +21,7 @@ pub const WARN_LOG_LEVEL: libc::c_int = 2;
 pub const ERROR_LOG_LEVEL: libc::c_int = 3;
 
 macro_rules! WLOG {
-    ($s:expr ,$($x:expr),+) => {
+    ($s:expr $(, $x:expr)* $(,)?) => {
         logmsg(WARN_LOG_LEVEL,
                std::ptr::null(),
                std::ffi::CString::new(file!())
@@ -31,7 +32,25 @@ macro_rules! WLOG {
                std::ffi::CString::new($s)
                    .expect("CString::new failed")
                    .as_ptr() as *const libc::c_char,
-                $($x),+
+                $($x),*
                 );
+    }
+}
+
+macro_rules! ELOG {
+    ($s:expr $(, $x:expr)* $(,)?) => {
+        logmsg(
+            ERROR_LOG_LEVEL,
+            std::ptr::null(),
+            std::ffi::CString::new(file!())
+                .expect("CString::new failed")
+                .as_ptr() as *const libc::c_char,
+            line!() as libc::c_int,
+            true,
+            std::ffi::CString::new($s)
+                .expect("CString::new failed")
+                .as_ptr() as *const libc::c_char,
+            $($x),*
+            );
     }
 }

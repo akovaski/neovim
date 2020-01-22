@@ -8,6 +8,7 @@ use std::ffi::CString;
 
 #[macro_use]
 mod c_helpers;
+pub use c_helpers::*;
 #[macro_use]
 mod log;
 pub use log::*;

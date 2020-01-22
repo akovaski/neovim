@@ -45,10 +45,7 @@ pub unsafe extern "C" fn time_watcher_stop(watcher: *mut TimeWatcher) {
 #[no_mangle]
 pub unsafe extern "C" fn time_watcher_close(mut watcher: *mut TimeWatcher, cb: time_cb) {
     (*watcher).close_cb = cb;
-    uv_close(
-        &mut (*watcher).uv as *mut uv_timer_t as *mut uv_handle_t,
-        Some(close_cb),
-    );
+    uv_close(&mut (*watcher).uv, Some(close_cb));
 }
 
 unsafe extern "C" fn time_event(argv: *mut *mut libc::c_void) {

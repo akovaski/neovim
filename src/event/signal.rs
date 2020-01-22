@@ -33,14 +33,7 @@ pub unsafe extern "C" fn signal_watcher_start(
     signum: libc::c_int,
 ) {
     (*watcher).cb = cb;
-    uv::uv_signal_start(
-        &mut (*watcher).uv,
-        Some(
-            signal_watcher_cb
-                as unsafe extern "C" fn(_: *mut uv::uv_signal_t, _: libc::c_int) -> (),
-        ),
-        signum,
-    );
+    uv::uv_signal_start(&mut (*watcher).uv, Some(signal_watcher_cb), signum);
 }
 #[no_mangle]
 pub unsafe extern "C" fn signal_watcher_stop(watcher: *mut SignalWatcher) {
@@ -52,13 +45,10 @@ pub unsafe extern "C" fn signal_watcher_close(
     cb: signal_close_cb,
 ) {
     (*watcher).close_cb = cb;
-    uv::uv_close(
-        &mut (*watcher).uv as *mut uv::uv_signal_t as *mut uv::uv_handle_t,
-        Some(close_cb as unsafe extern "C" fn(_: *mut uv::uv_handle_t) -> ()),
-    );
+    uv::uv_close(&mut (*watcher).uv, Some(close_cb));
 }
 unsafe extern "C" fn signal_event(argv: *mut *mut libc::c_void) {
-    let watcher = *argv.offset(0 as libc::c_int as isize) as *mut SignalWatcher;
+    let watcher = *argv.offset(0) as *mut SignalWatcher;
     (*watcher).cb.expect("non-null function pointer")(
         watcher,
         (*watcher).uv.signum,

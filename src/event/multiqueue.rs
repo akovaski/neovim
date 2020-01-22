@@ -1,7 +1,6 @@
 use crate::*;
 
 extern "C" {
-    pub type MultiQueue;
     pub fn multiqueue_new_parent(put_cb: put_callback, data: *mut libc::c_void) -> *mut MultiQueue;
     pub fn multiqueue_new_child(parent: *mut MultiQueue) -> *mut MultiQueue;
     pub fn multiqueue_free(this: *mut MultiQueue);
@@ -18,3 +17,20 @@ pub type put_callback =
 pub unsafe fn multiqueue_put(this: *mut MultiQueue, cb: argv_callback, args: &[*mut libc::c_void]) {
     multiqueue_put_event(this, event_create(cb, args));
 }
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct _queue {
+    pub next: *mut _queue,
+    pub prev: *mut _queue,
+}
+pub type QUEUE = _queue;
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct multiqueue {
+    pub parent: *mut MultiQueue,
+    pub headtail: QUEUE,
+    pub put_cb: put_callback,
+    pub data: *mut libc::c_void,
+    pub size: libc::size_t,
+}
+pub type MultiQueue = multiqueue;

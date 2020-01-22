@@ -42,7 +42,44 @@ pub unsafe fn CREATE_EVENT(
         handler(args.as_ptr() as *mut *mut libc::c_void);
     };
 }
-// TODO: LOOP_PROCESS_EVENTS_UNTIL, LOOP_PROCESS_EVENTS, used in other files
+
+// Poll for events until a condition or timeout
+pub unsafe fn LOOP_PROCESS_EVENTS_UNTIL(
+    loop_0: &mut Loop,
+    multiqueue: &mut Option<MultiQueue>,
+    timeout: libc::c_int,
+    condition: fn() -> bool,
+) {
+    let mut remaining = timeout;
+    let mut before: u64 = if remaining > 0 { os_hrtime() } else { 0 };
+    while !condition() {
+        LOOP_PROCESS_EVENTS(loop_0, multiqueue, remaining);
+        if remaining == 0 {
+            break;
+        } else if remaining > 0 {
+            let now: u64 = os_hrtime();
+            remaining -= ((now - before) / 1000000) as i32;
+            before = now;
+            if remaining <= 0 {
+                break;
+            }
+        }
+    }
+}
+
+pub unsafe fn LOOP_PROCESS_EVENTS(
+    loop_0: &mut Loop,
+    multiqueue: &mut Option<MultiQueue>,
+    timeout: libc::c_int,
+) {
+    if let Some(multiqueue) = multiqueue {
+        if !multiqueue_empty(multiqueue) {
+            multiqueue_process_events(multiqueue);
+        }
+    } else {
+        loop_poll_events(loop_0, timeout);
+    }
+}
 
 #[no_mangle]
 pub unsafe extern "C" fn loop_init(mut loop_0: *mut Loop, _data: *mut libc::c_void) {

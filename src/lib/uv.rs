@@ -26,10 +26,18 @@ extern "C" {
     ) -> libc::c_int;
     pub fn uv_timer_stop(handle: *mut uv_timer_t) -> libc::c_int;
     pub fn uv_signal_init(loop_0: *mut uv_loop_t, handle: *mut uv_signal_t) -> libc::c_int;
+    pub fn uv_now(_: *const uv_loop_t) -> u64;
+    pub fn uv_hrtime() -> u64;
     pub fn uv_mutex_init(handle: *mut uv_mutex_t) -> libc::c_int;
     pub fn uv_mutex_destroy(handle: *mut uv_mutex_t);
     pub fn uv_mutex_lock(handle: *mut uv_mutex_t);
     pub fn uv_mutex_unlock(handle: *mut uv_mutex_t);
+    pub fn uv_cond_init(cond: *mut uv_cond_t) -> libc::c_int;
+    pub fn uv_cond_timedwait(
+        cond: *mut uv_cond_t,
+        mutex: *mut uv_mutex_t,
+        timeout: u64,
+    ) -> libc::c_int;
 }
 
 pub trait UvClosable {}
@@ -152,7 +160,7 @@ pub struct uv_signal_s {
     pub type_0: uv_handle_type,
     pub close_cb: uv_close_cb,
     pub handle_queue: [*mut libc::c_void; 2],
-    pub u: C2RustUnnamed_1,
+    pub u: Unnamed_uv_handle_fs_r,
     pub next_closing: *mut uv_handle_t,
     pub flags: libc::c_uint,
     pub signal_cb: uv_signal_cb,
@@ -179,15 +187,9 @@ pub struct uv_handle_s {
     pub type_0: uv_handle_type,
     pub close_cb: uv_close_cb,
     pub handle_queue: [*mut libc::c_void; 2],
-    pub u: C2RustUnnamed_0,
+    pub u: Unnamed_uv_handle_fs_r,
     pub next_closing: *mut uv_handle_t,
     pub flags: libc::c_uint,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub union C2RustUnnamed_0 {
-    pub fd: libc::c_int,
-    pub reserved: [*mut libc::c_void; 4],
 }
 pub type uv_close_cb = Option<unsafe extern "C" fn(_: *mut uv_handle_t) -> ()>;
 pub type uv_handle_type = libc::c_uint;
@@ -213,12 +215,6 @@ pub const UV_UNKNOWN_HANDLE: uv_handle_type = 0;
 pub type uv_loop_t = uv_loop_s;
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub union C2RustUnnamed_1 {
-    pub fd: libc::c_int,
-    pub reserved: [*mut libc::c_void; 4],
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
 pub struct C2RustUnnamed_2 {
     pub min: *mut libc::c_void,
     pub nelts: libc::c_uint,
@@ -233,20 +229,19 @@ pub struct uv_async_s {
     pub type_0: uv_handle_type,
     pub close_cb: uv_close_cb,
     pub handle_queue: [*mut libc::c_void; 2],
-    pub u: C2RustUnnamed_3,
+    pub u: Unnamed_uv_handle_fs_r,
     pub next_closing: *mut uv_handle_t,
     pub flags: libc::c_uint,
     pub async_cb: uv_async_cb,
     pub queue: [*mut libc::c_void; 2],
     pub pending: libc::c_int,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub union C2RustUnnamed_3 {
-    pub fd: libc::c_int,
-    pub reserved: [*mut libc::c_void; 4],
-}
 pub type uv_mutex_t = pthread_mutex_t;
+impl Default for uv_mutex_t {
+    fn default() -> uv_mutex_t {
+        unsafe { std::mem::zeroed() }
+    }
+}
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub union C2RustUnnamed_4 {
@@ -280,7 +275,7 @@ pub struct uv_stream_s {
     pub type_0: uv_handle_type,
     pub close_cb: uv_close_cb,
     pub handle_queue: [*mut libc::c_void; 2],
-    pub u: C2RustUnnamed_5,
+    pub u: Unnamed_uv_handle_fs_r,
     pub next_closing: *mut uv_handle_t,
     pub flags: libc::c_uint,
     pub write_queue_size: libc::size_t,
@@ -327,19 +322,13 @@ pub type uv_alloc_cb =
     Option<unsafe extern "C" fn(_: *mut uv_handle_t, _: libc::size_t, _: *mut uv_buf_t) -> ()>;
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub union C2RustUnnamed_5 {
-    pub fd: libc::c_int,
-    pub reserved: [*mut libc::c_void; 4],
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
 pub struct uv_tcp_s {
     pub data: *mut libc::c_void,
     pub loop_0: *mut uv_loop_t,
     pub type_0: uv_handle_type,
     pub close_cb: uv_close_cb,
     pub handle_queue: [*mut libc::c_void; 2],
-    pub u: C2RustUnnamed_6,
+    pub u: Unnamed_uv_handle_fs_r,
     pub next_closing: *mut uv_handle_t,
     pub flags: libc::c_uint,
     pub write_queue_size: libc::size_t,
@@ -355,12 +344,6 @@ pub struct uv_tcp_s {
     pub accepted_fd: libc::c_int,
     pub queued_fds: *mut libc::c_void,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub union C2RustUnnamed_6 {
-    pub fd: libc::c_int,
-    pub reserved: [*mut libc::c_void; 4],
-}
 pub type uv_tcp_t = uv_tcp_s;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -370,7 +353,7 @@ pub struct uv_pipe_s {
     pub type_0: uv_handle_type,
     pub close_cb: uv_close_cb,
     pub handle_queue: [*mut libc::c_void; 2],
-    pub u: C2RustUnnamed_7,
+    pub u: Unnamed_uv_handle_fs_r,
     pub next_closing: *mut uv_handle_t,
     pub flags: libc::c_uint,
     pub write_queue_size: libc::size_t,
@@ -388,12 +371,6 @@ pub struct uv_pipe_s {
     pub ipc: libc::c_int,
     pub pipe_fname: *const libc::c_char,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub union C2RustUnnamed_7 {
-    pub fd: libc::c_int,
-    pub reserved: [*mut libc::c_void; 4],
-}
 pub type uv_pipe_t = uv_pipe_s;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -403,7 +380,7 @@ pub struct uv_timer_s {
     pub type_0: uv_handle_type,
     pub close_cb: uv_close_cb,
     pub handle_queue: [*mut libc::c_void; 2],
-    pub u: C2RustUnnamed_8,
+    pub u: Unnamed_uv_handle_fs_r,
     pub next_closing: *mut uv_handle_t,
     pub flags: libc::c_uint,
     pub timer_cb: uv_timer_cb,
@@ -416,19 +393,13 @@ pub type uv_timer_cb = Option<unsafe extern "C" fn(_: *mut uv_timer_t) -> ()>;
 pub type uv_timer_t = uv_timer_s;
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub union C2RustUnnamed_8 {
-    pub fd: libc::c_int,
-    pub reserved: [*mut libc::c_void; 4],
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
 pub struct uv_idle_s {
     pub data: *mut libc::c_void,
     pub loop_0: *mut uv_loop_t,
     pub type_0: uv_handle_type,
     pub close_cb: uv_close_cb,
     pub handle_queue: [*mut libc::c_void; 2],
-    pub u: C2RustUnnamed_9,
+    pub u: Unnamed_uv_handle_fs_r,
     pub next_closing: *mut uv_handle_t,
     pub flags: libc::c_uint,
     pub idle_cb: uv_idle_cb,
@@ -438,7 +409,7 @@ pub type uv_idle_cb = Option<unsafe extern "C" fn(_: *mut uv_idle_t) -> ()>;
 pub type uv_idle_t = uv_idle_s;
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub union C2RustUnnamed_9 {
+pub union Unnamed_uv_handle_fs_r {
     pub fd: libc::c_int,
     pub reserved: [*mut libc::c_void; 4],
 }
@@ -451,3 +422,133 @@ pub enum uv_run_mode {
     UV_RUN_ONCE,
     UV_RUN_NOWAIT,
 }
+pub type uv_cond_t = pthread_cond_t;
+impl Default for uv_cond_t {
+    fn default() -> pthread_cond_t {
+        unsafe { std::mem::zeroed() }
+    }
+}
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub union pthread_cond_t {
+    pub __data: __pthread_cond_s,
+    pub __size: [libc::c_char; 48],
+    pub __align: libc::c_longlong,
+}
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct __pthread_cond_s {
+    pub c2rust_unnamed: _cond_s_C2RustUnnamed_1,
+    pub c2rust_unnamed_0: _cond_s_C2RustUnnamed,
+    pub __g_refs: [libc::c_uint; 2],
+    pub __g_size: [libc::c_uint; 2],
+    pub __g1_orig_size: libc::c_uint,
+    pub __wrefs: libc::c_uint,
+    pub __g_signals: [libc::c_uint; 2],
+}
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub union _cond_s_C2RustUnnamed {
+    pub __g1_start: libc::c_ulonglong,
+    pub __g1_start32: _cond_s_C2RustUnnamed_0,
+}
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct _cond_s_C2RustUnnamed_0 {
+    pub __low: libc::c_uint,
+    pub __high: libc::c_uint,
+}
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub union _cond_s_C2RustUnnamed_1 {
+    pub __wseq: libc::c_ulonglong,
+    pub __wseq32: _cond_s_C2RustUnnamed_2,
+}
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct _cond_s_C2RustUnnamed_2 {
+    pub __low: libc::c_uint,
+    pub __high: libc::c_uint,
+}
+pub type UvError = libc::c_int;
+pub const UV_ERRNO_MAX: UvError = -4096;
+pub const UV_EILSEQ: UvError = -84;
+pub const UV_EFTYPE: UvError = -4028;
+pub const UV_ENOTTY: UvError = -25;
+pub const UV_EREMOTEIO: UvError = -121;
+pub const UV_EHOSTDOWN: UvError = -112;
+pub const UV_EMLINK: UvError = -31;
+pub const UV_ENXIO: UvError = -6;
+pub const UV_EOF: UvError = -4095;
+pub const UV_UNKNOWN: UvError = -4094;
+pub const UV_EXDEV: UvError = -18;
+pub const UV_ETXTBSY: UvError = -26;
+pub const UV_ETIMEDOUT: UvError = -110;
+pub const UV_ESRCH: UvError = -3;
+pub const UV_ESPIPE: UvError = -29;
+pub const UV_ESHUTDOWN: UvError = -108;
+pub const UV_EROFS: UvError = -30;
+pub const UV_ERANGE: UvError = -34;
+pub const UV_EPROTOTYPE: UvError = -91;
+pub const UV_EPROTONOSUPPORT: UvError = -93;
+pub const UV_EPROTO: UvError = -71;
+pub const UV_EPIPE: UvError = -32;
+pub const UV_EPERM: UvError = -1;
+pub const UV_ENOTSUP: UvError = -95;
+pub const UV_ENOTSOCK: UvError = -88;
+pub const UV_ENOTEMPTY: UvError = -39;
+pub const UV_ENOTDIR: UvError = -20;
+pub const UV_ENOTCONN: UvError = -107;
+pub const UV_ENOSYS: UvError = -38;
+pub const UV_ENOSPC: UvError = -28;
+pub const UV_ENOPROTOOPT: UvError = -92;
+pub const UV_ENONET: UvError = -64;
+pub const UV_ENOMEM: UvError = -12;
+pub const UV_ENOENT: UvError = -2;
+pub const UV_ENODEV: UvError = -19;
+pub const UV_ENOBUFS: UvError = -105;
+pub const UV_ENFILE: UvError = -23;
+pub const UV_ENETUNREACH: UvError = -101;
+pub const UV_ENETDOWN: UvError = -100;
+pub const UV_ENAMETOOLONG: UvError = -36;
+pub const UV_EMSGSIZE: UvError = -90;
+pub const UV_EMFILE: UvError = -24;
+pub const UV_ELOOP: UvError = -40;
+pub const UV_EISDIR: UvError = -21;
+pub const UV_EISCONN: UvError = -106;
+pub const UV_EIO: UvError = -5;
+pub const UV_EINVAL: UvError = -22;
+pub const UV_EINTR: UvError = -4;
+pub const UV_EHOSTUNREACH: UvError = -113;
+pub const UV_EFBIG: UvError = -27;
+pub const UV_EFAULT: UvError = -14;
+pub const UV_EEXIST: UvError = -17;
+pub const UV_EDESTADDRREQ: UvError = -89;
+pub const UV_ECONNRESET: UvError = -104;
+pub const UV_ECONNREFUSED: UvError = -111;
+pub const UV_ECONNABORTED: UvError = -103;
+pub const UV_ECHARSET: UvError = -4080;
+pub const UV_ECANCELED: UvError = -125;
+pub const UV_EBUSY: UvError = -16;
+pub const UV_EBADF: UvError = -9;
+pub const UV_EALREADY: UvError = -114;
+pub const UV_EAI_SOCKTYPE: UvError = -3011;
+pub const UV_EAI_SERVICE: UvError = -3010;
+pub const UV_EAI_PROTOCOL: UvError = -3014;
+pub const UV_EAI_OVERFLOW: UvError = -3009;
+pub const UV_EAI_NONAME: UvError = -3008;
+pub const UV_EAI_NODATA: UvError = -3007;
+pub const UV_EAI_MEMORY: UvError = -3006;
+pub const UV_EAI_FAMILY: UvError = -3005;
+pub const UV_EAI_FAIL: UvError = -3004;
+pub const UV_EAI_CANCELED: UvError = -3003;
+pub const UV_EAI_BADHINTS: UvError = -3013;
+pub const UV_EAI_BADFLAGS: UvError = -3002;
+pub const UV_EAI_AGAIN: UvError = -3001;
+pub const UV_EAI_ADDRFAMILY: UvError = -3000;
+pub const UV_EAGAIN: UvError = -11;
+pub const UV_EAFNOSUPPORT: UvError = -97;
+pub const UV_EADDRNOTAVAIL: UvError = -99;
+pub const UV_EADDRINUSE: UvError = -98;
+pub const UV_EACCES: UvError = -13;
+pub const UV_E2BIG: UvError = -7;

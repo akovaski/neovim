@@ -32,11 +32,11 @@ pub struct Loop {
     pub recursive: libc::c_int,
 }
 pub unsafe fn CREATE_EVENT(
-    multiqueue: *mut MultiQueue,
+    multiqueue: Option<&mut MultiQueue>,
     handler: valid_argv_callback,
     args: &[*mut libc::c_void],
 ) {
-    if !multiqueue.is_null() {
+    if multiqueue.is_some() {
         multiqueue_put(multiqueue, Some(handler), args);
     } else {
         handler(args.as_ptr() as *mut *mut libc::c_void);
@@ -73,8 +73,8 @@ pub unsafe fn LOOP_PROCESS_EVENTS(
     timeout: libc::c_int,
 ) {
     if let Some(multiqueue) = multiqueue {
-        if !multiqueue_empty(multiqueue) {
-            multiqueue_process_events(multiqueue);
+        if !multiqueue_empty(Some(multiqueue)) {
+            multiqueue_process_events(Some(multiqueue));
         }
     } else {
         loop_poll_events(loop_0, timeout);
@@ -88,7 +88,7 @@ pub unsafe extern "C" fn loop_init(mut loop_0: *mut Loop, _data: *mut libc::c_vo
     (*loop_0).uv.data = loop_0 as *mut libc::c_void;
     (*loop_0).children = kl_init();
     (*loop_0).events = multiqueue_new_parent(Some(loop_on_put), loop_0 as *mut libc::c_void);
-    (*loop_0).fast_events = multiqueue_new_child((*loop_0).events);
+    (*loop_0).fast_events = multiqueue_new_child(&mut *(*loop_0).events);
     (*loop_0).thread_events = multiqueue_new_parent(None, ptr::null_mut());
     uv_mutex_init(&mut (*loop_0).mutex);
     uv_async_init(&mut (*loop_0).uv, &mut (*loop_0).async_0, Some(async_cb));
@@ -138,7 +138,7 @@ pub unsafe extern "C" fn loop_poll_events(mut loop_0: *mut Loop, ms: libc::c_int
         uv_timer_stop(&mut (*loop_0).poll_timer);
     }
     (*loop_0).recursive -= 1; // Can re-enter uv_run now
-    multiqueue_process_events((*loop_0).fast_events);
+    multiqueue_process_events((*loop_0).fast_events.as_mut());
     return timeout_expired;
 }
 
@@ -153,7 +153,7 @@ pub unsafe extern "C" fn loop_poll_events(mut loop_0: *mut Loop, ms: libc::c_int
 #[no_mangle]
 pub unsafe extern "C" fn loop_schedule_fast(loop_0: *mut Loop, event: Event) {
     uv_mutex_lock(&mut (*loop_0).mutex);
-    multiqueue_put_event((*loop_0).thread_events, event);
+    multiqueue_put_event((*loop_0).thread_events.as_mut(), event);
     uv_async_send(&mut (*loop_0).async_0);
     uv_mutex_unlock(&mut (*loop_0).mutex);
 }
@@ -174,12 +174,12 @@ pub unsafe extern "C" fn loop_schedule_deferred(loop_0: *mut Loop, event: Event)
 unsafe extern "C" fn loop_deferred_event(argv: *mut *mut libc::c_void) {
     let loop_0: *mut Loop = *argv.offset(0) as *mut Loop;
     let eventp: *mut Event = *argv.offset(1) as *mut Event;
-    multiqueue_put_event((*loop_0).events, *eventp);
+    multiqueue_put_event((*loop_0).events.as_mut(), *eventp);
     xfree(eventp);
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn loop_on_put(_queue: *mut MultiQueue, data: *mut libc::c_void) {
+pub unsafe extern "C" fn loop_on_put(_queue: Option<&mut MultiQueue>, data: *mut libc::c_void) {
     let loop_0: *mut Loop = data as *mut Loop;
     // Sometimes libuv will run pending callbacks (timer for example) before
     // blocking for a poll. If this happens and the callback pushes a event to one
@@ -225,15 +225,15 @@ pub unsafe extern "C" fn loop_close(loop_0: *mut Loop, wait: bool) -> bool {
 #[no_mangle]
 pub unsafe extern "C" fn loop_purge(loop_0: *mut Loop) {
     uv_mutex_lock(&mut (*loop_0).mutex);
-    multiqueue_purge_events((*loop_0).thread_events);
-    multiqueue_purge_events((*loop_0).fast_events);
+    multiqueue_purge_events((*loop_0).thread_events.as_mut());
+    multiqueue_purge_events((*loop_0).fast_events.as_mut());
     uv_mutex_unlock(&mut (*loop_0).mutex);
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn loop_size(loop_0: *mut Loop) -> libc::size_t {
     uv_mutex_lock(&mut (*loop_0).mutex);
-    let rv: libc::size_t = multiqueue_size((*loop_0).thread_events);
+    let rv: libc::size_t = multiqueue_size(&mut *(*loop_0).thread_events);
     uv_mutex_unlock(&mut (*loop_0).mutex);
     return rv;
 }
@@ -242,9 +242,9 @@ unsafe extern "C" fn async_cb(handle: *mut uv_async_t) {
     let l: *mut Loop = (*(*handle).loop_0).data as *mut Loop;
     uv_mutex_lock(&mut (*l).mutex);
     // Flush thread_events to fast_events for processing on main loop.
-    while !multiqueue_empty((*l).thread_events) {
-        let ev: Event = multiqueue_get((*l).thread_events);
-        multiqueue_put_event((*l).fast_events, ev);
+    while !multiqueue_empty((*l).thread_events.as_mut()) {
+        let ev: Event = multiqueue_get((*l).thread_events.as_mut());
+        multiqueue_put_event((*l).fast_events.as_mut(), ev);
     }
     uv_mutex_unlock(&mut (*l).mutex);
 }

@@ -35,6 +35,17 @@ macro_rules! c_assert {
     };
 }
 
+macro_rules! offset_of {
+    ( $type:ty, $field: ident ) => {{
+        type tt = $type;
+        let x: tt = std::mem::zeroed();
+        let tt { ref $field, .. } = x;
+        let offset = ($field as *const _ as usize) - (&x as *const _ as usize);
+        std::mem::forget(x);
+        offset as isize
+    }};
+}
+
 #[allow(dead_code)]
 unsafe extern "C" fn xdl_diff(
     mf1: *mut xdiff::mmfile_t,

@@ -16,6 +16,9 @@ pub use log::*;
 mod rbuffer;
 pub use rbuffer::*;
 #[macro_use]
+mod lib;
+pub use lib::*;
+#[macro_use]
 mod event;
 pub use event::*;
 
@@ -41,8 +44,6 @@ mod grid_defs;
 pub use grid_defs::*;
 mod hashtab;
 pub use hashtab::*;
-mod lib;
-pub use lib::*;
 mod mark_defs;
 pub use mark_defs::*;
 mod mark_extended;

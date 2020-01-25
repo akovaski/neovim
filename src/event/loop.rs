@@ -2,7 +2,6 @@ use crate::*;
 use std::ptr;
 
 pub type WatcherPtr = *mut libc::c_void;
-#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct Loop {
     pub uv: uv_loop_t,

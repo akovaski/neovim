@@ -38,13 +38,24 @@ extern "C" {
         mutex: *mut uv_mutex_t,
         timeout: u64,
     ) -> libc::c_int;
+    pub fn uv_stream_get_write_queue_size(stream: *const uv_stream_t) -> libc::size_t;
+    pub fn uv_stream_set_blocking(handle: *mut uv_pipe_t, blocking: libc::c_int) -> libc::c_int;
+    pub fn uv_guess_handle(file: uv_file) -> uv_handle_type;
+    pub fn uv_pipe_init(_: *mut uv_loop_t, handle: *mut uv_pipe_t, ipc: libc::c_int)
+        -> libc::c_int;
+    pub fn uv_pipe_open(_: *mut uv_pipe_t, file: uv_file) -> libc::c_int;
+    pub fn uv_idle_init(_: *mut uv_loop_t, idle: *mut uv_idle_t) -> libc::c_int;
 }
 
 pub trait UvClosable {}
 impl UvClosable for uv_timer_t {}
 impl UvClosable for uv_signal_s {}
 impl UvClosable for uv_async_s {}
-pub unsafe fn uv_close<T: UvClosable>(handle: &mut T, close_cb: uv_close_cb) {
+impl UvClosable for uv_pipe_t {}
+impl UvClosable for uv_stream_s {}
+impl UvClosable for uv_handle_s {}
+impl UvClosable for uv_idle_s {}
+pub unsafe fn uv_close<T: UvClosable>(handle: *mut T, close_cb: uv_close_cb) {
     c_uv_close(handle as *mut T as *mut uv_handle_t, close_cb);
 }
 
@@ -99,7 +110,6 @@ pub union pthread_rwlock_t {
     pub __size: [libc::c_char; 56],
     pub __align: libc::c_long,
 }
-#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct uv_loop_s {
     pub data: *mut libc::c_void,

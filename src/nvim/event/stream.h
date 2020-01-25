@@ -57,7 +57,10 @@ struct stream {
   MultiQueue *events;
 };
 
-#ifdef INCLUDE_GENERATED_DECLARATIONS
-# include "event/stream.h.generated.h"
-#endif
+int stream_set_blocking(int fd, bool blocking);
+void stream_init(Loop *loop, Stream *stream, int fd, uv_stream_t *uvstream);
+void stream_close(Stream *stream, stream_close_cb on_stream_close, void *data);
+void stream_may_close(Stream *stream);
+void stream_close_handle(Stream *stream);
+
 #endif  // NVIM_EVENT_STREAM_H

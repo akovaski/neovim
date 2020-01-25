@@ -22,16 +22,8 @@ pub const ERROR_LOG_LEVEL: libc::c_int = 3;
 
 macro_rules! WLOG {
     ($s:expr $(, $x:expr)* $(,)?) => {
-        logmsg(WARN_LOG_LEVEL,
-               std::ptr::null(),
-               std::ffi::CString::new(file!())
-                   .expect("CString::new failed")
-                   .as_ptr() as *const libc::c_char,
-                line!() as libc::c_int,
-                true,
-               std::ffi::CString::new($s)
-                   .expect("CString::new failed")
-                   .as_ptr() as *const libc::c_char,
+        logmsg!(WARN_LOG_LEVEL,
+                $s,
                 $($x),*
                 );
     }
@@ -39,8 +31,28 @@ macro_rules! WLOG {
 
 macro_rules! ELOG {
     ($s:expr $(, $x:expr)* $(,)?) => {
-        logmsg(
+        logmsg!(
             ERROR_LOG_LEVEL,
+            $s,
+            $($x),*
+            );
+    }
+}
+
+macro_rules! DLOG {
+    ($s:expr $(, $x:expr)* $(,)?) => {
+        logmsg!(
+            DEBUG_LOG_LEVEL,
+            $s,
+            $($x),*
+            );
+    }
+}
+
+macro_rules! logmsg {
+    ($level:expr, $s:expr $(, $x:expr)* $(,)?) => {
+        logmsg(
+            $level,
             std::ptr::null(),
             std::ffi::CString::new(file!())
                 .expect("CString::new failed")

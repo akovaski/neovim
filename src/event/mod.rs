@@ -11,3 +11,5 @@ pub mod stream;
 pub use stream::*;
 pub mod time;
 pub use time::*;
+pub mod wstream;
+pub use wstream::*;

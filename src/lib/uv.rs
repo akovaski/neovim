@@ -45,6 +45,30 @@ extern "C" {
         -> libc::c_int;
     pub fn uv_pipe_open(_: *mut uv_pipe_t, file: uv_file) -> libc::c_int;
     pub fn uv_idle_init(_: *mut uv_loop_t, idle: *mut uv_idle_t) -> libc::c_int;
+    #[link_name = "uv_write"]
+    fn c_uv_write(
+        req: *mut uv_write_t<libc::c_void>,
+        handle: *mut uv_stream_t,
+        bufs: *const uv_buf_t,
+        nbufs: libc::c_uint,
+        cb: uv_write_cb<libc::c_void>,
+    ) -> libc::c_int;
+}
+
+pub unsafe fn uv_write<D>(
+    req: *mut uv_write_t<D>,
+    handle: *mut uv_stream_t,
+    bufs: *const uv_buf_t,
+    nbufs: libc::c_uint,
+    cb: uv_write_cb<D>,
+) -> libc::c_int {
+    c_uv_write(
+        req as *mut uv_write_t<libc::c_void>,
+        handle,
+        bufs,
+        nbufs,
+        std::mem::transmute(cb),
+    )
 }
 
 pub trait UvClosable {}
@@ -562,3 +586,21 @@ pub const UV_EADDRNOTAVAIL: UvError = -99;
 pub const UV_EADDRINUSE: UvError = -98;
 pub const UV_EACCES: UvError = -13;
 pub const UV_E2BIG: UvError = -7;
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct uv_write_s<D> {
+    pub data: *mut D,
+    pub type_0: uv_req_type,
+    pub reserved: [*mut libc::c_void; 6],
+    pub cb: uv_write_cb<D>,
+    pub send_handle: *mut uv_stream_t,
+    pub handle: *mut uv_stream_t,
+    pub queue: [*mut libc::c_void; 2],
+    pub write_index: libc::c_uint,
+    pub bufs: *mut uv_buf_t,
+    pub nbufs: libc::c_uint,
+    pub error: libc::c_int,
+    pub bufsml: [uv_buf_t; 4],
+}
+pub type uv_write_cb<D> = Option<unsafe extern "C" fn(_: *mut uv_write_t<D>, _: libc::c_int) -> ()>;
+pub type uv_write_t<D> = uv_write_s<D>;

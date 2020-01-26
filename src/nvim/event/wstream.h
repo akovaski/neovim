@@ -18,7 +18,15 @@ struct wbuffer {
   wbuffer_data_finalizer cb;
 };
 
-#ifdef INCLUDE_GENERATED_DECLARATIONS
-# include "event/wstream.h.generated.h"
-#endif
+void wstream_init_fd(Loop *loop, Stream *stream, int fd, size_t maxmem);
+void wstream_init_stream(Stream *stream, uv_stream_t *uvstream, size_t maxmem);
+void wstream_init(Stream *stream, size_t maxmem);
+void wstream_set_write_cb(Stream *stream, stream_write_cb cb, void *data);
+bool wstream_write(Stream *stream, WBuffer *buffer);
+WBuffer *wstream_new_buffer(char *data,
+                            size_t size,
+                            size_t refcount,
+                            wbuffer_data_finalizer cb);
+void wstream_release_wbuffer(WBuffer *buffer);
+
 #endif  // NVIM_EVENT_WSTREAM_H

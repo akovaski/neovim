@@ -58,6 +58,8 @@ mod memline_defs;
 pub use memline_defs::*;
 mod memory;
 pub use memory::*;
+mod misc1;
+pub use misc1::*;
 mod option_defs;
 pub use option_defs::*;
 mod os;

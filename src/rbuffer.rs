@@ -16,6 +16,87 @@ use crate::memory::*;
 use std::cmp::min;
 use std::ptr;
 
+mod ffi {
+    use super::*;
+    #[no_mangle]
+    unsafe extern "C" fn rbuffer_size(buf: *mut RBuffer<libc::c_void>) -> libc::size_t {
+        super::rbuffer_size(buf)
+    }
+    #[no_mangle]
+    unsafe extern "C" fn rbuffer_new(capacity: libc::size_t) -> *mut RBuffer<libc::c_void> {
+        super::rbuffer_new(capacity)
+    }
+    #[no_mangle]
+    unsafe extern "C" fn rbuffer_free(buf: *mut RBuffer<libc::c_void>) {
+        super::rbuffer_free(buf)
+    }
+    #[no_mangle]
+    unsafe extern "C" fn rbuffer_capacity(buf: *mut RBuffer<libc::c_void>) -> libc::size_t {
+        super::rbuffer_capacity(buf)
+    }
+    #[no_mangle]
+    unsafe extern "C" fn rbuffer_space(buf: *mut RBuffer<libc::c_void>) -> libc::size_t {
+        super::rbuffer_space(buf)
+    }
+    #[no_mangle]
+    unsafe extern "C" fn rbuffer_write_ptr(
+        buf: *mut RBuffer<libc::c_void>,
+        write_count: *mut libc::size_t,
+    ) -> *mut libc::c_char {
+        super::rbuffer_write_ptr(buf, write_count)
+    }
+    #[no_mangle]
+    unsafe extern "C" fn rbuffer_reset(buf: *mut RBuffer<libc::c_void>) {
+        super::rbuffer_reset(buf)
+    }
+    #[no_mangle]
+    unsafe extern "C" fn rbuffer_produced(buf: *mut RBuffer<libc::c_void>, count: libc::size_t) {
+        super::rbuffer_produced(buf, count)
+    }
+    #[no_mangle]
+    unsafe extern "C" fn rbuffer_read_ptr(
+        buf: *mut RBuffer<libc::c_void>,
+        read_count: *mut libc::size_t,
+    ) -> *mut libc::c_char {
+        super::rbuffer_read_ptr(buf, read_count)
+    }
+    #[no_mangle]
+    unsafe extern "C" fn rbuffer_consumed(buf: *mut RBuffer<libc::c_void>, count: libc::size_t) {
+        super::rbuffer_consumed(buf, count)
+    }
+    #[no_mangle]
+    unsafe extern "C" fn rbuffer_write(
+        buf: *mut RBuffer<libc::c_void>,
+        src: *const libc::c_char,
+        src_size: libc::size_t,
+    ) -> libc::size_t {
+        super::rbuffer_write(buf, src, src_size)
+    }
+    #[no_mangle]
+    unsafe extern "C" fn rbuffer_read(
+        buf: *mut RBuffer<libc::c_void>,
+        dst: *mut libc::c_char,
+        dst_size: libc::size_t,
+    ) -> libc::size_t {
+        super::rbuffer_read(buf, dst, dst_size)
+    }
+    #[no_mangle]
+    unsafe extern "C" fn rbuffer_get(
+        buf: *mut RBuffer<libc::c_void>,
+        index: libc::size_t,
+    ) -> *mut libc::c_char {
+        super::rbuffer_get(buf, index)
+    }
+    #[no_mangle]
+    unsafe extern "C" fn rbuffer_cmp(
+        buf: *mut RBuffer<libc::c_void>,
+        str: *const libc::c_char,
+        count: libc::size_t,
+    ) -> libc::c_int {
+        super::rbuffer_cmp(buf, str, count)
+    }
+}
+
 /// Macros that simplify working with the read/write pointers directly by hiding
 /// ring buffer wrap logic. Some examples:
 ///
@@ -68,19 +149,18 @@ macro_rules! RBUFFER_UNTIL_FULL {
 // TODO: RBUFFER_EACH, RBUFFER_EACH_REVERSE
 //       These are only used in os/input.c and tui/input.c
 
-pub type RBuffer = rbuffer;
+pub type RBuffer<T> = rbuffer<T>;
 /// Type of function invoked during certain events:
 ///   - When the RBuffer switches to the full state
 ///   - When the RBuffer switches to the non-full state
-pub type rbuffer_callback =
-    Option<unsafe extern "C" fn(_: *mut RBuffer, _: *mut libc::c_void) -> ()>;
+pub type rbuffer_callback<T> = Option<unsafe extern "C" fn(_: *mut RBuffer<T>, _: *mut T) -> ()>;
 
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub struct rbuffer {
-    pub full_cb: rbuffer_callback,
-    pub nonfull_cb: rbuffer_callback,
-    pub data: *mut libc::c_void,
+pub struct rbuffer<T> {
+    pub full_cb: rbuffer_callback<T>,
+    pub nonfull_cb: rbuffer_callback<T>,
+    pub data: *mut T,
     pub size: libc::size_t,
     pub temp: *mut libc::c_char, // helper memory used to by rbuffer_reset if required
     pub end_ptr: *mut libc::c_char,
@@ -90,12 +170,11 @@ pub struct rbuffer {
 }
 
 /// Creates a new `RBuffer` instance.
-#[no_mangle]
-pub unsafe extern "C" fn rbuffer_new(mut capacity: libc::size_t) -> *mut RBuffer {
+pub unsafe fn rbuffer_new<T>(mut capacity: libc::size_t) -> *mut RBuffer<T> {
     if capacity == 0 {
         capacity = 0x10000;
     }
-    let mut rv: *mut RBuffer = xcalloc(1, std::mem::size_of::<RBuffer>() + capacity);
+    let mut rv: *mut RBuffer<T> = xcalloc(1, std::mem::size_of::<RBuffer<T>>() + capacity);
     (*rv).nonfull_cb = None;
     (*rv).full_cb = None;
     (*rv).data = ptr::null_mut();
@@ -107,24 +186,19 @@ pub unsafe extern "C" fn rbuffer_new(mut capacity: libc::size_t) -> *mut RBuffer
     return rv;
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn rbuffer_free(buf: *mut RBuffer) {
+pub unsafe fn rbuffer_free<T>(buf: *mut RBuffer<T>) {
     xfree((*buf).temp);
     xfree(buf);
 }
-
-#[no_mangle]
-pub unsafe extern "C" fn rbuffer_size(buf: *mut RBuffer) -> libc::size_t {
+pub unsafe fn rbuffer_size<T>(buf: *mut RBuffer<T>) -> libc::size_t {
     return (*buf).size;
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn rbuffer_capacity(buf: *mut RBuffer) -> libc::size_t {
+pub unsafe fn rbuffer_capacity<T>(buf: *mut RBuffer<T>) -> libc::size_t {
     return (*buf).end_ptr.offset_from((*buf).start_ptr.as_mut_ptr()) as libc::size_t;
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn rbuffer_space(buf: *mut RBuffer) -> libc::size_t {
+pub unsafe fn rbuffer_space<T>(buf: *mut RBuffer<T>) -> libc::size_t {
     return rbuffer_capacity(buf) - (*buf).size;
 }
 
@@ -134,9 +208,8 @@ pub unsafe extern "C" fn rbuffer_space(buf: *mut RBuffer) -> libc::size_t {
 ///
 /// It is necessary to call this function twice to ensure all empty space was
 /// used. See RBUFFER_UNTIL_FULL for a macro that simplifies this task.
-#[no_mangle]
-pub unsafe extern "C" fn rbuffer_write_ptr(
-    buf: *mut RBuffer,
+pub unsafe fn rbuffer_write_ptr<T>(
+    buf: *mut RBuffer<T>,
     write_count: *mut libc::size_t,
 ) -> *mut libc::c_char {
     if (*buf).size == rbuffer_capacity(buf) {
@@ -155,8 +228,7 @@ pub unsafe extern "C" fn rbuffer_write_ptr(
 
 /// Reset an RBuffer so read_ptr is at the beginning of the memory. If
 /// necessary, this moves existing data by allocating temporary memory.
-#[no_mangle]
-pub unsafe extern "C" fn rbuffer_reset(mut buf: *mut RBuffer) {
+pub unsafe fn rbuffer_reset<T>(mut buf: *mut RBuffer<T>) {
     let temp_size: libc::size_t = rbuffer_size(buf);
     if temp_size != 0 {
         if (*buf).temp.is_null() {
@@ -175,8 +247,7 @@ pub unsafe extern "C" fn rbuffer_reset(mut buf: *mut RBuffer) {
 /// automatically by `rbuffer_write`, but when using `rbuffer_write_ptr`
 /// directly, this needs to called after the data was copied to the internal
 /// buffer. The write pointer will be wrapped if required.
-#[no_mangle]
-pub unsafe extern "C" fn rbuffer_produced(mut buf: *mut RBuffer, count: libc::size_t) {
+pub unsafe fn rbuffer_produced<T>(mut buf: *mut RBuffer<T>, count: libc::size_t) {
     c_assert!(count != 0 && count <= rbuffer_space(buf));
 
     (*buf).write_ptr = (*buf).write_ptr.offset(count as isize);
@@ -199,9 +270,8 @@ pub unsafe extern "C" fn rbuffer_produced(mut buf: *mut RBuffer, count: libc::si
 ///
 /// It is necessary to call this function twice to ensure all available bytes
 /// were read. See RBUFFER_UNTIL_EMPTY for a macro that simplifies this task.
-#[no_mangle]
-pub unsafe extern "C" fn rbuffer_read_ptr(
-    buf: *mut RBuffer,
+pub unsafe fn rbuffer_read_ptr<T>(
+    buf: *mut RBuffer<T>,
     read_count: *mut libc::size_t,
 ) -> *mut libc::c_char {
     if (*buf).size == 0 {
@@ -222,8 +292,7 @@ pub unsafe extern "C" fn rbuffer_read_ptr(
 /// automatically by `rbuffer_read`, but when using `rbuffer_read_ptr`
 /// directly, this needs to called after the data was copied from the internal
 /// buffer. The read pointer will be wrapped if required.
-#[no_mangle]
-pub unsafe extern "C" fn rbuffer_consumed(mut buf: *mut RBuffer, count: libc::size_t) {
+pub unsafe fn rbuffer_consumed<T>(mut buf: *mut RBuffer<T>, count: libc::size_t) {
     c_assert!(count != 0 && count <= (*buf).size);
 
     (*buf).read_ptr = (*buf).read_ptr.offset(count as isize);
@@ -242,9 +311,8 @@ pub unsafe extern "C" fn rbuffer_consumed(mut buf: *mut RBuffer, count: libc::si
 
 /// Higher level functions for copying from/to RBuffer instances and data
 /// pointers
-#[no_mangle]
-pub unsafe extern "C" fn rbuffer_write(
-    buf: *mut RBuffer,
+pub unsafe fn rbuffer_write<T>(
+    buf: *mut RBuffer<T>,
     mut src: *const libc::c_char,
     mut src_size: libc::size_t,
 ) -> libc::size_t {
@@ -266,9 +334,8 @@ pub unsafe extern "C" fn rbuffer_write(
     return size - src_size;
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn rbuffer_read(
-    buf: *mut RBuffer,
+pub unsafe fn rbuffer_read<T>(
+    buf: *mut RBuffer<T>,
     mut dst: *mut libc::c_char,
     mut dst_size: libc::size_t,
 ) -> libc::size_t {
@@ -290,8 +357,7 @@ pub unsafe extern "C" fn rbuffer_read(
     return size - dst_size;
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn rbuffer_get(buf: *mut RBuffer, index: libc::size_t) -> *mut libc::c_char {
+pub unsafe fn rbuffer_get<T>(buf: *mut RBuffer<T>, index: libc::size_t) -> *mut libc::c_char {
     c_assert!(index < (*buf).size);
     let mut rptr: *mut libc::c_char = (*buf).read_ptr.offset(index as isize);
     if rptr >= (*buf).end_ptr {
@@ -300,9 +366,8 @@ pub unsafe extern "C" fn rbuffer_get(buf: *mut RBuffer, index: libc::size_t) -> 
     return rptr;
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn rbuffer_cmp(
-    buf: *mut RBuffer,
+pub unsafe fn rbuffer_cmp<T>(
+    buf: *mut RBuffer<T>,
     str: *const libc::c_char,
     mut count: libc::size_t,
 ) -> libc::c_int {

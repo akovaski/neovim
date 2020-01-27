@@ -5,6 +5,8 @@ pub mod r#loop;
 pub use r#loop::*;
 pub mod multiqueue;
 pub use multiqueue::*;
+pub mod rstream;
+pub use rstream::*;
 pub mod signal;
 pub use signal::*;
 pub mod stream;

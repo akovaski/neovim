@@ -53,6 +53,26 @@ extern "C" {
         nbufs: libc::c_uint,
         cb: uv_write_cb<libc::c_void>,
     ) -> libc::c_int;
+    pub fn uv_read_start(
+        _: *mut uv_stream_t,
+        alloc_cb_0: uv_alloc_cb,
+        read_cb_0: uv_read_cb,
+    ) -> libc::c_int;
+    pub fn uv_read_stop(_: *mut uv_stream_t) -> libc::c_int;
+    pub fn uv_idle_start(idle: *mut uv_idle_t, cb: uv_idle_cb) -> libc::c_int;
+    pub fn uv_idle_stop(idle: *mut uv_idle_t) -> libc::c_int;
+    pub fn uv_fs_req_cleanup(req: *mut uv_fs_t);
+    pub fn uv_fs_read(
+        loop_0: *mut uv_loop_t,
+        req: *mut uv_fs_t,
+        file: uv_file,
+        bufs: *const uv_buf_t,
+        nbufs: libc::c_uint,
+        offset: i64,
+        cb: uv_fs_cb,
+    ) -> libc::c_int;
+    pub fn uv_err_name(err: libc::c_int) -> *const libc::c_char;
+    pub fn uv_strerror(err: libc::c_int) -> *const libc::c_char;
 }
 
 pub unsafe fn uv_write<D>(
@@ -604,3 +624,108 @@ pub struct uv_write_s<D> {
 }
 pub type uv_write_cb<D> = Option<unsafe extern "C" fn(_: *mut uv_write_t<D>, _: libc::c_int) -> ()>;
 pub type uv_write_t<D> = uv_write_s<D>;
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct uv_fs_t {
+    pub data: *mut libc::c_void,
+    pub type_0: uv_req_type,
+    pub reserved: [*mut libc::c_void; 6],
+    pub fs_type: uv_fs_type,
+    pub loop_0: *mut uv_loop_t,
+    pub cb: uv_fs_cb,
+    pub result: libc::ssize_t,
+    pub ptr: *mut libc::c_void,
+    pub path: *const libc::c_char,
+    pub statbuf: uv_stat_t,
+    pub new_path: *const libc::c_char,
+    pub file: uv_file,
+    pub flags: libc::c_int,
+    pub mode: mode_t,
+    pub nbufs: libc::c_uint,
+    pub bufs: *mut uv_buf_t,
+    pub off: off_t,
+    pub uid: uv_uid_t,
+    pub gid: uv_gid_t,
+    pub atime: libc::c_double,
+    pub mtime: libc::c_double,
+    pub work_req: uv__work,
+    pub bufsml: [uv_buf_t; 4],
+}
+pub type uv_fs_cb = Option<unsafe extern "C" fn(_: *mut uv_fs_t) -> ()>;
+pub type uv_fs_type = libc::c_int;
+pub const UV_FS_STATFS: uv_fs_type = 34;
+pub const UV_FS_CLOSEDIR: uv_fs_type = 33;
+pub const UV_FS_READDIR: uv_fs_type = 32;
+pub const UV_FS_OPENDIR: uv_fs_type = 31;
+pub const UV_FS_LCHOWN: uv_fs_type = 30;
+pub const UV_FS_COPYFILE: uv_fs_type = 29;
+pub const UV_FS_REALPATH: uv_fs_type = 28;
+pub const UV_FS_FCHOWN: uv_fs_type = 27;
+pub const UV_FS_CHOWN: uv_fs_type = 26;
+pub const UV_FS_READLINK: uv_fs_type = 25;
+pub const UV_FS_SYMLINK: uv_fs_type = 24;
+pub const UV_FS_LINK: uv_fs_type = 23;
+pub const UV_FS_SCANDIR: uv_fs_type = 22;
+pub const UV_FS_RENAME: uv_fs_type = 21;
+pub const UV_FS_MKDTEMP: uv_fs_type = 20;
+pub const UV_FS_MKDIR: uv_fs_type = 19;
+pub const UV_FS_RMDIR: uv_fs_type = 18;
+pub const UV_FS_UNLINK: uv_fs_type = 17;
+pub const UV_FS_FDATASYNC: uv_fs_type = 16;
+pub const UV_FS_FSYNC: uv_fs_type = 15;
+pub const UV_FS_FCHMOD: uv_fs_type = 14;
+pub const UV_FS_CHMOD: uv_fs_type = 13;
+pub const UV_FS_ACCESS: uv_fs_type = 12;
+pub const UV_FS_FUTIME: uv_fs_type = 11;
+pub const UV_FS_UTIME: uv_fs_type = 10;
+pub const UV_FS_FTRUNCATE: uv_fs_type = 9;
+pub const UV_FS_FSTAT: uv_fs_type = 8;
+pub const UV_FS_LSTAT: uv_fs_type = 7;
+pub const UV_FS_STAT: uv_fs_type = 6;
+pub const UV_FS_SENDFILE: uv_fs_type = 5;
+pub const UV_FS_WRITE: uv_fs_type = 4;
+pub const UV_FS_READ: uv_fs_type = 3;
+pub const UV_FS_CLOSE: uv_fs_type = 2;
+pub const UV_FS_OPEN: uv_fs_type = 1;
+pub const UV_FS_CUSTOM: uv_fs_type = 0;
+pub const UV_FS_UNKNOWN: uv_fs_type = -1;
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct uv_stat_t {
+    pub st_dev: u64,
+    pub st_mode: u64,
+    pub st_nlink: u64,
+    pub st_uid: u64,
+    pub st_gid: u64,
+    pub st_rdev: u64,
+    pub st_ino: u64,
+    pub st_size: u64,
+    pub st_blksize: u64,
+    pub st_blocks: u64,
+    pub st_flags: u64,
+    pub st_gen: u64,
+    pub st_atim: uv_timespec_t,
+    pub st_mtim: uv_timespec_t,
+    pub st_ctim: uv_timespec_t,
+    pub st_birthtim: uv_timespec_t,
+}
+pub type mode_t = libc::c_uint;
+pub type off_t = libc::c_long;
+pub type uv_gid_t = libc::c_uint;
+pub type uv_uid_t = libc::c_uint;
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct uv__work {
+    pub work: Option<unsafe extern "C" fn(_: *mut uv__work) -> ()>,
+    pub done: Option<unsafe extern "C" fn(_: *mut uv__work, _: libc::c_int) -> ()>,
+    pub loop_0: *mut uv_loop_s,
+    pub wq: [*mut libc::c_void; 2],
+}
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct uv_timespec_t {
+    pub tv_sec: libc::c_long,
+    pub tv_nsec: libc::c_long,
+}
+pub type uintmax_t = libc::c_ulong;
+pub type uintptr_t = libc::c_ulong;

@@ -6,10 +6,10 @@ use std::ptr;
 pub struct Stream {
     pub closed: bool,
     pub did_eof: bool,
-    uv: stream_uv_union,
+    pub uv: stream_uv_union,
     pub uvstream: *mut uv_stream_t,
     pub uvbuf: uv_buf_t,
-    pub buffer: *mut RBuffer,
+    pub buffer: *mut RBuffer<Stream>,
     pub fd: uv_file,
     pub read_cb: stream_read_cb,
     pub write_cb: stream_write_cb,
@@ -27,7 +27,7 @@ pub struct Stream {
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
-union stream_uv_union {
+pub union stream_uv_union {
     pub pipe: uv_pipe_t,
     pub tcp: uv_tcp_t,
     pub idle: uv_idle_t,
@@ -45,7 +45,7 @@ union stream_uv_union {
 pub type stream_read_cb = Option<
     unsafe extern "C" fn(
         _: *mut Stream,
-        _: *mut RBuffer,
+        _: *mut RBuffer<Stream>,
         _: libc::size_t,
         _: *mut libc::c_void,
         _: bool,

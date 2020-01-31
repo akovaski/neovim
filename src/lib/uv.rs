@@ -73,6 +73,12 @@ extern "C" {
     ) -> libc::c_int;
     pub fn uv_err_name(err: libc::c_int) -> *const libc::c_char;
     pub fn uv_strerror(err: libc::c_int) -> *const libc::c_char;
+    #[link_name = "uv_spawn"]
+    pub fn c_uv_spawn(
+        loop_0: *mut uv_loop_t,
+        handle: *mut uv_process_t<libc::c_void>,
+        options: *const uv_process_options_t<libc::c_void>,
+    ) -> libc::c_int;
 }
 
 pub unsafe fn uv_write<D>(
@@ -99,8 +105,20 @@ impl UvClosable for uv_pipe_t {}
 impl UvClosable for uv_stream_s {}
 impl UvClosable for uv_handle_s {}
 impl UvClosable for uv_idle_s {}
+impl<T> UvClosable for uv_process_s<T> {}
 pub unsafe fn uv_close<T: UvClosable>(handle: *mut T, close_cb: uv_close_cb) {
     c_uv_close(handle as *mut T as *mut uv_handle_t, close_cb);
+}
+pub unsafe fn uv_spawn<T>(
+    loop_0: *mut uv_loop_t,
+    handle: *mut uv_process_t<T>,
+    options: *const uv_process_options_t<T>,
+) -> libc::c_int {
+    c_uv_spawn(
+        loop_0,
+        handle as *mut uv_process_t<libc::c_void>,
+        options as *mut uv_process_options_t<libc::c_void>,
+    )
 }
 
 pub type uv_async_cb = Option<unsafe extern "C" fn(_: *mut uv_async_t) -> ()>;
@@ -345,8 +363,8 @@ pub struct uv_stream_s {
     pub accepted_fd: libc::c_int,
     pub queued_fds: *mut libc::c_void,
 }
-pub type uv_connection_cb = Option<unsafe extern "C" fn(_: *mut uv_stream_t, _: libc::c_int) -> ()>;
 pub type uv_stream_t = uv_stream_s;
+pub type uv_connection_cb = Option<unsafe extern "C" fn(_: *mut uv_stream_t, _: libc::c_int) -> ()>;
 pub type uv_shutdown_t = uv_shutdown_s;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -729,3 +747,73 @@ pub struct uv_timespec_t {
 }
 pub type uintmax_t = libc::c_ulong;
 pub type uintptr_t = libc::c_ulong;
+pub type uv_process_t<T> = uv_process_s<T>;
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct uv_process_s<T> {
+    pub data: *mut T,
+    pub loop_0: *mut uv_loop_t,
+    pub type_0: uv_handle_type,
+    pub close_cb: uv_close_cb,
+    pub handle_queue: [*mut libc::c_void; 2],
+    pub u: Unnamed_uv_handle_fs_r,
+    pub next_closing: *mut uv_handle_t,
+    pub flags: libc::c_uint,
+    pub exit_cb: uv_exit_cb<T>,
+    pub pid: libc::c_int,
+    pub queue: [*mut libc::c_void; 2],
+    pub status: libc::c_int,
+}
+pub type uv_exit_cb<T> =
+    Option<unsafe extern "C" fn(_: *mut uv_process_t<T>, _: i64, _: libc::c_int) -> ()>;
+pub type uv_stdio_flags = libc::c_uint;
+pub const UV_OVERLAPPED_PIPE: uv_stdio_flags = 64;
+pub const UV_WRITABLE_PIPE: uv_stdio_flags = 32;
+pub const UV_READABLE_PIPE: uv_stdio_flags = 16;
+pub const UV_INHERIT_STREAM: uv_stdio_flags = 4;
+pub const UV_INHERIT_FD: uv_stdio_flags = 2;
+pub const UV_CREATE_PIPE: uv_stdio_flags = 1;
+pub const UV_IGNORE: uv_stdio_flags = 0;
+pub type uv_stdio_container_t = uv_stdio_container_s;
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct uv_stdio_container_s {
+    pub flags: uv_stdio_flags,
+    pub data: Unnamed_uv_stdio_stream_union,
+}
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub union Unnamed_uv_stdio_stream_union {
+    pub stream: uv_stream_mut,
+    pub fd: libc::c_int,
+}
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub union uv_stream_mut {
+    pub tcp: *mut uv_tcp_t,
+    pub pipe: *mut uv_pipe_t,
+    //pub tty: *mut uv_tty_t,
+}
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct uv_process_options_s<T> {
+    pub exit_cb: uv_exit_cb<T>,
+    pub file: *const libc::c_char,
+    pub args: *mut *mut libc::c_char,
+    pub env: *mut *mut libc::c_char,
+    pub cwd: *const libc::c_char,
+    pub flags: libc::c_uint,
+    pub stdio_count: libc::c_int,
+    pub stdio: *mut uv_stdio_container_t,
+    pub uid: uv_uid_t,
+    pub gid: uv_gid_t,
+}
+pub type uv_process_options_t<T> = uv_process_options_s<T>;
+pub type uv_process_flags = libc::c_uint;
+pub const UV_PROCESS_WINDOWS_HIDE_GUI: uv_process_flags = 64;
+pub const UV_PROCESS_WINDOWS_HIDE_CONSOLE: uv_process_flags = 32;
+pub const UV_PROCESS_WINDOWS_HIDE: uv_process_flags = 16;
+pub const UV_PROCESS_DETACHED: uv_process_flags = 8;
+pub const UV_PROCESS_WINDOWS_VERBATIM_ARGUMENTS: uv_process_flags = 4;
+pub const UV_PROCESS_SETGID: uv_process_flags = 2;
+pub const UV_PROCESS_SETUID: uv_process_flags = 1;

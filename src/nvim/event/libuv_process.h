@@ -20,7 +20,6 @@ static inline LibuvProcess libuv_process_init(Loop *loop, void *data)
   return rv;
 }
 
-#ifdef INCLUDE_GENERATED_DECLARATIONS
-# include "event/libuv_process.h.generated.h"
-#endif
+int libuv_process_spawn(LibuvProcess *uvproc);
+void libuv_process_close(LibuvProcess *uvproc);
 #endif  // NVIM_EVENT_LIBUV_PROCESS_H

@@ -1,4 +1,10 @@
 pub mod fs_defs;
 pub use fs_defs::*;
+pub mod process;
+pub use process::*;
+pub mod pty_process_unix;
+pub use pty_process_unix::*;
+pub mod shell;
+pub use shell::*;
 pub mod time;
 pub use time::*;

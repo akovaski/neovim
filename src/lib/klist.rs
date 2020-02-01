@@ -30,7 +30,7 @@ use std::ptr;
 #[repr(C)]
 pub struct kl1<T> {
     pub data: T,
-    next: *mut kl1<T>,
+    pub next: *mut kl1<T>,
 }
 
 #[derive(Copy, Clone)]
@@ -45,10 +45,10 @@ struct kmp_t<T> {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct kl_t<T> {
-    head: *mut kl1<T>,
-    tail: *mut kl1<T>,
+    pub head: *mut kl1<T>,
+    pub tail: *mut kl1<T>,
     mp: *mut kmp_t<T>,
-    size: libc::size_t,
+    pub size: libc::size_t,
 }
 
 unsafe fn kmp_init<T>() -> *mut kmp_t<T> {
@@ -98,5 +98,59 @@ pub unsafe fn kl_destroy<T>(mut kl: *mut kl_t<T>) {
     kmp_destroy((*kl).mp);
     XFREE_CLEAR(&mut kl);
 }
+pub unsafe extern "C" fn kl_push<T, D: Into<T>>(mut kl: *mut kl_t<T>, d: D) {
+    let mut p: *mut kl1<T> = kmp_alloc((*kl).mp);
+    let mut q: *mut kl1<T> = (*kl).tail;
+    (*p).next = ptr::null_mut();
+    (*(*kl).tail).next = p;
+    (*kl).tail = p;
+    (*kl).size = (*kl).size.wrapping_add(1);
+    (*q).data = d.into();
+}
 
-// TODO: kl_push, kl_iter, kl_empty, kl_shift_at : all in event/process.c
+pub unsafe extern "C" fn kl_shift_at<T: Copy>(mut kl: *mut kl_t<T>, n: *mut *mut kl1<T>) -> T {
+    c_assert!(!(**n).next.is_null());
+    (*kl).size = (*kl).size.wrapping_sub(1);
+    let p: *mut kl1<T> = *n;
+    *n = (**n).next;
+    if p == (*kl).head {
+        (*kl).head = *n
+    }
+    let d: T = (*p).data;
+    kmp_free((*kl).mp, p);
+    return d;
+}
+
+pub unsafe fn kl_empty<T>(kl: *mut kl_t<T>) -> bool {
+    (*kl).size == 0
+}
+
+impl<T> kl_t<T> {
+    pub fn iter(&self) -> klIterator<T> {
+        klIterator {
+            kl: self,
+            p: &(self.head),
+        }
+    }
+}
+
+pub struct klIterator<'a, T> {
+    kl: &'a kl_t<T>,
+    p: &'a *mut kl1<T>,
+}
+
+impl<'a, T> Iterator for klIterator<'a, T> {
+    type Item = *mut *mut kl1<T>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        unsafe {
+            if *self.p == (*self.kl).tail {
+                None
+            } else {
+                let ret = self.p;
+                self.p = &(**self.p).next;
+                Some(ret as *const _ as *mut _)
+            }
+        }
+    }
+}

@@ -38,7 +38,7 @@ extern "C" {
         mutex: *mut uv_mutex_t,
         timeout: u64,
     ) -> libc::c_int;
-    pub fn uv_stream_get_write_queue_size(stream: *const uv_stream_t) -> libc::size_t;
+    pub fn uv_stream_get_write_queue_size(stream: uv_stream_mut) -> libc::size_t;
     pub fn uv_stream_set_blocking(handle: *mut uv_pipe_t, blocking: libc::c_int) -> libc::c_int;
     pub fn uv_guess_handle(file: uv_file) -> uv_handle_type;
     pub fn uv_pipe_init(_: *mut uv_loop_t, handle: *mut uv_pipe_t, ipc: libc::c_int)
@@ -48,17 +48,17 @@ extern "C" {
     #[link_name = "uv_write"]
     fn c_uv_write(
         req: *mut uv_write_t<libc::c_void>,
-        handle: *mut uv_stream_t,
+        handle: uv_stream_mut,
         bufs: *const uv_buf_t,
         nbufs: libc::c_uint,
         cb: uv_write_cb<libc::c_void>,
     ) -> libc::c_int;
     pub fn uv_read_start(
-        _: *mut uv_stream_t,
+        _: uv_stream_mut,
         alloc_cb_0: uv_alloc_cb,
         read_cb_0: uv_read_cb,
     ) -> libc::c_int;
-    pub fn uv_read_stop(_: *mut uv_stream_t) -> libc::c_int;
+    pub fn uv_read_stop(_: uv_stream_mut) -> libc::c_int;
     pub fn uv_idle_start(idle: *mut uv_idle_t, cb: uv_idle_cb) -> libc::c_int;
     pub fn uv_idle_stop(idle: *mut uv_idle_t) -> libc::c_int;
     pub fn uv_fs_req_cleanup(req: *mut uv_fs_t);
@@ -79,11 +79,15 @@ extern "C" {
         handle: *mut uv_process_t<libc::c_void>,
         options: *const uv_process_options_t<libc::c_void>,
     ) -> libc::c_int;
+    #[link_name = "uv_recv_buffer_size"]
+    pub fn c_uv_recv_buffer_size(handle: *mut uv_handle_t, value: *mut libc::c_int) -> libc::c_int;
+    #[link_name = "uv_unref"]
+    fn c_uv_unref(_: *mut uv_handle_t);
 }
 
 pub unsafe fn uv_write<D>(
     req: *mut uv_write_t<D>,
-    handle: *mut uv_stream_t,
+    handle: uv_stream_mut,
     bufs: *const uv_buf_t,
     nbufs: libc::c_uint,
     cb: uv_write_cb<D>,
@@ -97,17 +101,26 @@ pub unsafe fn uv_write<D>(
     )
 }
 
-pub trait UvClosable {}
-impl UvClosable for uv_timer_t {}
-impl UvClosable for uv_signal_s {}
-impl UvClosable for uv_async_s {}
-impl UvClosable for uv_pipe_t {}
-impl UvClosable for uv_stream_s {}
-impl UvClosable for uv_handle_s {}
-impl UvClosable for uv_idle_s {}
-impl<T> UvClosable for uv_process_s<T> {}
-pub unsafe fn uv_close<T: UvClosable>(handle: *mut T, close_cb: uv_close_cb) {
-    c_uv_close(handle as *mut T as *mut uv_handle_t, close_cb);
+pub trait UvHandler {}
+impl UvHandler for uv_timer_t {}
+impl UvHandler for uv_signal_s {}
+impl UvHandler for uv_async_s {}
+impl UvHandler for uv_pipe_t {}
+impl UvHandler for uv_stream_s {}
+impl UvHandler for uv_handle_s {}
+impl UvHandler for uv_idle_s {}
+impl<T> UvHandler for uv_process_s<T> {}
+pub unsafe fn uv_close<T: UvHandler>(handle: *mut T, close_cb: uv_close_cb) {
+    c_uv_close(handle as *mut uv_handle_t, close_cb);
+}
+pub unsafe fn uv_recv_buffer_size<T: UvHandler>(
+    handle: *mut T,
+    value: *mut libc::c_int,
+) -> libc::c_int {
+    c_uv_recv_buffer_size(handle as *mut uv_handle_t, value)
+}
+pub unsafe fn uv_unref<T: UvHandler>(handle: *mut T) {
+    c_uv_unref(handle as *mut uv_handle_t);
 }
 pub unsafe fn uv_spawn<T>(
     loop_0: *mut uv_loop_t,
@@ -389,7 +402,7 @@ pub struct uv_connect_s {
 }
 pub type uv_connect_cb = Option<unsafe extern "C" fn(_: *mut uv_connect_t, _: libc::c_int) -> ()>;
 pub type uv_read_cb =
-    Option<unsafe extern "C" fn(_: *mut uv_stream_t, _: libc::ssize_t, _: *const uv_buf_t) -> ()>;
+    Option<unsafe extern "C" fn(_: uv_stream_mut, _: libc::ssize_t, _: *const uv_buf_t) -> ()>;
 pub type uv_alloc_cb =
     Option<unsafe extern "C" fn(_: *mut uv_handle_t, _: libc::size_t, _: *mut uv_buf_t) -> ()>;
 #[derive(Copy, Clone)]
@@ -792,7 +805,25 @@ pub union Unnamed_uv_stdio_stream_union {
 pub union uv_stream_mut {
     pub tcp: *mut uv_tcp_t,
     pub pipe: *mut uv_pipe_t,
+    pub stream: *mut uv_stream_t,
     //pub tty: *mut uv_tty_t,
+}
+impl From<&mut uv_pipe_t> for uv_stream_mut {
+    fn from(pipe: &mut uv_pipe_t) -> uv_stream_mut {
+        uv_stream_mut { pipe: pipe }
+    }
+}
+impl From<()> for uv_stream_mut {
+    fn from(_: ()) -> uv_stream_mut {
+        uv_stream_mut {
+            pipe: std::ptr::null_mut(),
+        }
+    }
+}
+impl uv_stream_mut {
+    pub unsafe fn is_null(&self) -> bool {
+        self.pipe.is_null()
+    }
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -817,3 +848,6 @@ pub const UV_PROCESS_DETACHED: uv_process_flags = 8;
 pub const UV_PROCESS_WINDOWS_VERBATIM_ARGUMENTS: uv_process_flags = 4;
 pub const UV_PROCESS_SETGID: uv_process_flags = 2;
 pub const UV_PROCESS_SETUID: uv_process_flags = 1;
+pub type uv_process_signal = u8;
+pub const SIGKILL: uv_process_signal = 9;
+pub const SIGTERM: uv_process_signal = 15;

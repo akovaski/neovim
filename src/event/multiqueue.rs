@@ -189,10 +189,10 @@ pub unsafe extern "C" fn multiqueue_purge_events(this: Option<&mut MultiQueue>) 
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn multiqueue_empty(this: Option<&mut MultiQueue>) -> bool {
+pub unsafe extern "C" fn multiqueue_empty(this: Option<&MultiQueue>) -> bool {
     c_assert!(this.is_some());
     let this = this.unwrap();
-    return QUEUE_EMPTY(&mut (*this).headtail);
+    return QUEUE_EMPTY(&(*this).headtail);
 }
 
 #[no_mangle]
@@ -224,7 +224,7 @@ unsafe extern "C" fn multiqueueitem_get_event(
     if (*item).link {
         // get the next node in the linked queue
         let linked: *mut MultiQueue = (*item).data.queue;
-        c_assert!(!multiqueue_empty(linked.as_mut()));
+        c_assert!(!multiqueue_empty(linked.as_ref()));
         let child: *mut MultiQueueItem =
             multiqueue_node_data(QUEUE_HEAD((*linked).headtail).as_mut());
         ev = (*child).data.item.event;

@@ -2,6 +2,12 @@ use crate::*;
 use std::ptr;
 
 pub type WatcherPtr = *mut libc::c_void;
+impl From<&mut &mut Process> for WatcherPtr {
+    fn from(p: &mut &mut Process) -> WatcherPtr {
+        (*p) as *mut _ as WatcherPtr
+    }
+}
+
 #[repr(C)]
 pub struct Loop {
     pub uv: uv_loop_t,
@@ -45,14 +51,14 @@ pub unsafe fn CREATE_EVENT(
 // Poll for events until a condition or timeout
 pub unsafe fn LOOP_PROCESS_EVENTS_UNTIL(
     loop_0: &mut Loop,
-    multiqueue: &mut Option<MultiQueue>,
+    mut multiqueue: Option<&mut MultiQueue>,
     timeout: libc::c_int,
-    condition: fn() -> bool,
+    condition: impl Fn(&Loop) -> bool,
 ) {
     let mut remaining = timeout;
     let mut before: u64 = if remaining > 0 { os_hrtime() } else { 0 };
-    while !condition() {
-        LOOP_PROCESS_EVENTS(loop_0, multiqueue, remaining);
+    while !condition(&loop_0) {
+        LOOP_PROCESS_EVENTS(loop_0, &mut multiqueue, remaining);
         if remaining == 0 {
             break;
         } else if remaining > 0 {
@@ -68,15 +74,16 @@ pub unsafe fn LOOP_PROCESS_EVENTS_UNTIL(
 
 pub unsafe fn LOOP_PROCESS_EVENTS(
     loop_0: &mut Loop,
-    multiqueue: &mut Option<MultiQueue>,
+    multiqueue: &mut Option<&mut MultiQueue>,
     timeout: libc::c_int,
 ) {
-    if let Some(multiqueue) = multiqueue {
-        if !multiqueue_empty(Some(multiqueue)) {
+    match multiqueue {
+        Some(multiqueue) if !multiqueue_empty(Some(multiqueue)) => {
             multiqueue_process_events(Some(multiqueue));
         }
-    } else {
-        loop_poll_events(loop_0, timeout);
+        _ => {
+            loop_poll_events(loop_0, timeout);
+        }
     }
 }
 
@@ -241,7 +248,7 @@ unsafe extern "C" fn async_cb(handle: *mut uv_async_t) {
     let l: *mut Loop = (*(*handle).loop_0).data as *mut Loop;
     uv_mutex_lock(&mut (*l).mutex);
     // Flush thread_events to fast_events for processing on main loop.
-    while !multiqueue_empty((*l).thread_events.as_mut()) {
+    while !multiqueue_empty((*l).thread_events.as_ref()) {
         let ev: Event = multiqueue_get((*l).thread_events.as_mut());
         multiqueue_put_event((*l).fast_events.as_mut(), ev);
     }

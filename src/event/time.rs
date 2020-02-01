@@ -55,7 +55,7 @@ unsafe extern "C" fn time_event(argv: *mut *mut libc::c_void) {
 
 unsafe extern "C" fn time_watcher_cb(handle: *mut uv_timer_t) {
     let watcher: *mut TimeWatcher = (*handle).data as *mut TimeWatcher;
-    if (*watcher).blockable && !multiqueue_empty((*watcher).events.as_mut()) {
+    if (*watcher).blockable && !multiqueue_empty((*watcher).events.as_ref()) {
         // the timer blocked and there already is an unprocessed event waiting
         return;
     }

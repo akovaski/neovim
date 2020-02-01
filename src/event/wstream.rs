@@ -27,14 +27,14 @@ pub unsafe extern "C" fn wstream_init_fd(
     fd: libc::c_int,
     maxmem: libc::size_t,
 ) {
-    stream_init(loop_0, stream, fd, ptr::null_mut());
+    stream_init(loop_0, stream, fd, ().into());
     wstream_init(stream, maxmem);
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn wstream_init_stream(
     stream: *mut Stream,
-    uvstream: *mut uv_stream_t,
+    uvstream: uv_stream_mut,
     maxmem: libc::size_t,
 ) {
     stream_init(ptr::null_mut(), stream, -1, uvstream);

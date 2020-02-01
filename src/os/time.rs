@@ -3,9 +3,7 @@ use std::cmp::min;
 use std::ptr;
 pub type Timestamp = u64;
 extern "C" {
-    static mut got_int: libc::c_int;
     fn os_char_avail() -> bool;
-//pub fn os_hrtime() -> u64;
 }
 
 static mut delay_mutex: Option<uv_mutex_t> = None;
@@ -56,9 +54,7 @@ pub unsafe extern "C" fn os_delay(mut ms: u64, ignoreinput: bool) {
         if ms > libc::c_int::max_value() as u64 {
             ms = libc::c_int::max_value() as u64;
         }
-        LOOP_PROCESS_EVENTS_UNTIL(&mut main_loop, &mut None, ms as libc::c_int, || {
-            got_int != 0
-        });
+        LOOP_PROCESS_EVENTS_UNTIL(&mut main_loop, None, ms as libc::c_int, |_| got_int != 0);
     } else {
         os_microdelay(ms * 1000, ignoreinput);
     }

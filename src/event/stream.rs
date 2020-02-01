@@ -7,7 +7,7 @@ pub struct Stream {
     pub closed: bool,
     pub did_eof: bool,
     pub uv: stream_uv_union,
-    pub uvstream: *mut uv_stream_t,
+    pub uvstream: uv_stream_mut,
     pub uvbuf: uv_buf_t,
     pub buffer: *mut RBuffer<Stream>,
     pub fd: uv_file,
@@ -86,7 +86,7 @@ pub unsafe extern "C" fn stream_init(
     loop_0: *mut Loop,
     mut stream: *mut Stream,
     fd: libc::c_int,
-    uvstream: *mut uv_stream_t,
+    uvstream: uv_stream_mut,
 ) {
     (*stream).uvstream = uvstream;
 
@@ -107,12 +107,12 @@ pub unsafe extern "C" fn stream_init(
 
             uv_pipe_init(&mut (*loop_0).uv, &mut (*stream).uv.pipe, 0);
             uv_pipe_open(&mut (*stream).uv.pipe, fd);
-            (*stream).uvstream = &mut (*stream).uv.pipe as *mut uv_pipe_t as *mut uv_stream_t
+            (*stream).uvstream = (&mut (*stream).uv.pipe).into();
         }
     }
 
     if !(*stream).uvstream.is_null() {
-        (*(*stream).uvstream).data = stream as *mut libc::c_void
+        (*(*stream).uvstream.stream).data = stream as *mut libc::c_void
     }
 
     (*stream).internal_data = ptr::null_mut();
@@ -167,7 +167,7 @@ pub unsafe extern "C" fn stream_close_handle(stream: *mut Stream) {
                 uv_stream_get_write_queue_size((*stream).uvstream)
             );
         }
-        uv_close((*stream).uvstream, Some(close_cb));
+        uv_close((*stream).uvstream.stream, Some(close_cb));
     } else {
         uv_close(&mut (*stream).uv.idle, Some(close_cb));
     };

@@ -8,14 +8,14 @@ pub unsafe extern "C" fn rstream_init_fd(
     fd: libc::c_int,
     bufsize: libc::size_t,
 ) {
-    stream_init(loop_0, stream, fd, ptr::null_mut());
+    stream_init(loop_0, stream, fd, ().into());
     rstream_init(stream, bufsize);
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn rstream_init_stream(
     stream: &mut Stream,
-    uvstream: *mut uv_stream_t,
+    uvstream: uv_stream_mut,
     bufsize: libc::size_t,
 ) {
     stream_init(ptr::null_mut(), stream, -1, uvstream);
@@ -87,12 +87,8 @@ unsafe extern "C" fn alloc_cb(
 /// Callback invoked by libuv after it copies the data into the buffer provided
 /// by `alloc_cb`. This is also called on EOF or when `alloc_cb` returns a
 /// 0-length buffer.
-unsafe extern "C" fn read_cb(
-    uvstream: *mut uv_stream_t,
-    cnt: libc::ssize_t,
-    _buf: *const uv_buf_t,
-) {
-    let mut stream: *mut Stream = (*uvstream).data as *mut Stream;
+unsafe extern "C" fn read_cb(uvstream: uv_stream_mut, cnt: libc::ssize_t, _buf: *const uv_buf_t) {
+    let mut stream: *mut Stream = (*uvstream.stream).data as *mut Stream;
 
     if cnt <= 0 {
         // cnt == 0 means libuv asked for a buffer and decided it wasn't needed:
@@ -103,7 +99,7 @@ unsafe extern "C" fn read_cb(
         // won't be called)
         if cnt == UV_ENOBUFS as isize || cnt == 0 {
             return;
-        } else if cnt == UV_EOF as isize && (*uvstream).type_0 == UV_TTY {
+        } else if cnt == UV_EOF as isize && (*uvstream.stream).type_0 == UV_TTY {
             // The TTY driver might signal EOF without closing the stream
             invoke_read_cb(stream, 0, true);
         } else {

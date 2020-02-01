@@ -2,6 +2,7 @@ pub mod kbtree;
 pub use kbtree::*;
 pub mod khash;
 pub use khash::*;
+#[macro_use]
 pub mod klist;
 pub use klist::*;
 #[macro_use]

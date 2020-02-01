@@ -49,6 +49,16 @@ macro_rules! DLOG {
     }
 }
 
+macro_rules! ILOG {
+    ($s:expr $(, $x:expr)* $(,)?) => {
+        logmsg!(
+            INFO_LOG_LEVEL,
+            $s,
+            $($x),*
+            );
+    }
+}
+
 macro_rules! logmsg {
     ($level:expr, $s:expr $(, $x:expr)* $(,)?) => {
         logmsg(

@@ -62,7 +62,11 @@ static inline bool process_is_stopped(Process *proc)
   return exited || (proc->stopped_time != 0);
 }
 
-#ifdef INCLUDE_GENERATED_DECLARATIONS
-# include "event/process.h.generated.h"
-#endif
+
+int process_spawn(Process *proc, bool in, bool out, bool err);
+void process_teardown(Loop *loop);
+void process_close_streams(Process *proc);
+int process_wait(Process *proc, int ms, MultiQueue *events);
+void process_stop(Process *proc);
+
 #endif  // NVIM_EVENT_PROCESS_H

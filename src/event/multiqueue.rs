@@ -81,10 +81,10 @@ pub struct MultiQueue {
 /// Event present on multiple queues.
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub struct MulticastEvent {
-    pub event: Event,
-    pub fired: bool,
-    pub refcount: libc::c_int,
+struct MulticastEvent {
+    event: Event,
+    fired: bool,
+    refcount: libc::c_int,
 }
 
 static mut NILEVENT: Event = Event {
@@ -125,8 +125,8 @@ unsafe extern "C" fn multiqueue_new(
 pub unsafe extern "C" fn multiqueue_free(this: *mut MultiQueue) {
     c_assert!(!this.is_null());
     while !QUEUE_EMPTY(&mut (*this).headtail) {
-        let q: *mut QUEUE = (*this).headtail.next;
-        let item: *mut MultiQueueItem = multiqueue_node_data(q.as_mut());
+        let q: &mut QUEUE = (*this).headtail.next.as_mut().unwrap();
+        let item: *mut MultiQueueItem = multiqueue_node_data(q);
         if !(*this).parent.is_null() {
             QUEUE_REMOVE(&mut (*(*item).data.item.parent_item).node);
             xfree((*item).data.item.parent_item);
@@ -139,25 +139,19 @@ pub unsafe extern "C" fn multiqueue_free(this: *mut MultiQueue) {
 
 /// Removes the next item and returns its Event.
 #[no_mangle]
-pub unsafe extern "C" fn multiqueue_get(this: Option<&mut MultiQueue>) -> Event {
-    let this = this.unwrap();
-    return if multiqueue_empty(Some(this)) {
+pub unsafe extern "C" fn multiqueue_get(this: &mut MultiQueue) -> Event {
+    return if multiqueue_empty(this) {
         NILEVENT
     } else {
-        multiqueue_remove(Some(this))
+        multiqueue_remove(this)
     };
 }
 
-pub unsafe fn multiqueue_put(
-    this: Option<&mut MultiQueue>,
-    cb: argv_callback,
-    args: &[*mut libc::c_void],
-) {
+pub unsafe fn multiqueue_put(this: &mut MultiQueue, cb: argv_callback, args: &[*mut libc::c_void]) {
     multiqueue_put_event(this, event_create(cb, args));
 }
 #[no_mangle]
-pub unsafe extern "C" fn multiqueue_put_event(this: Option<&mut MultiQueue>, event: Event) {
-    let this = this.unwrap();
+pub unsafe extern "C" fn multiqueue_put_event(this: &mut MultiQueue, event: Event) {
     multiqueue_push(this, event);
     if !(*this).parent.is_null() {
         if let Some(put_cb) = (*(*this).parent).put_cb {
@@ -167,11 +161,9 @@ pub unsafe extern "C" fn multiqueue_put_event(this: Option<&mut MultiQueue>, eve
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn multiqueue_process_events(this: Option<&mut MultiQueue>) {
-    c_assert!(this.is_some());
-    let this = this.unwrap();
-    while !multiqueue_empty(Some(this)) {
-        let mut event: Event = multiqueue_remove(Some(this));
+pub unsafe extern "C" fn multiqueue_process_events(this: &mut MultiQueue) {
+    while !multiqueue_empty(this) {
+        let mut event: Event = multiqueue_remove(this);
         if let Some(handler) = event.handler {
             handler(event.argv.as_mut_ptr());
         }
@@ -180,53 +172,43 @@ pub unsafe extern "C" fn multiqueue_process_events(this: Option<&mut MultiQueue>
 
 /// Removes all events without processing them.
 #[no_mangle]
-pub unsafe extern "C" fn multiqueue_purge_events(this: Option<&mut MultiQueue>) {
-    c_assert!(this.is_some());
-    let this = this.unwrap();
-    while !multiqueue_empty(Some(this)) {
-        multiqueue_remove(Some(this));
+pub unsafe extern "C" fn multiqueue_purge_events(this: &mut MultiQueue) {
+    while !multiqueue_empty(this) {
+        multiqueue_remove(this);
     }
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn multiqueue_empty(this: Option<&MultiQueue>) -> bool {
-    c_assert!(this.is_some());
-    let this = this.unwrap();
+pub unsafe extern "C" fn multiqueue_empty(this: &MultiQueue) -> bool {
     return QUEUE_EMPTY(&(*this).headtail);
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn multiqueue_replace_parent(
-    this: Option<&mut MultiQueue>,
-    new_parent: Option<&mut MultiQueue>,
+    this: &mut MultiQueue,
+    new_parent: *mut MultiQueue,
 ) {
-    let this = this.unwrap();
-    c_assert!(multiqueue_empty(Some(this)));
-    (*this).parent = new_parent.map_or(ptr::null_mut(), |x| x as *mut _);
+    c_assert!(multiqueue_empty(this));
+    (*this).parent = new_parent;
 }
 
 /// Gets the count of all events currently in the queue.
 #[no_mangle]
-pub unsafe extern "C" fn multiqueue_size(this: &mut MultiQueue) -> libc::size_t {
-    return (*this).size;
+pub unsafe extern "C" fn multiqueue_size(this: &MultiQueue) -> libc::size_t {
+    return this.size;
 }
 
 /// Gets an Event from an item.
 ///
 /// @param remove   Remove the node from its queue, and free it.
-unsafe extern "C" fn multiqueueitem_get_event(
-    item: Option<&mut MultiQueueItem>,
-    remove: bool,
-) -> Event {
-    c_assert!(item.is_some());
-    let item = item.unwrap();
+unsafe fn multiqueueitem_get_event(item: &mut MultiQueueItem, remove: bool) -> Event {
     let ev: Event;
-    if (*item).link {
+    if item.link {
         // get the next node in the linked queue
-        let linked: *mut MultiQueue = (*item).data.queue;
-        c_assert!(!multiqueue_empty(linked.as_ref()));
+        let linked: *mut MultiQueue = item.data.queue;
+        c_assert!(!multiqueue_empty(linked.as_ref().unwrap()));
         let child: *mut MultiQueueItem =
-            multiqueue_node_data(QUEUE_HEAD((*linked).headtail).as_mut());
+            multiqueue_node_data(QUEUE_HEAD((*linked).headtail).as_mut().unwrap());
         ev = (*child).data.item.event;
         // remove the child node
         if remove {
@@ -235,25 +217,24 @@ unsafe extern "C" fn multiqueueitem_get_event(
         }
     } else {
         // remove the corresponding link node in the parent queue
-        if remove && !(*item).data.item.parent_item.is_null() {
-            QUEUE_REMOVE(&mut (*(*item).data.item.parent_item).node);
-            xfree((*item).data.item.parent_item);
-            (*item).data.item.parent_item = ptr::null_mut();
+        if remove && !item.data.item.parent_item.is_null() {
+            QUEUE_REMOVE(&mut (*item.data.item.parent_item).node);
+            xfree(item.data.item.parent_item);
+            item.data.item.parent_item = ptr::null_mut();
         }
-        ev = (*item).data.item.event;
+        ev = item.data.item.event;
     }
     return ev;
 }
 
-unsafe extern "C" fn multiqueue_remove(this: Option<&mut MultiQueue>) -> Event {
-    let this = this.unwrap();
-    c_assert!(!multiqueue_empty(Some(this)));
-    let h: *mut QUEUE = QUEUE_HEAD((*this).headtail);
+unsafe fn multiqueue_remove(this: &mut MultiQueue) -> Event {
+    c_assert!(!multiqueue_empty(this));
+    let h: &mut QUEUE = QUEUE_HEAD(this.headtail).as_mut().unwrap();
     QUEUE_REMOVE(h);
-    let item: *mut MultiQueueItem = multiqueue_node_data(h.as_mut());
-    c_assert!(!(*item).link || (*this).parent.is_null()); // Only a parent queue has link-nodes
-    let ev: Event = multiqueueitem_get_event(item.as_mut(), true);
-    (*this).size = (*this).size.wrapping_sub(1);
+    let item: *mut MultiQueueItem = multiqueue_node_data(h);
+    c_assert!(!(*item).link || this.parent.is_null()); // Only a parent queue has link-nodes
+    let ev: Event = multiqueueitem_get_event(item.as_mut().unwrap(), true);
+    this.size = this.size.wrapping_sub(1);
     xfree(item);
     return ev;
 }
@@ -263,22 +244,21 @@ unsafe fn multiqueue_push(mut this: &mut MultiQueue, event: Event) {
     (*item).link = false;
     (*item).data.item.event = event;
     (*item).data.item.parent_item = ptr::null_mut();
-    QUEUE_INSERT_TAIL(&mut (*this).headtail, &mut (*item).node);
-    if !(*this).parent.is_null() {
+    QUEUE_INSERT_TAIL(&mut this.headtail, &mut (*item).node);
+    if !this.parent.is_null() {
         // push link node to the parent queue
         (*item).data.item.parent_item = xmalloc(std::mem::size_of::<MultiQueueItem>());
         (*(*item).data.item.parent_item).link = true;
         (*(*item).data.item.parent_item).data.queue = this;
         QUEUE_INSERT_TAIL(
-            &mut (*(*this).parent).headtail,
+            &mut (*this.parent).headtail,
             &mut (*(*item).data.item.parent_item).node,
         );
     }
-    (*this).size = (*this).size.wrapping_add(1);
+    this.size = this.size.wrapping_add(1);
 }
 
-unsafe fn multiqueue_node_data(q: Option<&mut QUEUE>) -> *mut MultiQueueItem {
-    let q = q.unwrap() as *mut QUEUE;
+unsafe fn multiqueue_node_data(q: &mut QUEUE) -> *mut MultiQueueItem {
     QUEUE_DATA!(q, MultiQueueItem, node)
 }
 
@@ -292,22 +272,26 @@ unsafe fn multiqueue_node_data(q: Option<&mut QUEUE>) -> *mut MultiQueueItem {
 /// @return Event that is safe to put onto `num` queues
 #[no_mangle]
 pub unsafe extern "C" fn event_create_oneshot(ev: Event, num: libc::c_int) -> Event {
-    let mut data: *mut MulticastEvent = xmalloc(std::mem::size_of::<MulticastEvent>());
-    (*data).event = ev;
-    (*data).fired = false;
-    (*data).refcount = num;
-    return event_create(Some(multiqueue_oneshot_event), vargs!(data));
+    let data = Box::new(MulticastEvent {
+        event: ev,
+        fired: false,
+        refcount: num,
+    });
+    return event_create(Some(multiqueue_oneshot_event), vargs!(Box::into_raw(data)));
 }
 unsafe extern "C" fn multiqueue_oneshot_event(argv: *mut *mut libc::c_void) {
-    let mut data: *mut MulticastEvent = *argv.offset(0) as *mut MulticastEvent;
-    if !(*data).fired {
-        (*data).fired = true;
-        if let Some(handler) = (*data).event.handler {
-            handler((*data).event.argv.as_mut_ptr());
+    let mut data: Box<MulticastEvent> = Box::from_raw(*argv.offset(0) as *mut _);
+    if !data.fired {
+        data.fired = true;
+        if let Some(handler) = data.event.handler {
+            handler(data.event.argv.as_mut_ptr());
         }
     }
-    (*data).refcount = (*data).refcount.wrapping_sub(1);
-    if (*data).refcount == 0 {
-        xfree(data);
-    };
+    data.refcount -= 1;
+    if data.refcount == 0 {
+        std::mem::drop(data);
+    } else {
+        // keep 'data' allocated for the next call of this function
+        Box::into_raw(data);
+    }
 }

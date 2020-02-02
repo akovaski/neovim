@@ -27,7 +27,7 @@ pub struct QUEUE {
 // Public macros.
 macro_rules! QUEUE_DATA {
     ($q:expr, $type:ty, $field:ident) => {
-        ($q as *mut u8).offset(-offset_of!($type, $field)) as *mut $type
+        ($q as *mut QUEUE as *mut u8).offset(-offset_of!($type, $field)) as *mut $type
     };
 }
 
@@ -35,28 +35,28 @@ macro_rules! QUEUE_DATA {
 // iterating over its elements results in undefined behavior.
 
 #[inline]
-pub unsafe fn QUEUE_EMPTY(q: *const QUEUE) -> bool {
-    return q == (*q).next;
+pub fn QUEUE_EMPTY(q: &QUEUE) -> bool {
+    return q as *const _ == q.next;
 }
 
-pub unsafe fn QUEUE_HEAD(q: QUEUE) -> *mut QUEUE {
+pub fn QUEUE_HEAD(q: QUEUE) -> *mut QUEUE {
     q.next
 }
 
 #[inline]
-pub unsafe fn QUEUE_INIT(q: *mut QUEUE) {
-    (*q).next = q;
-    (*q).prev = q;
+pub fn QUEUE_INIT(q: &mut QUEUE) {
+    q.next = q;
+    q.prev = q;
 }
 #[inline]
-pub unsafe fn QUEUE_INSERT_TAIL(h: *mut QUEUE, q: *mut QUEUE) {
-    (*q).next = h;
-    (*q).prev = (*h).prev;
-    (*(*q).prev).next = q;
-    (*h).prev = q;
+pub unsafe fn QUEUE_INSERT_TAIL(h: &mut QUEUE, q: &mut QUEUE) {
+    q.next = h;
+    q.prev = h.prev;
+    (*q.prev).next = q;
+    h.prev = q;
 }
 #[inline]
-pub unsafe fn QUEUE_REMOVE(q: *mut QUEUE) {
-    (*(*q).prev).next = (*q).next;
-    (*(*q).next).prev = (*q).prev;
+pub unsafe fn QUEUE_REMOVE(q: &mut QUEUE) {
+    (*q.prev).next = q.next;
+    (*q.next).prev = q.prev;
 }

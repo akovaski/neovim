@@ -158,7 +158,7 @@ pub unsafe extern "C" fn process_teardown(loop_0: &mut Loop) {
 
     // Wait until all children exit and all close events are processed.
     LOOP_PROCESS_EVENTS_UNTIL(loop_0, (*loop_0).events.as_mut(), -1, |loop_0| {
-        kl_empty((*loop_0).children) && multiqueue_empty((*loop_0).events.as_ref())
+        kl_empty((*loop_0).children) && multiqueue_empty((*loop_0).events.as_ref().unwrap())
     });
     pty_process_teardown(loop_0);
 }
@@ -222,9 +222,9 @@ pub unsafe extern "C" fn process_wait(
     if (*proc_0).refcount == 1 {
         // Job exited, free its resources.
         decref(proc_0);
-        if !events.is_null() {
+        if let Some(events) = events.as_mut() {
             // the decref call created an exit event, process it now
-            multiqueue_process_events(events.as_mut());
+            multiqueue_process_events(events);
         }
     } else {
         (*proc_0).refcount -= 1
@@ -387,8 +387,8 @@ unsafe extern "C" fn flush_stream(loop_0: &mut Loop, stream: *mut Stream) {
 
         // Poll for data and process the generated events.
         loop_poll_events(loop_0, 0);
-        if !(*stream).events.is_null() {
-            multiqueue_process_events((*stream).events.as_mut());
+        if let Some(events) = (*stream).events.as_mut() {
+            multiqueue_process_events(events);
         }
 
         // Stream can be closed if it is empty.

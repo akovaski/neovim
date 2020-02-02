@@ -59,7 +59,7 @@ unsafe extern "C" fn signal_watcher_cb(handle: *mut uv::uv_signal_t, _signum: li
     let watcher = (*handle).data as *mut SignalWatcher;
     if !(*watcher).events.is_null() {
         multiqueue::multiqueue_put_event(
-            Some(&mut *(*watcher).events),
+            (*watcher).events.as_mut().unwrap(),
             event_create(Some(signal_event), vargs!(watcher)),
         );
     } else {

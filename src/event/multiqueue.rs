@@ -43,44 +43,84 @@
 //! other sources and focus on a specific channel.
 
 use crate::*;
-use std::ptr;
 use std::mem;
+use std::ptr;
 
 pub type put_callback =
     Option<unsafe extern "C" fn(_: Option<&mut MultiQueue>, _: *mut libc::c_void) -> ()>;
 
-#[derive(Copy, Clone)]
 #[repr(C)]
 pub struct MultiQueueItem {
-    pub data: mq_item_data,
-    pub link: bool, // true: current item is just a link to a node in a child queue
-    pub node: QUEUE,
+    data: mq_item_data,
+    link: bool, // true: current item is just a link to a node in a child queue
+    node: QUEUE,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub union mq_item_data {
-    pub queue: *mut MultiQueue,
-    pub item: mq_item_data_item,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct mq_item_data_item {
-    pub event: Event,
-    pub parent_item: *mut MultiQueueItem,
+impl Drop for MultiQueueItem {
+    fn drop(&mut self) {
+        unsafe {
+            if self.link {
+                // remove the child node
+                match self.data.queue.as_mut() {
+                    Some(linked) => {
+                        let mut child = Box::from_raw(multiqueue_node_data(
+                            QUEUE_HEAD(linked.headtail).as_mut().unwrap(),
+                        ));
+                        // prevent the child from dropping the current node
+                        child.data.item.parent_item = ptr::null_mut();
+                        mem::drop(child);
+                    }
+                    _ => (),
+                }
+            } else {
+                // remove the parent node
+                match self.data.item.parent_item {
+                    parent_item if !parent_item.is_null() => {
+                        let mut parent_item = Box::from_raw(parent_item);
+                        // prevent the parent from dropping the current node
+                        parent_item.data.queue = ptr::null_mut();
+                        mem::drop(parent_item);
+                    }
+                    _ => (),
+                }
+            }
+            QUEUE_REMOVE(&mut self.node);
+        }
+    }
 }
 
 #[derive(Copy, Clone)]
 #[repr(C)]
+union mq_item_data {
+    queue: *mut MultiQueue,
+    item: mq_item_data_item,
+}
+#[derive(Copy, Clone)]
+#[repr(C)]
+struct mq_item_data_item {
+    event: Event,
+    parent_item: *mut MultiQueueItem,
+}
+
+#[repr(C)]
 pub struct MultiQueue {
-    pub parent: *mut MultiQueue,
-    pub headtail: QUEUE, // circularly-linked
-    pub put_cb: put_callback,
-    pub data: *mut libc::c_void,
-    pub size: libc::size_t,
+    parent: *mut MultiQueue,
+    headtail: QUEUE, // circularly-linked
+    put_cb: put_callback,
+    data: *mut libc::c_void,
+    size: libc::size_t,
+}
+impl Drop for MultiQueue {
+    fn drop(&mut self) {
+        unsafe {
+            while !QUEUE_EMPTY(&mut self.headtail) {
+                let q: &mut QUEUE = self.headtail.next.as_mut().unwrap();
+                mem::drop(Box::from_raw(multiqueue_node_data(q)));
+            }
+        }
+    }
 }
 
 /// Event present on multiple queues.
-#[derive(Copy, Clone)]
 #[repr(C)]
 struct MulticastEvent {
     event: Event,
@@ -130,19 +170,7 @@ unsafe extern "C" fn multiqueue_new(
 #[no_mangle]
 pub unsafe extern "C" fn multiqueue_free(this: *mut MultiQueue) {
     c_assert!(!this.is_null());
-    let mut this = Box::from_raw(this);
-    while !QUEUE_EMPTY(&mut this.headtail) {
-        let q: &mut QUEUE = this.headtail.next.as_mut().unwrap();
-        let item: Box<MultiQueueItem> = Box::from_raw(multiqueue_node_data(q));
-        if !this.parent.is_null() {
-            let mut parent_item = Box::from_raw(item.data.item.parent_item);
-            QUEUE_REMOVE(&mut parent_item.node);
-            mem::drop(parent_item);
-        }
-        QUEUE_REMOVE(q);
-        mem::drop(item);
-    }
-    mem::drop(this);
+    mem::drop(Box::from_raw(this));
 }
 
 /// Removes the next item and returns its Event.
@@ -207,33 +235,16 @@ pub unsafe extern "C" fn multiqueue_size(this: &MultiQueue) -> libc::size_t {
 }
 
 /// Gets an Event from an item.
-///
-/// @param remove   Remove the node from its queue, and free it.
-unsafe fn multiqueueitem_get_event(item: &mut MultiQueueItem, remove: bool) -> Event {
+unsafe fn multiqueueitem_get_event(item: &mut MultiQueueItem) -> Event {
     let ev: Event;
     if item.link {
         // get the next node in the linked queue
         let linked: *mut MultiQueue = item.data.queue;
         c_assert!(!multiqueue_empty(linked.as_ref().unwrap()));
-        let mut child: Box<MultiQueueItem> = Box::from_raw(multiqueue_node_data(
-            QUEUE_HEAD((*linked).headtail).as_mut().unwrap(),
-        ));
-        ev = child.data.item.event;
-        // remove the child node
-        if remove {
-            QUEUE_REMOVE(&mut child.node);
-            mem::drop(child);
-        } else {
-            Box::into_raw(child);
-        }
+        let child: *mut MultiQueueItem =
+            multiqueue_node_data(QUEUE_HEAD((*linked).headtail).as_mut().unwrap());
+        ev = (*child).data.item.event;
     } else {
-        // remove the corresponding link node in the parent queue
-        if remove && !item.data.item.parent_item.is_null() {
-            let mut parent_item = Box::from_raw(item.data.item.parent_item);
-            QUEUE_REMOVE(&mut parent_item.node);
-            mem::drop(parent_item);
-            item.data.item.parent_item = ptr::null_mut();
-        }
         ev = item.data.item.event;
     }
     return ev;
@@ -242,16 +253,15 @@ unsafe fn multiqueueitem_get_event(item: &mut MultiQueueItem, remove: bool) -> E
 unsafe fn multiqueue_remove(this: &mut MultiQueue) -> Event {
     c_assert!(!multiqueue_empty(this));
     let h: &mut QUEUE = QUEUE_HEAD(this.headtail).as_mut().unwrap();
-    QUEUE_REMOVE(h);
     let mut item: Box<MultiQueueItem> = Box::from_raw(multiqueue_node_data(h));
     c_assert!(!item.link || this.parent.is_null()); // Only a parent queue has link-nodes
-    let ev: Event = multiqueueitem_get_event(&mut item, true);
+    let ev: Event = multiqueueitem_get_event(&mut item);
     this.size = this.size.wrapping_sub(1);
     mem::drop(item);
     return ev;
 }
 
-unsafe fn multiqueue_push(mut this: &mut MultiQueue, event: Event) {
+unsafe fn multiqueue_push(this: &mut MultiQueue, event: Event) {
     let mut item: Box<MultiQueueItem> = Box::new(MultiQueueItem {
         link: false,
         node: Default::default(),

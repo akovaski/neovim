@@ -16,12 +16,22 @@
 // WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 // ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 // OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+use std::ptr;
 
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct QUEUE {
     pub next: *mut QUEUE,
     pub prev: *mut QUEUE,
+}
+
+impl Default for QUEUE {
+    fn default() -> Self {
+        QUEUE {
+            next: ptr::null_mut(),
+            prev: ptr::null_mut(),
+        }
+    }
 }
 
 // Public macros.

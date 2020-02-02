@@ -101,7 +101,7 @@ pub unsafe extern "C" fn loop_init(mut loop_0: &mut Loop, _data: *mut libc::c_vo
     uv_signal_init(&mut loop_0.uv, &mut loop_0.children_watcher);
     uv_timer_init(&mut loop_0.uv, &mut loop_0.children_kill_timer);
     uv_timer_init(&mut loop_0.uv, &mut loop_0.poll_timer);
-    loop_0.poll_timer.data = xmalloc(std::mem::size_of::<bool>()); // "timeout expired" flag
+    loop_0.poll_timer.data = Box::into_raw(Box::new(false)) as *mut _; // "timeout expired" flag
 }
 
 /// Processes one `Loop.uv` event (at most).
@@ -166,8 +166,7 @@ pub unsafe extern "C" fn loop_schedule_fast(loop_0: &mut Loop, event: Event) {
 /// @see loop_schedule_fast
 #[no_mangle]
 pub unsafe extern "C" fn loop_schedule_deferred(loop_0: &mut Loop, event: Event) {
-    let eventp: *mut Event = xmalloc(std::mem::size_of::<Event>());
-    *eventp = event;
+    let eventp = Box::into_raw(Box::new(event));
     let loop_ptr = loop_0 as *mut _;
     loop_schedule_fast(
         loop_0,
@@ -176,9 +175,8 @@ pub unsafe extern "C" fn loop_schedule_deferred(loop_0: &mut Loop, event: Event)
 }
 unsafe extern "C" fn loop_deferred_event(argv: *mut *mut libc::c_void) {
     let loop_0: &mut Loop = (*argv.offset(0)).cast::<Loop>().as_mut().unwrap();
-    let eventp: *mut Event = *argv.offset(1) as *mut Event;
+    let eventp: Box<Event> = Box::from_raw(*argv.offset(1) as *mut Event);
     multiqueue_put_event(loop_0.events.as_mut().unwrap(), *eventp);
-    xfree(eventp);
 }
 
 #[no_mangle]
@@ -258,5 +256,5 @@ unsafe extern "C" fn timer_cb(handle: *mut uv_timer_t) {
 }
 
 unsafe extern "C" fn timer_close_cb(handle: *mut uv_handle_t) {
-    xfree((*handle).data);
+    Box::from_raw((*handle).data);
 }

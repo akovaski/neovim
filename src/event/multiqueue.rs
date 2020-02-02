@@ -44,6 +44,7 @@
 
 use crate::*;
 use std::ptr;
+use std::mem;
 
 pub type put_callback =
     Option<unsafe extern "C" fn(_: Option<&mut MultiQueue>, _: *mut libc::c_void) -> ()>;
@@ -112,29 +113,36 @@ unsafe extern "C" fn multiqueue_new(
     put_cb: put_callback,
     data: *mut libc::c_void,
 ) -> *mut MultiQueue {
-    let mut rv: *mut MultiQueue = xmalloc(std::mem::size_of::<MultiQueue>());
-    QUEUE_INIT(&mut (*rv).headtail);
-    (*rv).size = 0;
-    (*rv).parent = parent;
-    (*rv).put_cb = put_cb;
-    (*rv).data = data;
-    return rv;
+    let mut rv: Box<MultiQueue> = Box::new(MultiQueue {
+        parent: parent,
+        headtail: QUEUE {
+            next: ptr::null_mut(),
+            prev: ptr::null_mut(),
+        },
+        put_cb: put_cb,
+        data: data,
+        size: 0,
+    });
+    QUEUE_INIT(&mut rv.headtail);
+    return Box::into_raw(rv);
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn multiqueue_free(this: *mut MultiQueue) {
     c_assert!(!this.is_null());
-    while !QUEUE_EMPTY(&mut (*this).headtail) {
-        let q: &mut QUEUE = (*this).headtail.next.as_mut().unwrap();
-        let item: *mut MultiQueueItem = multiqueue_node_data(q);
-        if !(*this).parent.is_null() {
-            QUEUE_REMOVE(&mut (*(*item).data.item.parent_item).node);
-            xfree((*item).data.item.parent_item);
+    let mut this = Box::from_raw(this);
+    while !QUEUE_EMPTY(&mut this.headtail) {
+        let q: &mut QUEUE = this.headtail.next.as_mut().unwrap();
+        let item: Box<MultiQueueItem> = Box::from_raw(multiqueue_node_data(q));
+        if !this.parent.is_null() {
+            let mut parent_item = Box::from_raw(item.data.item.parent_item);
+            QUEUE_REMOVE(&mut parent_item.node);
+            mem::drop(parent_item);
         }
         QUEUE_REMOVE(q);
-        xfree(item);
+        mem::drop(item);
     }
-    xfree(this);
+    mem::drop(this);
 }
 
 /// Removes the next item and returns its Event.
@@ -207,19 +215,23 @@ unsafe fn multiqueueitem_get_event(item: &mut MultiQueueItem, remove: bool) -> E
         // get the next node in the linked queue
         let linked: *mut MultiQueue = item.data.queue;
         c_assert!(!multiqueue_empty(linked.as_ref().unwrap()));
-        let child: *mut MultiQueueItem =
-            multiqueue_node_data(QUEUE_HEAD((*linked).headtail).as_mut().unwrap());
-        ev = (*child).data.item.event;
+        let mut child: Box<MultiQueueItem> = Box::from_raw(multiqueue_node_data(
+            QUEUE_HEAD((*linked).headtail).as_mut().unwrap(),
+        ));
+        ev = child.data.item.event;
         // remove the child node
         if remove {
-            QUEUE_REMOVE(&mut (*child).node);
-            xfree(child);
+            QUEUE_REMOVE(&mut child.node);
+            mem::drop(child);
+        } else {
+            Box::into_raw(child);
         }
     } else {
         // remove the corresponding link node in the parent queue
         if remove && !item.data.item.parent_item.is_null() {
-            QUEUE_REMOVE(&mut (*item.data.item.parent_item).node);
-            xfree(item.data.item.parent_item);
+            let mut parent_item = Box::from_raw(item.data.item.parent_item);
+            QUEUE_REMOVE(&mut parent_item.node);
+            mem::drop(parent_item);
             item.data.item.parent_item = ptr::null_mut();
         }
         ev = item.data.item.event;
@@ -231,31 +243,38 @@ unsafe fn multiqueue_remove(this: &mut MultiQueue) -> Event {
     c_assert!(!multiqueue_empty(this));
     let h: &mut QUEUE = QUEUE_HEAD(this.headtail).as_mut().unwrap();
     QUEUE_REMOVE(h);
-    let item: *mut MultiQueueItem = multiqueue_node_data(h);
-    c_assert!(!(*item).link || this.parent.is_null()); // Only a parent queue has link-nodes
-    let ev: Event = multiqueueitem_get_event(item.as_mut().unwrap(), true);
+    let mut item: Box<MultiQueueItem> = Box::from_raw(multiqueue_node_data(h));
+    c_assert!(!item.link || this.parent.is_null()); // Only a parent queue has link-nodes
+    let ev: Event = multiqueueitem_get_event(&mut item, true);
     this.size = this.size.wrapping_sub(1);
-    xfree(item);
+    mem::drop(item);
     return ev;
 }
 
 unsafe fn multiqueue_push(mut this: &mut MultiQueue, event: Event) {
-    let mut item: *mut MultiQueueItem = xmalloc(std::mem::size_of::<MultiQueueItem>());
-    (*item).link = false;
-    (*item).data.item.event = event;
-    (*item).data.item.parent_item = ptr::null_mut();
-    QUEUE_INSERT_TAIL(&mut this.headtail, &mut (*item).node);
+    let mut item: Box<MultiQueueItem> = Box::new(MultiQueueItem {
+        link: false,
+        node: Default::default(),
+        data: mq_item_data {
+            item: mq_item_data_item {
+                event: event,
+                parent_item: ptr::null_mut(),
+            },
+        },
+    });
+    QUEUE_INSERT_TAIL(&mut this.headtail, &mut item.node);
     if !this.parent.is_null() {
         // push link node to the parent queue
-        (*item).data.item.parent_item = xmalloc(std::mem::size_of::<MultiQueueItem>());
-        (*(*item).data.item.parent_item).link = true;
-        (*(*item).data.item.parent_item).data.queue = this;
-        QUEUE_INSERT_TAIL(
-            &mut (*this.parent).headtail,
-            &mut (*(*item).data.item.parent_item).node,
-        );
+        let mut parent_item = Box::new(MultiQueueItem {
+            link: true,
+            node: Default::default(),
+            data: mq_item_data { queue: this },
+        });
+        QUEUE_INSERT_TAIL(&mut (*this.parent).headtail, &mut parent_item.node);
+        item.data.item.parent_item = Box::into_raw(parent_item);
     }
     this.size = this.size.wrapping_add(1);
+    Box::into_raw(item);
 }
 
 unsafe fn multiqueue_node_data(q: &mut QUEUE) -> *mut MultiQueueItem {
@@ -289,7 +308,7 @@ unsafe extern "C" fn multiqueue_oneshot_event(argv: *mut *mut libc::c_void) {
     }
     data.refcount -= 1;
     if data.refcount == 0 {
-        std::mem::drop(data);
+        mem::drop(data);
     } else {
         // keep 'data' allocated for the next call of this function
         Box::into_raw(data);

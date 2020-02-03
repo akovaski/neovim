@@ -72,8 +72,8 @@ pub unsafe extern "C" fn libuv_process_close(uvproc: *mut LibuvProcess) {
     uv_close(&mut (*uvproc).uv, Some(close_cb));
 }
 
-unsafe extern "C" fn close_cb(handle: *mut uv_handle_t) {
-    let proc_0: *mut Process = (*handle).data as *mut Process;
+unsafe extern "C" fn close_cb(handle: &mut uv_handle_t) {
+    let proc_0: *mut Process = handle.data as *mut Process;
     if let Some(internal_close_cb) = (*proc_0).internal_close_cb {
         internal_close_cb(proc_0);
     };

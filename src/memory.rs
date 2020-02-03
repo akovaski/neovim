@@ -6,6 +6,11 @@ extern "C" {
         _: *const libc::c_void,
         _: libc::size_t,
     ) -> *mut libc::c_void;
+    pub fn memmove(
+        _: *mut libc::c_void,
+        _: *const libc::c_void,
+        _: libc::c_ulong,
+    ) -> *mut libc::c_void;
 
     // memory.c
     #[link_name = "xmalloc"]
@@ -19,8 +24,13 @@ extern "C" {
     #[link_name = "xmallocz"]
     fn c_xmallocz(size: libc::size_t) -> *mut libc::c_void;
     pub fn xstpcpy(dst: *mut libc::c_char, src: *const libc::c_char) -> *mut libc::c_char;
+    pub fn xstrlcpy(
+        dst: *mut libc::c_char,
+        src: *const libc::c_char,
+        dsize: libc::size_t,
+    ) -> libc::size_t;
     #[link_name = "xstrdup"]
-    fn c_xstrdup(str: *const libc::c_char) -> *mut libc::c_char;
+    pub fn c_xstrdup(str: *const libc::c_char) -> *mut libc::c_char;
 }
 
 pub unsafe fn XFREE_CLEAR<T>(ptr: &mut *mut T) {

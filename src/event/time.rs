@@ -65,8 +65,8 @@ unsafe extern "C" fn close_event(argv: *mut *mut libc::c_void) {
     let watcher: *mut TimeWatcher = *argv as *mut TimeWatcher;
     (*watcher).close_cb.expect("non-null function pointer")(watcher, (*watcher).data);
 }
-unsafe extern "C" fn close_cb(handle: *mut uv_handle_t) {
-    let watcher: *mut TimeWatcher = (*handle).data as *mut TimeWatcher;
+unsafe extern "C" fn close_cb(handle: &mut uv_handle_t) {
+    let watcher: *mut TimeWatcher = handle.data as *mut TimeWatcher;
     if (*watcher).close_cb.is_some() {
         CREATE_EVENT((*watcher).events.as_mut(), close_event, vargs!(watcher));
     }

@@ -1,3 +1,5 @@
+pub mod fs;
+pub use fs::*;
 pub mod fs_defs;
 pub use fs_defs::*;
 pub mod process;

@@ -13,6 +13,8 @@ pub mod rstream;
 pub use rstream::*;
 pub mod signal;
 pub use signal::*;
+pub mod socket;
+pub use socket::*;
 pub mod stream;
 pub use stream::*;
 pub mod time;

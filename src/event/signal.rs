@@ -67,8 +67,8 @@ unsafe extern "C" fn signal_watcher_cb(handle: *mut uv::uv_signal_t, _signum: li
         signal_event(argv.as_mut_ptr());
     };
 }
-unsafe extern "C" fn close_cb(handle: *mut uv::uv_handle_t) {
-    let watcher = (*handle).data as *mut SignalWatcher;
+unsafe extern "C" fn close_cb(handle: &mut uv::uv_handle_t) {
+    let watcher = handle.data as *mut SignalWatcher;
     if (*watcher).close_cb.is_some() {
         (*watcher).close_cb.expect("non-null function pointer")(watcher, (*watcher).data);
     };

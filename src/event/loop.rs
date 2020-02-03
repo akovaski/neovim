@@ -255,6 +255,6 @@ unsafe extern "C" fn timer_cb(handle: *mut uv_timer_t) {
     *timeout_expired = true;
 }
 
-unsafe extern "C" fn timer_close_cb(handle: *mut uv_handle_t) {
-    Box::from_raw((*handle).data);
+unsafe extern "C" fn timer_close_cb(handle: &mut uv_handle_t) {
+    Box::from_raw(handle.data);
 }

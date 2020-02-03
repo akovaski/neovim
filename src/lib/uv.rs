@@ -1,3 +1,5 @@
+use crate::c_helpers::*;
+use std::ptr;
 extern "C" {
     pub fn uv_signal_start(
         handle: *mut uv_signal_t,
@@ -41,9 +43,21 @@ extern "C" {
     pub fn uv_stream_get_write_queue_size(stream: uv_stream_mut) -> libc::size_t;
     pub fn uv_stream_set_blocking(handle: *mut uv_pipe_t, blocking: libc::c_int) -> libc::c_int;
     pub fn uv_guess_handle(file: uv_file) -> uv_handle_type;
+    pub fn uv_listen(
+        stream: uv_stream_mut,
+        backlog: libc::c_int,
+        cb: uv_connection_cb,
+    ) -> libc::c_int;
     pub fn uv_pipe_init(_: *mut uv_loop_t, handle: *mut uv_pipe_t, ipc: libc::c_int)
         -> libc::c_int;
     pub fn uv_pipe_open(_: *mut uv_pipe_t, file: uv_file) -> libc::c_int;
+    pub fn uv_pipe_connect(
+        req: *mut uv_connect_t,
+        handle: *mut uv_pipe_t,
+        name: *const libc::c_char,
+        cb: uv_connect_cb,
+    );
+    pub fn uv_pipe_bind(handle: *mut uv_pipe_t, name: *const libc::c_char) -> libc::c_int;
     pub fn uv_idle_init(_: *mut uv_loop_t, idle: *mut uv_idle_t) -> libc::c_int;
     #[link_name = "uv_write"]
     fn c_uv_write(
@@ -83,6 +97,34 @@ extern "C" {
     pub fn c_uv_recv_buffer_size(handle: *mut uv_handle_t, value: *mut libc::c_int) -> libc::c_int;
     #[link_name = "uv_unref"]
     fn c_uv_unref(_: *mut uv_handle_t);
+    pub fn uv_getaddrinfo(
+        loop_0: *mut uv_loop_t,
+        req: *mut uv_getaddrinfo_t,
+        getaddrinfo_cb: uv_getaddrinfo_cb,
+        node: *const libc::c_char,
+        service: *const libc::c_char,
+        hints: *const addrinfo,
+    ) -> libc::c_int;
+    pub fn uv_freeaddrinfo(ai: *mut addrinfo);
+    pub fn uv_tcp_init(_: *mut uv_loop_t, handle: *mut uv_tcp_t) -> libc::c_int;
+    pub fn uv_tcp_nodelay(handle: *mut uv_tcp_t, enable: libc::c_int) -> libc::c_int;
+    pub fn uv_tcp_bind(
+        handle: *mut uv_tcp_t,
+        addr: *const sockaddr,
+        flags: libc::c_uint,
+    ) -> libc::c_int;
+    pub fn uv_tcp_getsockname(
+        handle: *const uv_tcp_t,
+        name: *mut sockaddr_storage,
+        namelen: *const libc::c_int,
+    ) -> libc::c_int;
+    pub fn uv_tcp_connect(
+        req: *mut uv_connect_t,
+        handle: *mut uv_tcp_t,
+        addr: *const sockaddr,
+        cb: uv_connect_cb,
+    ) -> libc::c_int;
+    pub fn uv_accept(server: uv_stream_mut, client: uv_stream_mut) -> libc::c_int;
 }
 
 pub unsafe fn uv_write<D>(
@@ -276,7 +318,7 @@ pub struct uv_handle_s {
     pub next_closing: *mut uv_handle_t,
     pub flags: libc::c_uint,
 }
-pub type uv_close_cb = Option<unsafe extern "C" fn(_: *mut uv_handle_t) -> ()>;
+pub type uv_close_cb = Option<unsafe extern "C" fn(_: &mut uv_handle_t) -> ()>;
 pub type uv_handle_type = libc::c_uint;
 pub const UV_HANDLE_TYPE_MAX: uv_handle_type = 18;
 pub const UV_FILE: uv_handle_type = 17;
@@ -377,7 +419,7 @@ pub struct uv_stream_s {
     pub queued_fds: *mut libc::c_void,
 }
 pub type uv_stream_t = uv_stream_s;
-pub type uv_connection_cb = Option<unsafe extern "C" fn(_: *mut uv_stream_t, _: libc::c_int) -> ()>;
+pub type uv_connection_cb = Option<unsafe extern "C" fn(_: &mut uv_stream_t, _: libc::c_int) -> ()>;
 pub type uv_shutdown_t = uv_shutdown_s;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -400,7 +442,19 @@ pub struct uv_connect_s {
     pub handle: *mut uv_stream_t,
     pub queue: [*mut libc::c_void; 2],
 }
-pub type uv_connect_cb = Option<unsafe extern "C" fn(_: *mut uv_connect_t, _: libc::c_int) -> ()>;
+impl Default for uv_connect_s {
+    fn default() -> uv_connect_s {
+        uv_connect_t {
+            data: ptr::null_mut(),
+            type_0: UV_UNKNOWN_REQ,
+            reserved: [ptr::null_mut(); 6],
+            cb: None,
+            handle: ptr::null_mut(),
+            queue: [ptr::null_mut(); 2],
+        }
+    }
+}
+pub type uv_connect_cb = Option<unsafe extern "C" fn(_: &mut uv_connect_t, _: libc::c_int) -> ()>;
 pub type uv_read_cb =
     Option<unsafe extern "C" fn(_: uv_stream_mut, _: libc::ssize_t, _: *const uv_buf_t) -> ()>;
 pub type uv_alloc_cb =
@@ -758,8 +812,6 @@ pub struct uv_timespec_t {
     pub tv_sec: libc::c_long,
     pub tv_nsec: libc::c_long,
 }
-pub type uintmax_t = libc::c_ulong;
-pub type uintptr_t = libc::c_ulong;
 pub type uv_process_t<T> = uv_process_s<T>;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -808,15 +860,25 @@ pub union uv_stream_mut {
     pub stream: *mut uv_stream_t,
     //pub tty: *mut uv_tty_t,
 }
+impl From<*mut uv_stream_t> for uv_stream_mut {
+    fn from(stream: *mut uv_stream_t) -> uv_stream_mut {
+        uv_stream_mut { stream: stream }
+    }
+}
 impl From<&mut uv_pipe_t> for uv_stream_mut {
     fn from(pipe: &mut uv_pipe_t) -> uv_stream_mut {
         uv_stream_mut { pipe: pipe }
     }
 }
+impl From<&mut uv_tcp_t> for uv_stream_mut {
+    fn from(tcp: &mut uv_tcp_t) -> uv_stream_mut {
+        uv_stream_mut { tcp: tcp }
+    }
+}
 impl From<()> for uv_stream_mut {
     fn from(_: ()) -> uv_stream_mut {
         uv_stream_mut {
-            pipe: std::ptr::null_mut(),
+            pipe: ptr::null_mut(),
         }
     }
 }
@@ -851,3 +913,43 @@ pub const UV_PROCESS_SETUID: uv_process_flags = 1;
 pub type uv_process_signal = u8;
 pub const SIGKILL: uv_process_signal = 9;
 pub const SIGTERM: uv_process_signal = 15;
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct uv_getaddrinfo_s<'a> {
+    pub data: *mut libc::c_void,
+    pub type_0: uv_req_type,
+    pub reserved: [*mut libc::c_void; 6],
+    pub loop_0: *mut uv_loop_t,
+    pub work_req: uv__work,
+    pub cb: uv_getaddrinfo_cb,
+    pub hints: *mut addrinfo<'a>,
+    pub hostname: *mut libc::c_char,
+    pub service: *mut libc::c_char,
+    pub addrinfo: *mut addrinfo<'a>,
+    pub retcode: libc::c_int,
+}
+impl<'a> Default for uv_getaddrinfo_s<'a> {
+    fn default() -> uv_getaddrinfo_s<'a> {
+        uv_getaddrinfo_t {
+            data: ptr::null_mut(),
+            type_0: UV_UNKNOWN_REQ,
+            reserved: [ptr::null_mut(); 6],
+            loop_0: ptr::null_mut(),
+            work_req: uv__work {
+                work: None,
+                done: None,
+                loop_0: ptr::null_mut(),
+                wq: [ptr::null_mut(); 2],
+            },
+            cb: None,
+            hints: ptr::null_mut(),
+            hostname: ptr::null_mut(),
+            service: ptr::null_mut(),
+            addrinfo: ptr::null_mut(),
+            retcode: 0,
+        }
+    }
+}
+pub type uv_getaddrinfo_cb =
+    Option<unsafe extern "C" fn(_: *mut uv_getaddrinfo_t, _: libc::c_int, _: *mut addrinfo) -> ()>;
+pub type uv_getaddrinfo_t<'a> = uv_getaddrinfo_s<'a>;

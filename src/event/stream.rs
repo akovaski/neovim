@@ -173,8 +173,8 @@ pub unsafe extern "C" fn stream_close_handle(stream: *mut Stream) {
     };
 }
 
-unsafe extern "C" fn close_cb(handle: *mut uv_handle_t) {
-    let stream: *mut Stream = (*handle).data as *mut Stream;
+unsafe extern "C" fn close_cb(handle: &mut uv_handle_t) {
+    let stream: *mut Stream = handle.data as *mut Stream;
     if !(*stream).buffer.is_null() {
         rbuffer_free((*stream).buffer);
     }

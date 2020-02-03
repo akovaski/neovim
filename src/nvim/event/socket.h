@@ -33,7 +33,13 @@ struct socket_watcher {
   MultiQueue *events;
 };
 
-#ifdef INCLUDE_GENERATED_DECLARATIONS
-# include "event/socket.h.generated.h"
-#endif
+int socket_watcher_init(Loop *loop, SocketWatcher *watcher,
+                        const char *endpoint);
+int socket_watcher_start(SocketWatcher *watcher, int backlog, socket_cb cb);
+int socket_watcher_accept(SocketWatcher *watcher, Stream *stream);
+void socket_watcher_close(SocketWatcher *watcher, socket_close_cb cb);
+bool socket_connect(Loop *loop, Stream *stream,
+                    bool is_tcp, const char *address,
+                    int timeout, const char **error);
+
 #endif  // NVIM_EVENT_SOCKET_H

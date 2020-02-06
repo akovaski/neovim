@@ -304,7 +304,7 @@ pub struct C2RustUnnamed {
     pub rbe_parent: *mut uv_signal_s,
     pub rbe_color: libc::c_int,
 }
-pub type uv_signal_cb = Option<unsafe extern "C" fn(_: *mut uv_signal_t, _: libc::c_int) -> ()>;
+pub type uv_signal_cb = Option<unsafe extern "C" fn(_: &mut uv_signal_t, _: libc::c_int) -> ()>;
 pub type uv_handle_t = uv_handle_s;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -528,7 +528,7 @@ pub struct uv_timer_s {
     pub repeat: u64,
     pub start_id: u64,
 }
-pub type uv_timer_cb = Option<unsafe extern "C" fn(_: *mut uv_timer_t) -> ()>;
+pub type uv_timer_cb = Option<unsafe extern "C" fn(_: &mut uv_timer_t) -> ()>;
 pub type uv_timer_t = uv_timer_s;
 #[derive(Copy, Clone)]
 #[repr(C)]

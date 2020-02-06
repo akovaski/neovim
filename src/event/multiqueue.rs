@@ -47,7 +47,7 @@ use std::mem;
 use std::ptr;
 
 pub type put_callback =
-    Option<unsafe extern "C" fn(_: Option<&mut MultiQueue>, _: *mut libc::c_void) -> ()>;
+    Option<unsafe extern "C" fn(_: &mut MultiQueue, _: *mut libc::c_void) -> ()>;
 
 #[repr(C)]
 pub struct MultiQueueItem {
@@ -143,8 +143,8 @@ pub unsafe extern "C" fn multiqueue_new_parent(
 
 #[no_mangle]
 pub unsafe extern "C" fn multiqueue_new_child(parent: &mut MultiQueue) -> *mut MultiQueue {
-    c_assert!((*parent).parent.is_null()); // parent cannot have a parent, more like a "root"
-    (*parent).size = (*parent).size.wrapping_add(1);
+    c_assert!(parent.parent.is_null()); // parent cannot have a parent, more like a "root"
+    parent.size = parent.size.wrapping_add(1);
     return multiqueue_new(parent, None, ptr::null_mut());
 }
 
@@ -189,9 +189,9 @@ pub unsafe fn multiqueue_put(this: &mut MultiQueue, cb: argv_callback, args: &[*
 #[no_mangle]
 pub unsafe extern "C" fn multiqueue_put_event(this: &mut MultiQueue, event: Event) {
     multiqueue_push(this, event);
-    if !(*this).parent.is_null() {
-        if let Some(put_cb) = (*(*this).parent).put_cb {
-            put_cb((*this).parent.as_mut(), (*(*this).parent).data);
+    if let Some(parent) = this.parent.as_mut() {
+        if let Some(put_cb) = parent.put_cb {
+            put_cb(parent, parent.data);
         }
     };
 }
@@ -216,7 +216,7 @@ pub unsafe extern "C" fn multiqueue_purge_events(this: &mut MultiQueue) {
 
 #[no_mangle]
 pub unsafe extern "C" fn multiqueue_empty(this: &MultiQueue) -> bool {
-    return QUEUE_EMPTY(&(*this).headtail);
+    return QUEUE_EMPTY(&this.headtail);
 }
 
 #[no_mangle]
@@ -225,7 +225,7 @@ pub unsafe extern "C" fn multiqueue_replace_parent(
     new_parent: *mut MultiQueue,
 ) {
     c_assert!(multiqueue_empty(this));
-    (*this).parent = new_parent;
+    this.parent = new_parent;
 }
 
 /// Gets the count of all events currently in the queue.
@@ -273,14 +273,14 @@ unsafe fn multiqueue_push(this: &mut MultiQueue, event: Event) {
         },
     });
     QUEUE_INSERT_TAIL(&mut this.headtail, &mut item.node);
-    if !this.parent.is_null() {
+    if let Some(parent) = this.parent.as_mut() {
         // push link node to the parent queue
         let mut parent_item = Box::new(MultiQueueItem {
             link: true,
             node: Default::default(),
             data: mq_item_data { queue: this },
         });
-        QUEUE_INSERT_TAIL(&mut (*this.parent).headtail, &mut parent_item.node);
+        QUEUE_INSERT_TAIL(&mut parent.headtail, &mut parent_item.node);
         item.data.item.parent_item = Box::into_raw(parent_item);
     }
     this.size = this.size.wrapping_add(1);

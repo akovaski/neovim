@@ -264,8 +264,8 @@ pub unsafe extern "C" fn process_stop(mut proc_0: &mut Process) {
 
 /// Sends SIGKILL (or SIGTERM..SIGKILL for PTY jobs) to processes that did
 /// not terminate after process_stop().
-unsafe extern "C" fn children_kill_cb(handle: *mut uv_timer_t) {
-    let loop_0: *mut Loop = (*(*handle).loop_0).data as *mut Loop;
+unsafe extern "C" fn children_kill_cb(handle: &mut uv_timer_t) {
+    let loop_0: *mut Loop = (*handle.loop_0).data as *mut Loop;
 
     for current in (&*(*loop_0).children).iter() {
         let mut proc_0: *mut Process = (**current).data as *mut Process;

@@ -180,7 +180,7 @@ unsafe extern "C" fn loop_deferred_event(argv: *mut *mut libc::c_void) {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn loop_on_put(_queue: Option<&mut MultiQueue>, data: *mut libc::c_void) {
+pub unsafe extern "C" fn loop_on_put(_queue: &mut MultiQueue, data: *mut libc::c_void) {
     let loop_0: &mut Loop = data.cast::<Loop>().as_mut().unwrap();
     // Sometimes libuv will run pending callbacks (timer for example) before
     // blocking for a poll. If this happens and the callback pushes a event to one
@@ -250,8 +250,8 @@ unsafe extern "C" fn async_cb(handle: *mut uv_async_t) {
     uv_mutex_unlock(&mut l.mutex);
 }
 
-unsafe extern "C" fn timer_cb(handle: *mut uv_timer_t) {
-    let timeout_expired: *mut bool = (*handle).data as *mut bool;
+unsafe extern "C" fn timer_cb(handle: &mut uv_timer_t) {
+    let timeout_expired: *mut bool = handle.data as *mut bool;
     *timeout_expired = true;
 }
 

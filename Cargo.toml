@@ -7,6 +7,8 @@ build="build.rs"
 
 [dependencies]
 libc = "0.2.0"
+bitflags = "1.2"
+byte-strings = "0.1.3"
 
 [dependencies.xdiff]
 path = "rust-deps/xdiff"

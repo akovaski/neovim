@@ -1,3 +1,5 @@
+use std::mem;
+
 extern "C" {
     // C std
     #[link_name = "memcpy"]
@@ -11,6 +13,8 @@ extern "C" {
         _: *const libc::c_void,
         _: libc::c_ulong,
     ) -> *mut libc::c_void;
+    #[link_name = "memchr"]
+    pub fn c_memchr(_: *const libc::c_void, _: libc::c_int, _: libc::c_ulong) -> *mut libc::c_void;
 
     // memory.c
     #[link_name = "xmalloc"]
@@ -33,6 +37,10 @@ extern "C" {
     pub fn c_xstrdup(str: *const libc::c_char) -> *mut libc::c_char;
 }
 
+pub fn var_size<T>(_: T) -> usize {
+    mem::size_of::<T>()
+}
+
 pub unsafe fn XFREE_CLEAR<T>(ptr: &mut *mut T) {
     xfree(*ptr as *mut libc::c_void);
     *ptr = std::ptr::null_mut();
@@ -40,6 +48,22 @@ pub unsafe fn XFREE_CLEAR<T>(ptr: &mut *mut T) {
 
 pub unsafe fn memcpy<T, U>(dest: *mut T, src: *const U, count: libc::size_t) -> *mut libc::c_void {
     c_memcpy(dest as *mut libc::c_void, src as *const libc::c_void, count)
+}
+
+pub unsafe fn memchr<T, N: std::convert::TryInto<u64>, C: Into<char>>(
+    ptr: *const T,
+    value: C,
+    num: N,
+) -> *mut libc::c_void
+where
+    <N as std::convert::TryInto<u64>>::Error: std::fmt::Debug,
+{
+    let value: char = value.into();
+    c_memchr(
+        ptr as *const libc::c_void,
+        value as i32,
+        num.try_into().unwrap(),
+    )
 }
 
 pub unsafe fn memcmp<T>(ptr1: *const T, ptr2: *const T, n: libc::size_t) -> libc::c_int {

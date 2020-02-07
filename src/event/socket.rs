@@ -240,7 +240,7 @@ pub unsafe extern "C" fn socket_connect(
     is_tcp: bool,
     address: *const libc::c_char,
     timeout: libc::c_int,
-    error: &mut *const libc::c_char,
+    error: &mut *const u8,
 ) -> bool {
     let mut success: bool = false;
     let mut status: libc::c_int = 0;

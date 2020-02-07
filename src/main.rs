@@ -2,6 +2,7 @@
 #![feature(c_variadic)]
 #![feature(ptr_offset_from)]
 #![allow(non_camel_case_types, non_snake_case, non_upper_case_globals)]
+#![feature(concat_idents)]
 
 use libc::{c_char, c_int};
 use std::ffi::CString;
@@ -22,6 +23,8 @@ pub use lib::*;
 mod event;
 pub use event::*;
 
+mod ascii;
+pub use ascii::*;
 mod aucmd;
 pub use aucmd::*;
 mod auevents;
@@ -48,6 +51,8 @@ mod grid_defs;
 pub use grid_defs::*;
 mod hashtab;
 pub use hashtab::*;
+mod keymap;
+pub use keymap::*;
 mod mark_defs;
 pub use mark_defs::*;
 mod mark_extended;
@@ -56,6 +61,8 @@ mod mark_extended_defs;
 pub use mark_extended_defs::*;
 mod math;
 pub use math::*;
+mod mbyte;
+pub use mbyte::*;
 mod memfile_defs;
 pub use memfile_defs::*;
 mod memline_defs;

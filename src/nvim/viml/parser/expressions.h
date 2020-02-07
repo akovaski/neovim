@@ -367,9 +367,6 @@ typedef struct {
   ExprASTNode *root;
 } ExprAST;
 
-/// Array mapping ExprASTNodeType to maximum amount of children node may have
-extern const uint8_t node_maxchildren[];
-
 /// Array mapping ExprASTNodeType values to their stringified versions
 extern const char *const east_node_type_tab[];
 
@@ -382,8 +379,12 @@ extern const char *const ccs_tab[];
 /// Array mapping ExprAssignmentType values to their stringified versions
 extern const char *const expr_asgn_type_tab[];
 
-#ifdef INCLUDE_GENERATED_DECLARATIONS
-# include "viml/parser/expressions.h.generated.h"
-#endif
+
+LexExprToken viml_pexpr_next_token(ParserState *const pstate, const int flags);
+const char *viml_pexpr_repr_token(const ParserState *const pstate,
+                                  const LexExprToken token,
+                                  size_t *const ret_size);
+void viml_pexpr_free_ast(ExprAST ast);
+ExprAST viml_pexpr_parse(ParserState *const pstate, const int flags);
 
 #endif  // NVIM_VIML_PARSER_EXPRESSIONS_H

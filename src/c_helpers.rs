@@ -73,6 +73,13 @@ pub mod stdio_h {
 }
 pub use stdio_h::*;
 
+#[allow(unused_macros)]
+macro_rules! snprintf {
+    ($dest: expr, $n: expr, $str: literal, $($e: expr),+ $(,)?) => {{
+        snprintf($dest as *mut i8, $n as u64, $str as *const u8 as *const i8, $($e),+)
+    }}
+}
+
 pub mod socket_h {
     pub type socklen_t = libc::c_uint;
     pub type sa_family_t = libc::c_ushort;
@@ -201,3 +208,7 @@ pub mod netdb_h {
     }
 }
 pub use netdb_h::*;
+pub mod iconv_h {
+    pub type iconv_t = *mut libc::c_void;
+}
+pub use iconv_h::*;

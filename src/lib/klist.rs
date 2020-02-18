@@ -109,7 +109,7 @@ pub unsafe extern "C" fn kl_push<T, D: Into<T>>(mut kl: *mut kl_t<T>, d: D) {
 }
 
 pub unsafe extern "C" fn kl_shift_at<T: Copy>(mut kl: *mut kl_t<T>, n: *mut *mut kl1<T>) -> T {
-    c_assert!(!(**n).next.is_null());
+    assert!(!(**n).next.is_null());
     (*kl).size = (*kl).size.wrapping_sub(1);
     let p: *mut kl1<T> = *n;
     *n = (**n).next;

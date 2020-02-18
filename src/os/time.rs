@@ -88,7 +88,7 @@ pub unsafe extern "C" fn os_microdelay(us: u64, ignoreinput: bool) {
             ns_delta,
         );
         if 0 != rv && UV_ETIMEDOUT != rv {
-            c_assert!(false);
+            assert!(false);
             break;
         } // Else: Timeout proceeded normally.
 

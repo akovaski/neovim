@@ -768,7 +768,7 @@ unsafe fn scale_number(
     if num == 0.0 || exponent == 0 {
         return num;
     }
-    c_assert!(base != 0);
+    assert!(base != 0);
     let mut exp = exponent;
     let mut p_base = base as float_T;
     let mut ret = num;
@@ -1474,18 +1474,18 @@ pub unsafe extern "C" fn viml_pexpr_free_ast(mut ast: ExprAST) {
         if cfg!(debug_assertions) {
             // Explicitly check for AST recursiveness.
             for i in 0..(ast_stack.size() - 1) {
-                c_assert!(**ast_stack.A(i) != *cur_node);
+                assert!(**ast_stack.A(i) != *cur_node);
             }
         }
         if (*cur_node).is_null() {
-            c_assert!(ast_stack.size() == 1);
+            assert!(ast_stack.size() == 1);
             ast_stack.lop(1);
         } else if !(**cur_node).children.is_null() {
             if cfg!(debug_assertions) {
                 let maxchildren = node_maxchildren((**cur_node).type_0);
-                c_assert!(maxchildren > 0);
-                c_assert!(maxchildren <= 2);
-                c_assert!(if maxchildren == 1 {
+                assert!(maxchildren > 0);
+                assert!(maxchildren <= 2);
+                assert!(if maxchildren == 1 {
                     (*(**cur_node).children).next == ptr::null_mut()
                 } else {
                     (*(**cur_node).children).next.is_null()
@@ -1706,7 +1706,7 @@ unsafe fn viml_pexpr_handle_bop(
     let mut top_node = ptr::null_mut();
     let mut top_node_lvl = kEOpLvlInvalid;
     let mut top_node_ass = kEOpAssNo;
-    c_assert!(!ast_stack.is_empty());
+    assert!(!ast_stack.is_empty());
     let bop_node_lvl = if bop_node.type_0 == kExprNodeCall || bop_node.type_0 == kExprNodeSubscript
     {
         kEOpLvlSubscript
@@ -1722,10 +1722,10 @@ unsafe fn viml_pexpr_handle_bop(
     loop {
         let new_top_node_p = *ast_stack.last();
         let new_top_node = *new_top_node_p;
-        c_assert!(!new_top_node.is_null());
+        assert!(!new_top_node.is_null());
         let new_top_node_lvl = node_lvl(*new_top_node);
         let new_top_node_ass = node_ass(*new_top_node);
-        c_assert!(bop_node_lvl != new_top_node_lvl || bop_node_ass == new_top_node_ass);
+        assert!(bop_node_lvl != new_top_node_lvl || bop_node_ass == new_top_node_ass);
         if !top_node_p.is_null()
             && (bop_node_lvl > new_top_node_lvl
                 || bop_node_lvl == new_top_node_lvl && new_top_node_ass == kEOpAssNo)
@@ -1754,12 +1754,12 @@ unsafe fn viml_pexpr_handle_bop(
         //        &bop_node->children->next = new_op(op(x,y),*), points to NULL
         *top_node_p = bop_node;
         bop_node.children = top_node;
-        c_assert!((*bop_node.children).next.is_null());
+        assert!((*bop_node.children).next.is_null());
         ast_stack.push(top_node_p);
         ast_stack.push(&mut (*bop_node.children).next);
     } else {
-        c_assert!(top_node_lvl == bop_node_lvl && top_node_ass == kEOpAssRight);
-        c_assert!(!(*top_node).children.is_null() && !(*(*top_node).children).next.is_null());
+        assert!(top_node_lvl == bop_node_lvl && top_node_ass == kEOpAssRight);
+        assert!(!(*top_node).children.is_null() && !(*(*top_node).children).next.is_null());
         // outer(op(x,y)) -> outer(op(x,new_op(y,*)))
         //
         // Before: top_node_p = outer(*), points to op(x,y)
@@ -1770,7 +1770,7 @@ unsafe fn viml_pexpr_handle_bop(
         //        &bop_node->children->next = new_op(y,*), points to NULL
         bop_node.children = (*(*top_node).children).next;
         (*(*top_node).children).next = bop_node;
-        c_assert!((*bop_node.children).next.is_null());
+        assert!((*bop_node.children).next.is_null());
         ast_stack.push(top_node_p);
         ast_stack.push(&mut (*(*top_node).children).next);
         ast_stack.push(&mut (*bop_node.children).next);
@@ -2438,7 +2438,7 @@ pub unsafe extern "C" fn viml_pexpr_parse(
                     // viml_parser_advance().
                     break 's_59; // goto viml_pexpr_parse_end
                 }
-                c_assert!(!(*top_node_p).is_null());
+                assert!(!(*top_node_p).is_null());
                 ERROR_FROM_TOKEN_AND_MSG!(cur_token, gettext("E15: Missing operator: %.*s"));
                 NEW_NODE_WITH_CUR_POS!(cur_node, kExprNodeOpMissing);
                 (*cur_node).len = 0;
@@ -2493,7 +2493,7 @@ pub unsafe extern "C" fn viml_pexpr_parse(
         /// @param[in]  hl  Corresponding highlighting, passed as an argument to #HL.
         macro_rules! SELECT_FIGURE_BRACE_TYPE {
             ($node: expr, $new_type: ident, $hl: literal) => {{
-                c_assert!(
+                assert!(
                     (*$node).type_0 == kExprNodeUnknownFigure
                         || (*$node).type_0 == concat_idents!(kExprNode, $new_type)
                 );
@@ -2516,7 +2516,7 @@ pub unsafe extern "C" fn viml_pexpr_parse(
         /// @param  hl  Highlighting name to use, passed as an argument to #HL.
         macro_rules! ADD_IDENT {
             ($new_ident_node_code: block, $hl: literal) => {{
-                c_assert!(want_node == kENodeOperator);
+                assert!(want_node == kENodeOperator);
                 // Operator: may only be curly braces name, but only under certain
                 // conditions.
 
@@ -2535,7 +2535,7 @@ pub unsafe extern "C" fn viml_pexpr_parse(
                         *top_node_p = cur_node;
                         ast_stack.push(&mut (*(*cur_node).children).next);
                         let new_top_node_p = *ast_stack.last();
-                        c_assert!((*new_top_node_p).is_null());
+                        assert!((*new_top_node_p).is_null());
                         $new_ident_node_code;
                         *new_top_node_p = cur_node;
                         HL_CUR_TOKEN!($hl);
@@ -2598,15 +2598,15 @@ pub unsafe extern "C" fn viml_pexpr_parse(
                 .items
                 .offset(cur_token.start.line as isize);
             top_node_p = *ast_stack.last();
-            c_assert!(!ast_stack.is_empty());
+            assert!(!ast_stack.is_empty());
             if cfg!(debug_assertions) {
                 want_value = want_node == kENodeValue;
-                c_assert!(want_value == (*top_node_p).is_null());
-                c_assert!(*ast_stack.A(0) == &mut ast.root);
+                assert!(want_value == (*top_node_p).is_null());
+                assert!(*ast_stack.A(0) == &mut ast.root);
                 // Check that stack item i + 1 points to stack items’ i *last* child.
                 for i in 0..(ast_stack.size() - 1) {
                     let item_null = want_value && i + 2 == ast_stack.size();
-                    c_assert!(
+                    assert!(
                         &mut (***ast_stack.A(i)).children as *mut *mut ExprASTNode
                             == *ast_stack.A(i + 1)
                             && if item_null {
@@ -2728,12 +2728,12 @@ pub unsafe extern "C" fn viml_pexpr_parse(
                         );
                         pt_stack.lop(1);
                     }
-                    c_assert!(!pt_stack.is_empty());
+                    assert!(!pt_stack.is_empty());
                 }
             }
-            c_assert!(!pt_stack.is_empty());
+            assert!(!pt_stack.is_empty());
             let cur_pt = *pt_stack.last();
-            c_assert!(lambda_node.is_null() || cur_pt == kEPTLambdaArguments);
+            assert!(lambda_node.is_null() || cur_pt == kEPTLambdaArguments);
             match tok_type {
                 kExprLexMissing | kExprLexSpacing | kExprLexEOC => {
                     unreachable!();
@@ -2784,7 +2784,7 @@ pub unsafe extern "C" fn viml_pexpr_parse(
                     }
                     NEW_NODE_WITH_CUR_POS!(cur_node, kExprNodeOption);
                     if cur_token.type_0 == kExprLexInvalid {
-                        c_assert!(
+                        assert!(
                             cur_token.len == 1
                                 || cur_token.len == 3
                                     && *pline.data.offset((cur_token.start.col + 2) as isize)
@@ -2901,7 +2901,7 @@ pub unsafe extern "C" fn viml_pexpr_parse(
                     want_node = kENodeValue;
                 }
                 kExprLexComma => {
-                    c_assert!(!(want_node == kENodeValue && cur_pt == kEPTLambdaArguments));
+                    assert!(!(want_node == kENodeValue && cur_pt == kEPTLambdaArguments));
                     if want_node == kENodeValue {
                         // Value level: comma appearing here is not valid.
                         // Note: in Vim string(,x) will give E116, this is not the case here.
@@ -2915,8 +2915,8 @@ pub unsafe extern "C" fn viml_pexpr_parse(
                         want_node = kENodeOperator
                     }
                     if cur_pt == kEPTLambdaArguments {
-                        c_assert!(!lambda_node.is_null());
-                        c_assert!((*lambda_node).data.fig.type_guesses.allow_lambda);
+                        assert!(!lambda_node.is_null());
+                        assert!((*lambda_node).data.fig.type_guesses.allow_lambda);
                         SELECT_FIGURE_BRACE_TYPE!(lambda_node, Lambda, b"Lambda");
                     }
                     loop {
@@ -2937,7 +2937,7 @@ pub unsafe extern "C" fn viml_pexpr_parse(
                             eastnode_type = (**eastnode_p).type_0;
                             eastnode_lvl = node_lvl(**eastnode_p);
                             if eastnode_type == kExprNodeLambda {
-                                c_assert!(
+                                assert!(
                                     cur_pt == kEPTLambdaArguments && want_node == kENodeOperator
                                 );
                                 break;
@@ -3014,8 +3014,8 @@ pub unsafe extern "C" fn viml_pexpr_parse(
                                 is_ternary = true;
                                 (**eastnode_p_0).data.ter.got_colon = true;
                                 ADD_VALUE_IF_MISSING!(gettext(EXP_VAL_COLON));
-                                c_assert!(!(**eastnode_p_0).children.is_null());
-                                c_assert!((*(**eastnode_p_0).children).next.is_null());
+                                assert!(!(**eastnode_p_0).children.is_null());
+                                assert!((*(**eastnode_p_0).children).next.is_null());
                                 ast_stack.push(&mut (*(**eastnode_p_0).children).next);
                                 break;
                             } else if eastnode_type_0 == kExprNodeUnknownFigure {
@@ -3026,7 +3026,7 @@ pub unsafe extern "C" fn viml_pexpr_parse(
                             } else if eastnode_type_0 == kExprNodeSubscript {
                                 is_subscript = true;
                                 // can_be_ternary = false;
-                                c_assert!(!is_ternary);
+                                assert!(!is_ternary);
                                 break;
                             } else if eastnode_type_0 == kExprNodeColon {
                                 viml_pexpr_parse_invalid_colon!();
@@ -3042,7 +3042,7 @@ pub unsafe extern "C" fn viml_pexpr_parse(
                             }
                         }
                         if is_subscript {
-                            c_assert!(ast_stack.size() > 1);
+                            assert!(ast_stack.size() > 1);
                             // Colon immediately following subscript start: it is empty subscript
                             // part like a[:2].
                             if want_node == kENodeValue
@@ -3075,7 +3075,7 @@ pub unsafe extern "C" fn viml_pexpr_parse(
                         ast_stack.lop(1);
                         macro_rules! viml_pexpr_parse_bracket_closing_error {
                             () => {{
-                                c_assert!(ast_stack.is_empty());
+                                assert!(ast_stack.is_empty());
                                 ERROR_FROM_TOKEN_AND_MSG!(
                                     cur_token,
                                     gettext("E15: Unexpected closing figure brace: %.*s")
@@ -3145,10 +3145,10 @@ pub unsafe extern "C" fn viml_pexpr_parse(
                         ast_stack.push(new_top_node_p);
                         want_node = kENodeOperator;
                         if ast_stack.size() <= asgn_level {
-                            c_assert!(ast_stack.size() == asgn_level);
+                            assert!(ast_stack.size() == asgn_level);
                             asgn_level = 0;
                             if cur_pt == kEPTAssignment {
-                                c_assert!(!ast.err.msg.is_null());
+                                assert!(!ast.err.msg.is_null());
                             } else if cur_pt == kEPTExpr
                                 && pt_stack.size() > 1
                                 && pt_is_assignment(*pt_stack.Z(1))
@@ -3187,7 +3187,7 @@ pub unsafe extern "C" fn viml_pexpr_parse(
                         ADD_OP_NODE!(cur_node);
                         HL_CUR_TOKEN!(b"SubscriptBracket");
                         if pt_is_assignment(cur_pt) {
-                            c_assert!(want_node == kENodeValue);
+                            assert!(want_node == kENodeValue);
                             // Subtract 1 for NULL at top.
                             asgn_level = ast_stack.size() - 1;
                             pt_stack.push(kEPTExpr);
@@ -3206,7 +3206,7 @@ pub unsafe extern "C" fn viml_pexpr_parse(
                         ast_stack.lop(1);
                         macro_rules! viml_pexpr_parse_figure_brace_closing_error {
                             () => {{
-                                c_assert!(ast_stack.is_empty());
+                                assert!(ast_stack.is_empty());
                                 ERROR_FROM_TOKEN_AND_MSG!(
                                     cur_token,
                                     gettext("E15: Unexpected closing figure brace: %.*s")
@@ -3259,8 +3259,8 @@ pub unsafe extern "C" fn viml_pexpr_parse(
                                 kExprNodeUnknownFigure => {
                                     if (*new_top_node).children.is_null() {
                                         // No children of curly braces node indicates empty dictionary.
-                                        c_assert!(want_node == kENodeValue);
-                                        c_assert!((*new_top_node).data.fig.type_guesses.allow_dict);
+                                        assert!(want_node == kENodeValue);
+                                        assert!((*new_top_node).data.fig.type_guesses.allow_dict);
                                         SELECT_FIGURE_BRACE_TYPE!(
                                             new_top_node,
                                             DictLiteral,
@@ -3310,7 +3310,7 @@ pub unsafe extern "C" fn viml_pexpr_parse(
                         ast_stack.push(new_top_node_p);
                         want_node = kENodeOperator;
                         if ast_stack.size() <= asgn_level {
-                            c_assert!(ast_stack.size() == asgn_level);
+                            assert!(ast_stack.size() == asgn_level);
                             if cur_pt == kEPTExpr
                                 && pt_stack.size() > 1
                                 && pt_is_assignment(*pt_stack.Z(1))
@@ -3362,34 +3362,34 @@ pub unsafe extern "C" fn viml_pexpr_parse(
                         );
                     }
                     if pt_is_assignment(cur_pt) && !pt_is_assignment(*pt_stack.last()) {
-                        c_assert!(want_node == kENodeValue);
+                        assert!(want_node == kENodeValue);
                         asgn_level = ast_stack.size() - 1;
                     }
                 }
                 kExprLexArrow => {
                     if cur_pt == kEPTLambdaArguments {
                         pt_stack.lop(1);
-                        c_assert!(!pt_stack.is_empty());
+                        assert!(!pt_stack.is_empty());
                         if want_node == kENodeValue {
                             // Wanting value means trailing comma and NULL at the top of the
                             // stack.
                             ast_stack.lop(1);
                         }
-                        c_assert!(!ast_stack.is_empty());
+                        assert!(!ast_stack.is_empty());
                         while (***ast_stack.last()).type_0 != kExprNodeLambda
                             && (***ast_stack.last()).type_0 != kExprNodeUnknownFigure
                         {
                             ast_stack.lop(1);
                         }
-                        c_assert!(**ast_stack.last() == lambda_node);
+                        assert!(**ast_stack.last() == lambda_node);
                         SELECT_FIGURE_BRACE_TYPE!(lambda_node, Lambda, b"Lambda");
                         NEW_NODE_WITH_CUR_POS!(cur_node, kExprNodeArrow);
                         if (*lambda_node).children.is_null() {
-                            c_assert!(want_node == kENodeValue);
+                            assert!(want_node == kENodeValue);
                             (*lambda_node).children = cur_node;
                             ast_stack.push(&mut (*lambda_node).children);
                         } else {
-                            c_assert!((*(*lambda_node).children).next.is_null());
+                            assert!((*(*lambda_node).children).next.is_null());
                             (*(*lambda_node).children).next = cur_node;
                             ast_stack.push(&mut (*(*lambda_node).children).next);
                         }
@@ -3432,7 +3432,7 @@ pub unsafe extern "C" fn viml_pexpr_parse(
                         (*cur_node).data.var.ident_len = cur_token.len - scope_shift;
                         *top_node_p = cur_node;
                         if scope_shift != 0 {
-                            c_assert!(!node_is_key);
+                            assert!(!node_is_key);
                             viml_parser_highlight(
                                 pstate,
                                 cur_token.start,
@@ -3457,7 +3457,7 @@ pub unsafe extern "C" fn viml_pexpr_parse(
                             },
                         );
                     } else if scope == kExprVarScopeMissing {
-                        c_assert!(want_node == kENodeOperator);
+                        assert!(want_node == kENodeOperator);
                         ADD_IDENT!(
                             {
                                 NEW_NODE_WITH_CUR_POS!(cur_node, kExprNodePlainIdentifier);
@@ -3588,7 +3588,7 @@ pub unsafe extern "C" fn viml_pexpr_parse(
                             // enclose everything in ().
                             (*cur_node).children = *new_top_node_p;
                             *new_top_node_p = cur_node;
-                            c_assert!((*cur_node).next.is_null());
+                            assert!((*cur_node).next.is_null());
                         }
                         ast_stack.push(new_top_node_p);
                         want_node = kENodeOperator;
@@ -3630,9 +3630,9 @@ pub unsafe extern "C" fn viml_pexpr_parse(
                     let mut ter_val_node;
                     NEW_NODE_WITH_CUR_POS!(ter_val_node, kExprNodeTernaryValue);
                     (*ter_val_node).data.ter.got_colon = false;
-                    c_assert!(!(*cur_node).children.is_null());
-                    c_assert!((*(*cur_node).children).next.is_null());
-                    c_assert!(*ast_stack.last() == &mut (*(*cur_node).children).next);
+                    assert!(!(*cur_node).children.is_null());
+                    assert!((*(*cur_node).children).next.is_null());
+                    assert!(*ast_stack.last() == &mut (*(*cur_node).children).next);
                     **ast_stack.last() = ter_val_node;
                     ast_stack.push(&mut (*ter_val_node).children);
                 }
@@ -3683,8 +3683,8 @@ pub unsafe extern "C" fn viml_pexpr_parse(
                             gettext("E15: Misplaced assignment: %.*s")
                         );
                     }
-                    c_assert!(!pt_stack.is_empty());
-                    c_assert!(*pt_stack.last() == kEPTExpr);
+                    assert!(!pt_stack.is_empty());
+                    assert!(*pt_stack.last() == kEPTExpr);
                     ADD_VALUE_IF_MISSING!(gettext("E15: Unexpected assignment: %.*s"));
                     NEW_NODE_WITH_CUR_POS!(cur_node, kExprNodeAssignment);
                     (*cur_node).data.ass.type_0 = cur_token.data.ass.type_0;
@@ -3705,8 +3705,8 @@ pub unsafe extern "C" fn viml_pexpr_parse(
         viml_parser_advance(pstate, cur_token.len);
     }
     // viml_pexpr_parse_end
-    c_assert!(!pt_stack.is_empty());
-    c_assert!(!ast_stack.is_empty());
+    assert!(!pt_stack.is_empty());
+    assert!(!ast_stack.is_empty());
     if want_node == kENodeValue
         // Blacklist some parse type entries as their presence means better error
         // message in the other branch.
@@ -3723,14 +3723,14 @@ pub unsafe extern "C" fn viml_pexpr_parse(
 
         // Pointer to ast.root must never be dropped, so “!= 1” is expected to be
         // the same as “> 1”.
-        c_assert!(!ast_stack.is_empty());
+        assert!(!ast_stack.is_empty());
         // Topmost stack item must be a *finished* value, so it must not be
         // analyzed. E.g. it may contain an already finished nested expression.
         ast_stack.lop(1);
         while ast.err.msg.is_null() && !ast_stack.is_empty() {
             let cur_node_0: *const ExprASTNode = *ast_stack.pop();
             // This should only happen when want_node == kENodeValue.
-            c_assert!(!cur_node_0.is_null());
+            assert!(!cur_node_0.is_null());
             // TODO(ZyX-I): Rehighlight as invalid?
             match (*cur_node_0).type_0 {
                 kExprNodeOpMissing | kExprNodeMissing => {

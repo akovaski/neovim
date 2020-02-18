@@ -76,9 +76,9 @@ pub unsafe extern "C" fn wstream_set_write_cb(
 /// @return false if the write failed
 #[no_mangle]
 pub unsafe extern "C" fn wstream_write(mut stream: *mut Stream, buffer: *mut WBuffer) -> bool {
-    c_assert!((*stream).maxmem != 0);
+    assert!((*stream).maxmem != 0);
     // This should not be called after a stream was freed
-    c_assert!(!(*stream).closed);
+    assert!(!(*stream).closed);
 
     if !((*stream).curmem > (*stream).maxmem) {
         (*stream).curmem = ((*stream).curmem).wrapping_add((*buffer).size);

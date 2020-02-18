@@ -143,7 +143,7 @@ pub unsafe extern "C" fn multiqueue_new_parent(
 
 #[no_mangle]
 pub unsafe extern "C" fn multiqueue_new_child(parent: &mut MultiQueue) -> *mut MultiQueue {
-    c_assert!(parent.parent.is_null()); // parent cannot have a parent, more like a "root"
+    assert!(parent.parent.is_null()); // parent cannot have a parent, more like a "root"
     parent.size = parent.size.wrapping_add(1);
     return multiqueue_new(parent, None, ptr::null_mut());
 }
@@ -169,7 +169,7 @@ unsafe extern "C" fn multiqueue_new(
 
 #[no_mangle]
 pub unsafe extern "C" fn multiqueue_free(this: *mut MultiQueue) {
-    c_assert!(!this.is_null());
+    assert!(!this.is_null());
     mem::drop(Box::from_raw(this));
 }
 
@@ -224,7 +224,7 @@ pub unsafe extern "C" fn multiqueue_replace_parent(
     this: &mut MultiQueue,
     new_parent: *mut MultiQueue,
 ) {
-    c_assert!(multiqueue_empty(this));
+    assert!(multiqueue_empty(this));
     this.parent = new_parent;
 }
 
@@ -240,7 +240,7 @@ unsafe fn multiqueueitem_get_event(item: &mut MultiQueueItem) -> Event {
     if item.link {
         // get the next node in the linked queue
         let linked: *mut MultiQueue = item.data.queue;
-        c_assert!(!multiqueue_empty(linked.as_ref().unwrap()));
+        assert!(!multiqueue_empty(linked.as_ref().unwrap()));
         let child: *mut MultiQueueItem =
             multiqueue_node_data(QUEUE_HEAD((*linked).headtail).as_mut().unwrap());
         ev = (*child).data.item.event;
@@ -251,10 +251,10 @@ unsafe fn multiqueueitem_get_event(item: &mut MultiQueueItem) -> Event {
 }
 
 unsafe fn multiqueue_remove(this: &mut MultiQueue) -> Event {
-    c_assert!(!multiqueue_empty(this));
+    assert!(!multiqueue_empty(this));
     let h: &mut QUEUE = QUEUE_HEAD(this.headtail).as_mut().unwrap();
     let mut item: Box<MultiQueueItem> = Box::from_raw(multiqueue_node_data(h));
-    c_assert!(!item.link || this.parent.is_null()); // Only a parent queue has link-nodes
+    assert!(!item.link || this.parent.is_null()); // Only a parent queue has link-nodes
     let ev: Event = multiqueueitem_get_event(&mut item);
     this.size = this.size.wrapping_sub(1);
     mem::drop(item);

@@ -66,7 +66,7 @@ unsafe extern "C" fn on_rbuffer_full(_buf: *mut RBuffer<Stream>, data: *mut Stre
 
 unsafe extern "C" fn on_rbuffer_nonfull(_buf: *mut RBuffer<Stream>, data: *mut Stream) {
     let stream: &mut Stream = data.as_mut().unwrap();
-    c_assert!((*stream).read_cb.is_some());
+    assert!((*stream).read_cb.is_some());
     rstream_start(stream, (*stream).read_cb, (*stream).cb_data);
 }
 

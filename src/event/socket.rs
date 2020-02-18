@@ -152,7 +152,7 @@ pub unsafe extern "C" fn socket_watcher_start(
         }
     }
 
-    c_assert!(result <= 0); // libuv should return negative error code or zero.
+    assert!(result <= 0); // libuv should return negative error code or zero.
     if result < 0 {
         if result == UV_EACCES as libc::c_int {
             // Libuv converts ENOENT to EACCES for Windows compatibility, but if

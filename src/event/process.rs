@@ -319,7 +319,7 @@ unsafe extern "C" fn decref(mut proc_0: *mut Process) {
             break;
         }
     }
-    c_assert!(!node.is_null());
+    assert!(!node.is_null());
     kl_shift_at((*loop_0).children, node);
     CREATE_EVENT(
         (*proc_0).events.as_mut(),
@@ -337,7 +337,7 @@ unsafe extern "C" fn process_close(mut proc_0: &mut Process) {
         // twice.
         return;
     }
-    c_assert!(!(*proc_0).closed);
+    assert!(!(*proc_0).closed);
     (*proc_0).closed = true;
 
     if (*proc_0).detach {

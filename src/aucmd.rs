@@ -11,7 +11,7 @@ pub unsafe extern "C" fn do_autocmd_uienter(chanid: u64, attached: bool) {
     recursive = true;
 
     let dict: *mut dict_T = get_vim_var_dict(VimVar::VV_EVENT);
-    c_assert!(chanid < VARNUMBER_MAX as u64);
+    assert!(chanid < VARNUMBER_MAX as u64);
     let chan_str = std::ffi::CString::new("chan").unwrap();
     tv_dict_add_nr(
         dict,

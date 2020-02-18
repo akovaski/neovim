@@ -140,7 +140,7 @@ pub unsafe fn viml_parser_get_remaining_line(
     } else {
         *ret_pline = *pstate.reader.lines.last();
     }
-    c_assert!(pstate.pos.line == pstate.reader.lines.size() - 1);
+    assert!(pstate.pos.line == pstate.reader.lines.size() - 1);
     if !ret_pline.data.is_null() {
         ret_pline.data = ret_pline.data.offset(pstate.pos.col as isize);
         ret_pline.size -= pstate.pos.col;
@@ -156,7 +156,7 @@ pub unsafe fn viml_parser_get_remaining_line(
 /// @param[in]  len  Number of bytes to advance.
 #[no_mangle]
 pub unsafe fn viml_parser_advance(pstate: &mut ParserState, len: libc::size_t) {
-    c_assert!(pstate.pos.line == pstate.reader.lines.size() - 1);
+    assert!(pstate.pos.line == pstate.reader.lines.size() - 1);
     let pline = *pstate.reader.lines.last();
     if pstate.pos.col + len >= pline.size {
         pstate.pos.line += 1;
@@ -182,7 +182,7 @@ pub unsafe fn viml_parser_highlight(
     if pstate.colors.is_null() || len == 0 {
         return;
     }
-    c_assert!(
+    assert!(
         (*pstate.colors).size() == 0
             || (*pstate.colors).Z(0).start.line < start.line
             || (*pstate.colors).Z(0).end_col <= start.col

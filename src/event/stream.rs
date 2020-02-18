@@ -100,7 +100,7 @@ pub unsafe extern "C" fn stream_init(
             uv_idle_init(&mut (*loop_0).uv, &mut (*stream).uv.idle);
             (*stream).uv.idle.data = stream as *mut libc::c_void
         } else {
-            c_assert!(type_0 == UV_NAMED_PIPE || type_0 == UV_TTY);
+            assert!(type_0 == UV_NAMED_PIPE || type_0 == UV_TTY);
 
             #[cfg(windows)]
             unimplemented!();
@@ -136,7 +136,7 @@ pub unsafe extern "C" fn stream_close(
     on_stream_close: stream_close_cb,
     data: *mut libc::c_void,
 ) {
-    c_assert!(!(*stream).closed);
+    assert!(!(*stream).closed);
     DLOG!("closing Stream: %p", stream);
     (*stream).closed = true;
     (*stream).close_cb = on_stream_close;

@@ -103,7 +103,7 @@ pub unsafe extern "C" fn ugrid_scroll(
         let target_row: *mut UCell = (*(*grid).cells.offset(i as isize)).offset(left as isize);
         let source_row: *mut UCell =
             (*(*grid).cells.offset((i + count) as isize)).offset(left as isize);
-        c_assert!(right >= left && left >= 0);
+        assert!(right >= left && left >= 0);
         memcpy(
             target_row,
             source_row,

@@ -14,7 +14,7 @@ pub struct Event {
 
 #[inline]
 pub unsafe fn event_create(cb: argv_callback, args: &[*mut libc::c_void]) -> Event {
-    c_assert!(args.len() <= EVENT_HANDLER_MAX_ARGC);
+    assert!(args.len() <= EVENT_HANDLER_MAX_ARGC);
     let mut event = Event {
         handler: cb,
         argv: [ptr::null_mut(); EVENT_HANDLER_MAX_ARGC],

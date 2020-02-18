@@ -248,7 +248,7 @@ pub unsafe fn rbuffer_reset<T>(mut buf: *mut RBuffer<T>) {
 /// directly, this needs to called after the data was copied to the internal
 /// buffer. The write pointer will be wrapped if required.
 pub unsafe fn rbuffer_produced<T>(mut buf: *mut RBuffer<T>, count: libc::size_t) {
-    c_assert!(count != 0 && count <= rbuffer_space(buf));
+    assert!(count != 0 && count <= rbuffer_space(buf));
 
     (*buf).write_ptr = (*buf).write_ptr.offset(count as isize);
     if (*buf).write_ptr >= (*buf).end_ptr {
@@ -293,7 +293,7 @@ pub unsafe fn rbuffer_read_ptr<T>(
 /// directly, this needs to called after the data was copied from the internal
 /// buffer. The read pointer will be wrapped if required.
 pub unsafe fn rbuffer_consumed<T>(mut buf: *mut RBuffer<T>, count: libc::size_t) {
-    c_assert!(count != 0 && count <= (*buf).size);
+    assert!(count != 0 && count <= (*buf).size);
 
     (*buf).read_ptr = (*buf).read_ptr.offset(count as isize);
     if (*buf).read_ptr >= (*buf).end_ptr {
@@ -358,7 +358,7 @@ pub unsafe fn rbuffer_read<T>(
 }
 
 pub unsafe fn rbuffer_get<T>(buf: *mut RBuffer<T>, index: libc::size_t) -> *mut libc::c_char {
-    c_assert!(index < (*buf).size);
+    assert!(index < (*buf).size);
     let mut rptr: *mut libc::c_char = (*buf).read_ptr.offset(index as isize);
     if rptr >= (*buf).end_ptr {
         rptr = rptr.offset(-(rbuffer_capacity(buf) as isize))
@@ -371,7 +371,7 @@ pub unsafe fn rbuffer_cmp<T>(
     str: *const libc::c_char,
     mut count: libc::size_t,
 ) -> libc::c_int {
-    c_assert!(count <= (*buf).size);
+    assert!(count <= (*buf).size);
     let mut rcnt: libc::size_t = 0;
     rbuffer_read_ptr(buf, &mut rcnt);
     let n: libc::size_t = min(count, rcnt);

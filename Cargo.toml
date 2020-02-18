@@ -15,3 +15,8 @@ path = "rust-deps/xdiff"
 
 [build-dependencies.cmake]
 path = "rust-deps/cmake"
+
+[lib]
+name = "rlibnvim"
+path = "src/rlibnvim.rs"
+crate-type = ["staticlib", "rlib"]

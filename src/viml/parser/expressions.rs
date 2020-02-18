@@ -792,8 +792,9 @@ unsafe fn scale_number(
 /// @param[in]  flags  Flags, @see LexExprFlags.
 ///
 /// @return Next token.
+#[no_mangle]
 #[must_use]
-unsafe fn viml_pexpr_next_token(pstate: &mut ParserState, flags: LexExprFlags) -> LexExprToken {
+pub unsafe fn viml_pexpr_next_token(pstate: &mut ParserState, flags: LexExprFlags) -> LexExprToken {
     let mut ret = {
         let mut init = LexExprToken::default();
         init.type_0 = kExprLexInvalid;
@@ -1226,7 +1227,7 @@ unsafe fn viml_pexpr_next_token(pstate: &mut ParserState, flags: LexExprFlags) -
             '.' => CHAR_OR_ASSIGN!(kExprLexDot, kExprAsgnConcat),
 
             // Expression end because Ex command ended.
-            '\u{0}' => {
+            '\u{0}' | '\n' => {
                 if flags.contains(LexExprFlags::ForbidEOC) {
                     ret.type_0 = kExprLexInvalid;
                     ret.data.err.msg = gettext("E15: Unexpected EOC character: %.*s");

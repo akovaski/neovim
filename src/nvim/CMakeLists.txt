@@ -458,6 +458,9 @@ endif()
 add_executable(nvim IMPORTED GLOBAL)
 set_property(TARGET nvim PROPERTY IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/target/debug/nvim)
 
+add_library(rlibnvim SHARED IMPORTED GLOBAL)
+set_property(TARGET rlibnvim PROPERTY IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/target/debug/librlibnvim.a)
+
 add_library(
   libnvim
   STATIC
@@ -492,7 +495,7 @@ else()
     ${XDIFF_SOURCES} ${XDIFF_HEADERS} ${TREESITTER_SOURCES}
     ${UNIT_TEST_FIXTURES}
   )
-  target_link_libraries(nvim-test ${NVIM_TEST_LINK_LIBRARIES})
+  target_link_libraries(nvim-test ${NVIM_TEST_LINK_LIBRARIES} rlibnvim)
   target_link_libraries(libnvim ${NVIM_TEST_LINK_LIBRARIES})
   set_property(
     TARGET nvim-test

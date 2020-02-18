@@ -2,6 +2,7 @@
 #define NVIM_EVENT_MULTIQUEUE_H
 
 #include <uv.h>
+#include <stdbool.h>
 
 #include "nvim/event/defs.h"
 #include "nvim/lib/queue.h"

@@ -93,7 +93,7 @@
 #include "nvim/buffer_updates.h"
 #include "nvim/pos.h"  // MAXLNUM
 #include "nvim/mark.h"
-#include "nvim/mark_extended.h"
+#include "nvim/extmark.h"
 #include "nvim/memline.h"
 #include "nvim/message.h"
 #include "nvim/misc1.h"
@@ -2244,7 +2244,7 @@ static void u_undoredo(int undo, bool do_buf_event)
     // Adjust marks
     if (oldsize != newsize) {
       mark_adjust(top + 1, top + oldsize, (long)MAXLNUM,
-                  (long)newsize - (long)oldsize, false, kExtmarkNOOP);
+                  (long)newsize - (long)oldsize, kExtmarkNOOP);
       if (curbuf->b_op_start.lnum > top + oldsize) {
         curbuf->b_op_start.lnum += newsize - oldsize;
       }
@@ -2971,7 +2971,10 @@ static char_u *u_save_line(linenr_T lnum)
 bool bufIsChanged(buf_T *buf)
   FUNC_ATTR_NONNULL_ALL FUNC_ATTR_WARN_UNUSED_RESULT
 {
-  return !bt_dontwrite(buf) && (buf->b_changed || file_ff_differs(buf, true));
+  // In a "prompt" buffer we do respect 'modified', so that we can control
+  // closing the window by setting or resetting that option.
+  return  (!bt_dontwrite(buf) || bt_prompt(buf))
+    && (buf->b_changed || file_ff_differs(buf, true));
 }
 
 // Return true if any buffer has changes.  Also buffers that are not written.

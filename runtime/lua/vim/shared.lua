@@ -20,6 +20,11 @@ vim.deepcopy = (function()
   local deepcopy_funcs = {
     table = function(orig)
       local copy = {}
+
+      if vim._empty_dict_mt ~= nil and getmetatable(orig) == vim._empty_dict_mt then
+        copy = vim.empty_dict()
+      end
+
       for k, v in pairs(orig) do
         copy[vim.deepcopy(k)] = vim.deepcopy(v)
       end
@@ -169,9 +174,19 @@ function vim.tbl_extend(behavior, ...)
   if (behavior ~= 'error' and behavior ~= 'keep' and behavior ~= 'force') then
     error('invalid "behavior": '..tostring(behavior))
   end
+
+  if select('#', ...) < 2 then
+    error('wrong number of arguments (given '..tostring(1 + select('#', ...))..', expected at least 3)')
+  end
+
   local ret = {}
+  if vim._empty_dict_mt ~= nil and getmetatable(select(1, ...)) == vim._empty_dict_mt then
+    ret = vim.empty_dict()
+  end
+
   for i = 1, select('#', ...) do
     local tbl = select(i, ...)
+    vim.validate{["after the second argument"] = {tbl,'t'}}
     if tbl then
       for k, v in pairs(tbl) do
         if behavior ~= 'force' and ret[k] ~= nil then
@@ -321,7 +336,7 @@ function vim.trim(s)
   return s:match('^%s*(.*%S)') or ''
 end
 
---- Escapes magic chars in a Lua pattern string.
+--- Escapes magic chars in a Lua pattern.
 ---
 --@see https://github.com/rxi/lume
 --@param s  String to escape
@@ -331,21 +346,21 @@ function vim.pesc(s)
   return s:gsub('[%(%)%.%%%+%-%*%?%[%]%^%$]', '%%%1')
 end
 
---- Test if `prefix` is a prefix of `s` for strings.
---
--- @param s String to check
--- @param prefix Potential prefix
--- @return boolean True if prefix is a prefix of s
+--- Tests if `s` starts with `prefix`.
+---
+--@param s (string) a string
+--@param prefix (string) a prefix
+--@return (boolean) true if `prefix` is a prefix of s
 function vim.startswith(s, prefix)
   vim.validate { s = {s, 's'}; prefix = {prefix, 's'}; }
   return s:sub(1, #prefix) == prefix
 end
 
---- Test if `suffix` is a suffix of `s` for strings.
---
--- @param s String to check
--- @param suffix Potential suffix
--- @return boolean True if suffix is a suffix of s
+--- Tests if `s` ends with `suffix`.
+---
+--@param s (string) a string
+--@param suffix (string) a suffix
+--@return (boolean) true if `suffix` is a suffix of s
 function vim.endswith(s, suffix)
   vim.validate { s = {s, 's'}; suffix = {suffix, 's'}; }
   return #suffix == 0 or s:sub(-#suffix) == suffix

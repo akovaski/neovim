@@ -2032,14 +2032,16 @@ readfile_linenr(
  * Fill "*eap" to force the 'fileencoding', 'fileformat' and 'binary to be
  * equal to the buffer "buf".  Used for calling readfile().
  */
-void prep_exarg(exarg_T *eap, buf_T *buf)
+void prep_exarg(exarg_T *eap, const buf_T *buf)
+  FUNC_ATTR_NONNULL_ALL
 {
-  eap->cmd = xmalloc(STRLEN(buf->b_p_ff) + STRLEN(buf->b_p_fenc) + 15);
+  const size_t cmd_len = 15 + STRLEN(buf->b_p_fenc);
+  eap->cmd = xmalloc(cmd_len);
 
-  sprintf((char *)eap->cmd, "e ++ff=%s ++enc=%s", buf->b_p_ff, buf->b_p_fenc);
-  eap->force_enc = 14 + (int)STRLEN(buf->b_p_ff);
+  snprintf((char *)eap->cmd, cmd_len, "e ++enc=%s", buf->b_p_fenc);
+  eap->force_enc = 8;
   eap->bad_char = buf->b_bad_char;
-  eap->force_ff = 7;
+  eap->force_ff = *buf->b_p_ff;
 
   eap->force_bin = buf->b_p_bin ? FORCE_BIN : FORCE_NOBIN;
   eap->read_edit = FALSE;
@@ -6587,7 +6589,7 @@ static int autocmd_nested = FALSE;
 
 /// Execute autocommands for "event" and file name "fname".
 ///
-/// @param event event that occured
+/// @param event event that occurred
 /// @param fname filename, NULL or empty means use actual file name
 /// @param fname_io filename to use for <afile> on cmdline
 /// @param force When true, ignore autocmd_busy
@@ -6604,7 +6606,7 @@ bool apply_autocmds(event_T event, char_u *fname, char_u *fname_io, bool force,
 /// Like apply_autocmds(), but with extra "eap" argument.  This takes care of
 /// setting v:filearg.
 ///
-/// @param event event that occured
+/// @param event event that occurred
 /// @param fname NULL or empty means use actual file name
 /// @param fname_io fname to use for <afile> on cmdline
 /// @param force When true, ignore autocmd_busy
@@ -6624,7 +6626,7 @@ static bool apply_autocmds_exarg(event_T event, char_u *fname, char_u *fname_io,
 /// conditional, no autocommands are executed.  If otherwise the autocommands
 /// cause the script to be aborted, retval is set to FAIL.
 ///
-/// @param event event that occured
+/// @param event event that occurred
 /// @param fname NULL or empty means use actual file name
 /// @param fname_io fname to use for <afile> on cmdline
 /// @param force When true, ignore autocmd_busy
@@ -6684,7 +6686,7 @@ bool has_event(event_T event) FUNC_ATTR_PURE FUNC_ATTR_WARN_UNUSED_RESULT
 
 /// Execute autocommands for "event" and file name "fname".
 ///
-/// @param event event that occured
+/// @param event event that occurred
 /// @param fname filename, NULL or empty means use actual file name
 /// @param fname_io filename to use for <afile> on cmdline,
 ///                 NULL means use `fname`.
@@ -6862,7 +6864,8 @@ static bool apply_autocmds_group(event_T event, char_u *fname, char_u *fname_io,
         || event == EVENT_SPELLFILEMISSING
         || event == EVENT_SYNTAX
         || event == EVENT_SIGNAL
-        || event == EVENT_TABCLOSED) {
+        || event == EVENT_TABCLOSED
+        || event == EVENT_WINCLOSED) {
       fname = vim_strsave(fname);
     } else {
       fname = (char_u *)FullName_save((char *)fname, false);
@@ -7196,8 +7199,8 @@ char_u *getnextac(int c, void *cookie, int indent, bool do_concat)
 /// To account for buffer-local autocommands, function needs to know
 /// in which buffer the file will be opened.
 ///
-/// @param event event that occured.
-/// @param sfname filename the event occured in.
+/// @param event event that occurred.
+/// @param sfname filename the event occurred in.
 /// @param buf buffer the file is open in
 bool has_autocmd(event_T event, char_u *sfname, buf_T *buf)
   FUNC_ATTR_WARN_UNUSED_RESULT

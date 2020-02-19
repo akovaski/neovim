@@ -28,7 +28,7 @@
 #include "nvim/indent.h"
 #include "nvim/indent_c.h"
 #include "nvim/main.h"
-#include "nvim/mark_extended.h"
+#include "nvim/extmark.h"
 #include "nvim/mbyte.h"
 #include "nvim/memline.h"
 #include "nvim/memory.h"
@@ -574,6 +574,12 @@ static int insert_check(VimState *state)
     foldCheckClose();
   }
 
+  int cmdchar_todo = s->cmdchar;
+  if (bt_prompt(curbuf)) {
+    init_prompt(cmdchar_todo);
+    cmdchar_todo = NUL;
+  }
+
   // If we inserted a character at the last position of the last line in the
   // window, scroll the window one line up. This avoids an extra redraw.  This
   // is detected when the cursor column is smaller after inserting something.
@@ -816,6 +822,16 @@ static int insert_handle_key(InsertState *s)
       got_int = false;         // don't stop executing autocommands et al
       s->nomove = true;
       return 0;  // exit insert mode
+    }
+    if (s->c == Ctrl_C && bt_prompt(curbuf)) {
+      if (invoke_prompt_interrupt()) {
+        if (!bt_prompt(curbuf)) {
+          // buffer changed to a non-prompt buffer, get out of
+          // Insert mode
+          return 0;
+        }
+        break;
+      }
     }
 
     // when 'insertmode' set, and not halfway through a mapping, don't leave
@@ -1143,6 +1159,15 @@ check_pum:
       cmdwin_result = CAR;
       return 0;
     }
+    if (bt_prompt(curbuf)) {
+      invoke_prompt_callback();
+      if (!bt_prompt(curbuf)) {
+        // buffer changed to a non-prompt buffer, get out of
+        // Insert mode
+        return 0;
+      }
+      break;
+    }
     if (!ins_eol(s->c) && !p_im) {
       return 0;  // out of memory
     }
@@ -1234,6 +1259,7 @@ normalchar:
       // Unmapped ALT/META chord behaves like ESC+c. #8213
       stuffcharReadbuff(ESC);
       stuffcharReadbuff(s->c);
+      u_sync(false);
       break;
     }
 
@@ -1568,6 +1594,52 @@ void edit_putchar(int c, int highlight)
   }
 }
 
+// Return the effective prompt for the current buffer.
+char_u *prompt_text(void)
+{
+    if (curbuf->b_prompt_text == NULL) {
+      return (char_u *)"% ";
+    }
+    return curbuf->b_prompt_text;
+}
+
+// Prepare for prompt mode: Make sure the last line has the prompt text.
+// Move the cursor to this line.
+static void init_prompt(int cmdchar_todo)
+{
+  char_u *prompt = prompt_text();
+  char_u *text;
+
+  curwin->w_cursor.lnum = curbuf->b_ml.ml_line_count;
+  text = get_cursor_line_ptr();
+  if (STRNCMP(text, prompt, STRLEN(prompt)) != 0) {
+    // prompt is missing, insert it or append a line with it
+    if (*text == NUL) {
+      ml_replace(curbuf->b_ml.ml_line_count, prompt, true);
+    } else {
+      ml_append(curbuf->b_ml.ml_line_count, prompt, 0, false);
+    }
+    curwin->w_cursor.lnum = curbuf->b_ml.ml_line_count;
+    coladvance((colnr_T)MAXCOL);
+    changed_bytes(curbuf->b_ml.ml_line_count, 0);
+  }
+  if (cmdchar_todo == 'A') {
+    coladvance((colnr_T)MAXCOL);
+  }
+  if (cmdchar_todo == 'I' || curwin->w_cursor.col <= (int)STRLEN(prompt)) {
+    curwin->w_cursor.col = STRLEN(prompt);
+  }
+  // Make sure the cursor is in a valid position.
+  check_cursor();
+}
+
+// Return TRUE if the cursor is in the editable position of the prompt line.
+int prompt_curpos_editable(void)
+{
+    return curwin->w_cursor.lnum == curbuf->b_ml.ml_line_count
+        && curwin->w_cursor.col >= (int)STRLEN(prompt_text());
+}
+
 /*
  * Undo the previous edit_putchar().
  */
@@ -1825,10 +1897,13 @@ change_indent (
 
     /* We only put back the new line up to the cursor */
     new_line[curwin->w_cursor.col] = NUL;
+    int new_col = curwin->w_cursor.col;
 
     // Put back original line
     ml_replace(curwin->w_cursor.lnum, orig_line, false);
     curwin->w_cursor.col = orig_col;
+
+    curbuf_splice_pending++;
 
     /* Backspace from cursor to start of line */
     backspace_until_column(0);
@@ -1837,13 +1912,16 @@ change_indent (
     ins_bytes(new_line);
 
     xfree(new_line);
-  }
 
-  // change_indent seems to bec called twice, this combination only triggers
-  // once for both calls
-  if (new_cursor_col - vcol != 0) {
-    extmark_col_adjust(curbuf, curwin->w_cursor.lnum, 0, 0, amount,
-                       kExtmarkUndo);
+    curbuf_splice_pending--;
+
+    // TODO(bfredl): test for crazy edge cases, like we stand on a TAB or
+    // something? does this even do the right text change then?
+    int delta = orig_col - new_col;
+    extmark_splice(curbuf, curwin->w_cursor.lnum-1, new_col,
+                   0, delta < 0 ? -delta : 0,
+                   0, delta > 0 ? delta : 0,
+                   kExtmarkUndo);
   }
 }
 
@@ -3378,6 +3456,7 @@ static bool ins_compl_prep(int c)
 {
   char_u *ptr;
   bool retval = false;
+  const int prev_mode = ctrl_x_mode;
 
   /* Forget any previous 'special' messages if this is actually
    * a ^X mode key - bar ^R, in which case we wait to see what it gives us.
@@ -3586,6 +3665,12 @@ static bool ins_compl_prep(int c)
 
       auto_format(FALSE, TRUE);
 
+      // Trigger the CompleteDonePre event to give scripts a chance to
+      // act upon the completion before clearing the info, and restore
+      // ctrl_x_mode, so that complete_info() can be used.
+      ctrl_x_mode = prev_mode;
+      ins_apply_autocmds(EVENT_COMPLETEDONEPRE);
+
       ins_compl_free();
       compl_started = false;
       compl_matches = 0;
@@ -3610,8 +3695,8 @@ static bool ins_compl_prep(int c)
        */
       if (want_cindent && in_cinkeys(KEY_COMPLETE, ' ', inindent(0)))
         do_c_expr_indent();
-      /* Trigger the CompleteDone event to give scripts a chance to act
-       * upon the completion. */
+      // Trigger the CompleteDone event to give scripts a chance to act
+      // upon the end of completion.
       ins_apply_autocmds(EVENT_COMPLETEDONE);
     }
   } else if (ctrl_x_mode == CTRL_X_LOCAL_MSG)
@@ -3740,6 +3825,8 @@ expand_by_function(
     case VAR_DICT:
       matchdict = rettv.vval.v_dict;
       break;
+    case VAR_SPECIAL:
+      FALLTHROUGH;
     default:
       // TODO(brammool): Give error message?
       tv_clear(&rettv);
@@ -5203,7 +5290,7 @@ static int ins_complete(int c, bool enable_pum)
     }
   }
 
-  /* Show a message about what (completion) mode we're in. */
+  // Show a message about what (completion) mode we're in.
   showmode();
   if (!shortmess(SHM_COMPLETIONMENU)) {
     if (edit_submode_extra != NULL) {
@@ -8145,10 +8232,14 @@ static void ins_mouse(int c)
     win_T   *new_curwin = curwin;
 
     if (curwin != old_curwin && win_valid(old_curwin)) {
-      /* Mouse took us to another window.  We need to go back to the
-       * previous one to stop insert there properly. */
+      // Mouse took us to another window.  We need to go back to the
+      // previous one to stop insert there properly.
       curwin = old_curwin;
       curbuf = curwin->w_buffer;
+      if (bt_prompt(curbuf)) {
+        // Restart Insert mode when re-entering the prompt buffer.
+        curbuf->b_prompt_insert = 'A';
+      }
     }
     start_arrow(curwin == old_curwin ? &tpos : NULL);
     if (curwin != new_curwin && win_valid(new_curwin)) {

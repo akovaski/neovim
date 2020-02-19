@@ -234,7 +234,8 @@ get_vimpatch() {
   msg_ok "Saved patch to '${NVIM_SOURCE_DIR}/${patch_file}'."
 }
 
-# shellcheck disable=SC2015  # "Note that A && B || C is not if-then-else."
+# shellcheck disable=SC2015
+# ^ "Note that A && B || C is not if-then-else."
 stage_patch() {
   get_vimpatch "$1"
   local try_apply="${2:-}"
@@ -305,7 +306,8 @@ git_hub_pr() {
   git hub pull new -m "$1"
 }
 
-# shellcheck disable=SC2015  # "Note that A && B || C is not if-then-else."
+# shellcheck disable=SC2015
+# ^ "Note that A && B || C is not if-then-else."
 submit_pr() {
   require_executable git
   local push_first
@@ -560,6 +562,7 @@ list_missing_previous_vimpatches_for_patch() {
     local -a missing_vim_patches=()
     _set_missing_vimpatches 1 -- "${fname}"
 
+    set +u  # Avoid "unbound variable" with bash < 4.4 below.
     local missing_vim_commit_info="${missing_vim_patches[0]}"
     if [[ -z "${missing_vim_commit_info}" ]]; then
       printf -- "-\n"
@@ -572,12 +575,15 @@ list_missing_previous_vimpatches_for_patch() {
         printf -- "-\n"
       fi
     fi
+    set -u
   done
 
+  set +u  # Avoid "unbound variable" with bash < 4.4 below.
   if [[ -z "${missing_list[*]}" ]]; then
     msg_ok 'no missing previous Vim patches'
     return 0
   fi
+  set -u
 
   local -a missing_unique
   while IFS= read -r line; do

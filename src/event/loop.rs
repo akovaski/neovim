@@ -201,11 +201,8 @@ pub unsafe extern "C" fn loop_close(loop_0: &mut Loop, wait: bool) -> bool {
     uv_close(&mut loop_0.async_0, None);
     let start: u64 = if wait { os_hrtime() } else { 0 };
     loop {
-        uv_run(
-            &mut loop_0.uv,
-            if wait { UV_RUN_DEFAULT } else { UV_RUN_NOWAIT },
-        );
-        if uv_loop_close(&mut loop_0.uv) == 0 || !wait {
+        uv_run(&mut loop_0.uv, UV_RUN_NOWAIT);
+        if !wait || uv_loop_close(&mut loop_0.uv) != UV_EBUSY {
             break;
         }
         if (os_hrtime() - start) >= (2 * 1000000000) {

@@ -1802,9 +1802,10 @@ char_u *ml_get(linenr_T lnum)
 /*
  * Return pointer to position "pos".
  */
-char_u *ml_get_pos(pos_T *pos)
+char_u *ml_get_pos(const pos_T *pos)
+  FUNC_ATTR_NONNULL_ALL
 {
-  return ml_get_buf(curbuf, pos->lnum, FALSE) + pos->col;
+  return ml_get_buf(curbuf, pos->lnum, false) + pos->col;
 }
 
 /*
@@ -1862,7 +1863,10 @@ errorret:
         // Avoid giving this message for a recursive call, may happen
         // when the GUI redraws part of the text.
         recursive++;
-        IEMSGN(_("E316: ml_get: cannot find line %" PRId64), lnum);
+        get_trans_bufname(buf);
+        shorten_dir(NameBuff);
+        iemsgf(_("E316: ml_get: cannot find line %" PRId64 " in buffer %d %s"),
+               lnum, buf->b_fnum, NameBuff);
         recursive--;
       }
       goto errorret;

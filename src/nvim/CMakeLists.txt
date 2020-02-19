@@ -23,6 +23,7 @@ endif()
 set(TOUCHES_DIR ${PROJECT_BINARY_DIR}/touches)
 set(GENERATOR_DIR ${CMAKE_CURRENT_LIST_DIR}/generators)
 set(GENERATED_DIR ${PROJECT_BINARY_DIR}/src/nvim/auto)
+set(BINARY_LIB_DIR ${PROJECT_BINARY_DIR}/lib/nvim/)
 set(API_DISPATCH_GENERATOR ${GENERATOR_DIR}/gen_api_dispatch.lua)
 set(API_UI_EVENTS_GENERATOR ${GENERATOR_DIR}/gen_api_ui_events.lua)
 set(GENERATOR_C_GRAMMAR ${GENERATOR_DIR}/c_grammar.lua)
@@ -134,6 +135,12 @@ foreach(sfile ${NVIM_SOURCES})
   if(NOT WIN32 AND ${f} MATCHES "^(pty_process_win.c)$")
     list(APPEND to_remove ${sfile})
   endif()
+  if(NOT WIN32 AND ${f} MATCHES "^(pty_conpty_win.c)$")
+    list(APPEND to_remove ${sfile})
+  endif()
+  if(NOT WIN32 AND ${f} MATCHES "^(os_win_console.c)$")
+    list(APPEND to_remove ${sfile})
+  endif()
 endforeach()
 
 list(REMOVE_ITEM NVIM_SOURCES ${to_remove})
@@ -143,6 +150,7 @@ set(CONV_SOURCES
   diff.c
   edit.c
   eval.c
+  eval/funcs.c
   ex_cmds.c
   ex_docmd.c
   fileio.c
@@ -173,10 +181,10 @@ if(NOT MSVC)
   check_c_compiler_flag(-Wstatic-in-inline HAS_WSTATIC_IN_INLINE)
   if(HAS_WSTATIC_IN_INLINE)
     set_source_files_properties(
-      eval.c PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} -Wno-static-in-inline -Wno-conversion")
+      eval/funcs.c PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} -Wno-static-in-inline -Wno-conversion")
   else()
     set_source_files_properties(
-      eval.c PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} -Wno-conversion")
+      eval/funcs.c PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} -Wno-conversion")
   endif()
 
   # tree-sitter: inlined external project, we don't maintain it. #10124
@@ -461,6 +469,17 @@ set_property(TARGET nvim PROPERTY IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/target/d
 add_library(rlibnvim SHARED IMPORTED GLOBAL)
 set_property(TARGET rlibnvim PROPERTY IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/target/debug/librlibnvim.a)
 
+file(MAKE_DIRECTORY ${BINARY_LIB_DIR})
+
+# install treesitter parser if bundled
+if(EXISTS ${DEPS_PREFIX}/lib/nvim/parser)
+  file(COPY ${DEPS_PREFIX}/lib/nvim/parser DESTINATION ${BINARY_LIB_DIR})
+endif()
+
+install(DIRECTORY ${BINARY_LIB_DIR}
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/nvim/
+  USE_SOURCE_PERMISSIONS)
+
 add_library(
   libnvim
   STATIC
@@ -534,6 +553,8 @@ endfunction()
 set(NO_SINGLE_CHECK_HEADERS
   os/win_defs.h
   os/pty_process_win.h
+  os/pty_conpty_win.h
+  os/os_win_console.h
 )
 foreach(hfile ${NVIM_HEADERS})
   get_test_target(test-includes "${hfile}" relative_path texe)

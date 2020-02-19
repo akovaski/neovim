@@ -87,6 +87,7 @@
 #include "nvim/highlight.h"
 #include "nvim/main.h"
 #include "nvim/mark.h"
+#include "nvim/extmark.h"
 #include "nvim/mbyte.h"
 #include "nvim/memline.h"
 #include "nvim/memory.h"
@@ -369,6 +370,17 @@ int update_screen(int type)
           grid_clear_line(&default_grid, default_grid.line_offset[i],
                           Columns, false);
         }
+        FOR_ALL_WINDOWS_IN_TAB(wp, curtab) {
+          if (wp->w_floating) {
+            continue;
+          }
+          if (W_ENDROW(wp) > valid) {
+            wp->w_redr_type = MAX(wp->w_redr_type, NOT_VALID);
+          }
+          if (W_ENDROW(wp) + wp->w_status_height > valid) {
+            wp->w_redr_status = true;
+          }
+        }
       }
       msg_grid_set_pos(Rows-p_ch, false);
       msg_grid_invalid = false;
@@ -620,6 +632,17 @@ bool win_cursorline_standout(const win_T *wp)
 {
   return wp->w_p_cul
     || (wp->w_p_cole > 0 && (VIsual_active || !conceal_cursor_line(wp)));
+}
+
+static DecorationRedrawState decorations;
+bool decorations_active = false;
+
+void decorations_add_luahl_attr(int attr_id,
+                                int start_row, int start_col,
+                                int end_row, int end_col)
+{
+  kv_push(decorations.active,
+          ((HlRange){ start_row, start_col, end_row, end_col, attr_id, NULL }));
 }
 
 /*
@@ -1213,6 +1236,8 @@ static void win_update(win_T *wp)
   srow = 0;
   lnum = wp->w_topline;  // first line shown in window
 
+  decorations_active = decorations_redraw_reset(buf, &decorations);
+
   if (buf->b_luahl && buf->b_luahl_window != LUA_NOREF) {
     Error err = ERROR_INIT;
     FIXED_TEMP_ARRAY(args, 4);
@@ -1221,6 +1246,7 @@ static void win_update(win_T *wp)
                          : (wp->w_topline + wp->w_height_inner));
     args.items[0] = WINDOW_OBJ(wp->handle);
     args.items[1] = BUFFER_OBJ(buf->handle);
+    // TODO(bfredl): we are not using this, but should be first drawn line?
     args.items[2] = INTEGER_OBJ(wp->w_topline-1);
     args.items[3] = INTEGER_OBJ(knownmax);
     // TODO(bfredl): we could allow this callback to change mod_top, mod_bot.
@@ -1231,6 +1257,7 @@ static void win_update(win_T *wp)
       api_clear_error(&err);
     }
   }
+
 
   for (;; ) {
     /* stop updating when reached the end of the window (check for _past_
@@ -2123,11 +2150,11 @@ fill_foldcolumn(
 
   if (closed) {
     if (symbol != 0) {
-      // rollback length
+      // rollback previous write
       char_counter -= len;
+      memset(&p[char_counter], ' ', len);
     }
-    symbol = wp->w_p_fcs_chars.foldclosed;
-    len = utf_char2bytes(symbol, &p[char_counter]);
+    len = utf_char2bytes(wp->w_p_fcs_chars.foldclosed, &p[char_counter]);
     char_counter += len;
   }
 
@@ -2236,7 +2263,7 @@ win_line (
   int change_start = MAXCOL;            // first col of changed area
   int change_end = -1;                  // last col of changed area
   colnr_T trailcol = MAXCOL;            // start of trailing spaces
-  int need_showbreak = false;           // overlong line, skip first x chars
+  bool need_showbreak = false;          // overlong line, skip first x chars
   int line_attr = 0;                    // attribute for the whole line
   int line_attr_lowprio = 0;            // low-priority attribute for the line
   matchitem_T *cur;                     // points to the match list
@@ -2250,8 +2277,7 @@ win_line (
   int prev_c1 = 0;                      // first composing char for prev_c
 
   bool search_attr_from_match = false;  // if search_attr is from :match
-  BufhlLineInfo bufhl_info;             // bufhl data for this line
-  bool has_bufhl = false;               // this buffer has highlight matches
+  bool has_decorations = false;         // this buffer has decorations
   bool do_virttext = false;             // draw virtual text for this line
 
   /* draw_state: items that are drawn in sequence: */
@@ -2294,6 +2320,8 @@ win_line (
 
   char *luatext = NULL;
 
+  buf_T *buf = wp->w_buffer;
+
   if (!number_only) {
     // To speed up the loop below, set extra_check when there is linebreak,
     // trailing white space and/or syntax processing to be done.
@@ -2315,13 +2343,34 @@ win_line (
       }
     }
 
-    if (bufhl_start_line(wp->w_buffer, lnum, &bufhl_info)) {
-      if (kv_size(bufhl_info.line->items)) {
-        has_bufhl = true;
+    if (decorations_active) {
+      if (buf->b_luahl && buf->b_luahl_line != LUA_NOREF) {
+        Error err = ERROR_INIT;
+        FIXED_TEMP_ARRAY(args, 3);
+        args.items[0] = WINDOW_OBJ(wp->handle);
+        args.items[1] = BUFFER_OBJ(buf->handle);
+        args.items[2] = INTEGER_OBJ(lnum-1);
+        lua_attr_active = true;
         extra_check = true;
+        Object o = executor_exec_lua_cb(buf->b_luahl_line, "line",
+                                        args, true, &err);
+        lua_attr_active = false;
+        if (o.type == kObjectTypeString) {
+          // TODO(bfredl): this is a bit of a hack. A final API should use an
+          // "unified" interface where luahl can add both bufhl and virttext
+          luatext = o.data.string.data;
+          do_virttext = true;
+        } else if (ERROR_SET(&err)) {
+          ELOG("error in luahl line: %s", err.msg);
+          luatext = err.msg;
+          do_virttext = true;
+        }
       }
-      if (kv_size(bufhl_info.line->virt_text)) {
-        do_virttext = true;
+
+      has_decorations = decorations_redraw_line(wp->w_buffer, lnum-1,
+                                                &decorations);
+      if (has_decorations) {
+        extra_check = true;
       }
     }
 
@@ -2517,41 +2566,6 @@ win_line (
   line = ml_get_buf(wp->w_buffer, lnum, FALSE);
   ptr = line;
 
-  buf_T *buf = wp->w_buffer;
-  if (buf->b_luahl && buf->b_luahl_line != LUA_NOREF) {
-    size_t size = STRLEN(line);
-    if (lua_attr_bufsize < size) {
-      xfree(lua_attr_buf);
-      lua_attr_buf = xcalloc(size, sizeof(*lua_attr_buf));
-      lua_attr_bufsize = size;
-    } else if (lua_attr_buf) {
-      memset(lua_attr_buf, 0, size * sizeof(*lua_attr_buf));
-    }
-    Error err = ERROR_INIT;
-    // TODO(bfredl): build a macro for the "static array" pattern
-    // in buf_updates_send_changes?
-    FIXED_TEMP_ARRAY(args, 3);
-    args.items[0] = WINDOW_OBJ(wp->handle);
-    args.items[1] = BUFFER_OBJ(buf->handle);
-    args.items[2] = INTEGER_OBJ(lnum-1);
-    lua_attr_active = true;
-    extra_check = true;
-    Object o = executor_exec_lua_cb(buf->b_luahl_line, "line",
-                                    args, true, &err);
-    lua_attr_active = false;
-    if (o.type == kObjectTypeString) {
-      // TODO(bfredl): this is a bit of a hack. A final API should use an
-      // "unified" interface where luahl can add both bufhl and virttext
-      luatext = o.data.string.data;
-      do_virttext = true;
-    } else if (ERROR_SET(&err)) {
-      ELOG("error in luahl line: %s", err.msg);
-      luatext = err.msg;
-      do_virttext = true;
-      api_clear_error(&err);
-    }
-  }
-
   if (has_spell && !number_only) {
     // For checking first word with a capital skip white space.
     if (cap_col == 0) {
@@ -2650,11 +2664,12 @@ win_line (
     else if (fromcol >= 0 && fromcol < vcol)
       fromcol = vcol;
 
-    /* When w_skipcol is non-zero, first line needs 'showbreak' */
-    if (wp->w_p_wrap)
-      need_showbreak = TRUE;
-    /* When spell checking a word we need to figure out the start of the
-     * word and if it's badly spelled or not. */
+    // When w_skipcol is non-zero, first line needs 'showbreak'
+    if (wp->w_p_wrap) {
+      need_showbreak = true;
+    }
+    // When spell checking a word we need to figure out the start of the
+    // word and if it's badly spelled or not.
     if (has_spell) {
       size_t len;
       colnr_T linecol = (colnr_T)(ptr - line);
@@ -2971,11 +2986,17 @@ win_line (
           }
           p_extra = NULL;
           c_extra = ' ';
-          n_extra = get_breakindent_win(wp, ml_get_buf(wp->w_buffer, lnum, FALSE));
-          /* Correct end of highlighted area for 'breakindent',
-             required wen 'linebreak' is also set. */
-          if (tocol == vcol)
+          c_final = NUL;
+          n_extra =
+            get_breakindent_win(wp, ml_get_buf(wp->w_buffer, lnum, false));
+          if (wp->w_skipcol > 0 && wp->w_p_wrap) {
+            need_showbreak = false;
+          }
+          // Correct end of highlighted area for 'breakindent',
+          // required wen 'linebreak' is also set.
+          if (tocol == vcol) {
             tocol += n_extra;
+          }
         }
       }
 
@@ -3004,7 +3025,9 @@ win_line (
           c_final = NUL;
           n_extra = (int)STRLEN(p_sbr);
           char_attr = win_hl_attr(wp, HLF_AT);
-          need_showbreak = false;
+          if (wp->w_skipcol == 0 || !wp->w_p_wrap) {
+            need_showbreak = false;
+          }
           vcol_sbr = vcol + MB_CHARLEN(p_sbr);
           /* Correct end of highlighted area for 'showbreak',
            * required when 'linebreak' is also set. */
@@ -3281,9 +3304,7 @@ win_line (
     } else {
       int c0;
 
-      if (p_extra_free != NULL) {
-        XFREE_CLEAR(p_extra_free);
-      }
+      XFREE_CLEAR(p_extra_free);
 
       // Get a character from the line itself.
       c0 = c = *ptr;
@@ -3515,19 +3536,16 @@ win_line (
             char_attr = hl_combine_attr(spell_attr, char_attr);
         }
 
-        if (has_bufhl && v > 0) {
-          int bufhl_attr = bufhl_get_attr(&bufhl_info, (colnr_T)v);
-          if (bufhl_attr != 0) {
+        if (has_decorations && v > 0) {
+          int extmark_attr = decorations_redraw_col(wp->w_buffer, (colnr_T)v-1,
+                                                    &decorations);
+          if (extmark_attr != 0) {
             if (!attr_pri) {
-              char_attr = hl_combine_attr(char_attr, bufhl_attr);
+              char_attr = hl_combine_attr(char_attr, extmark_attr);
             } else {
-              char_attr = hl_combine_attr(bufhl_attr, char_attr);
+              char_attr = hl_combine_attr(extmark_attr, char_attr);
             }
           }
-        }
-
-        if (buf->b_luahl && v > 0 && v < (long)lua_attr_bufsize+1) {
-          char_attr = hl_combine_attr(char_attr, lua_attr_buf[v-1]);
         }
 
         if (wp->w_buffer->terminal) {
@@ -3858,6 +3876,7 @@ win_line (
       }
       wp->w_wrow = row;
       did_wcol = true;
+      curwin->w_valid |= VALID_WCOL|VALID_WROW|VALID_VIRTCOL;
     }
 
     // Don't override visual selection highlighting.
@@ -4008,6 +4027,18 @@ win_line (
       if (draw_color_col)
         draw_color_col = advance_color_col(VCOL_HLC, &color_cols);
 
+      VirtText virt_text = KV_INITIAL_VALUE;
+      if (luatext) {
+        kv_push(virt_text, ((VirtTextChunk){ .text = luatext, .hl_id = 0 }));
+        do_virttext = true;
+      } else if (has_decorations) {
+        VirtText *vp = decorations_redraw_virt_text(wp->w_buffer, &decorations);
+        if (vp) {
+          virt_text = *vp;
+          do_virttext = true;
+        }
+      }
+
       if (((wp->w_p_cuc
             && (int)wp->w_virtcol >= VCOL_HLC - eol_hl_off
             && (int)wp->w_virtcol <
@@ -4018,14 +4049,6 @@ win_line (
         int rightmost_vcol = 0;
         int i;
 
-        VirtText virt_text;
-        if (luatext) {
-          virt_text = (VirtText)KV_INITIAL_VALUE;
-          kv_push(virt_text, ((VirtTextChunk){ .text = luatext, .hl_id = 0 }));
-        } else {
-          virt_text = do_virttext ? bufhl_info.line->virt_text
-                                  : (VirtText)KV_INITIAL_VALUE;
-        }
         size_t virt_pos = 0;
         LineState s = LINE_STATE((char_u *)"");
         int virt_attr = 0;

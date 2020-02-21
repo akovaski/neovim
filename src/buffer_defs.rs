@@ -1,11 +1,11 @@
 use crate::bufhl_defs::*;
 use crate::eval::typval::*;
-use crate::fmark_defs::*;
 use crate::garray::*;
 use crate::grid_defs::*;
 use crate::hashtab::*;
 use crate::lib::kbtree::*;
 use crate::mark_defs::*;
+
 use crate::mark_extended_defs::*;
 use crate::memline_defs::*;
 use crate::option_defs::*;

@@ -118,7 +118,7 @@ where
             }
         } else {
             if self.items == self.init_array.as_mut().as_mut_ptr() {
-                memcpy::<libc::c_void, _>(
+                memcpy::<libc::c_void>(
                     xmalloc(self.capacity * self.sizeof_item()),
                     self.items as *const libc::c_void,
                     self.size * self.sizeof_item(),

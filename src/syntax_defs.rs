@@ -8,7 +8,7 @@ use crate::regexp_defs::*;
 pub struct synstate_T {
     pub sst_next: *mut synstate_T,
     pub sst_lnum: linenr_T,
-    pub sst_union: C2RustUnnamed_19,
+    pub sst_union: synstate_sst,
     pub sst_next_flags: libc::c_int,
     pub sst_stacksize: libc::c_int,
     pub sst_next_list: *mut i16,
@@ -17,7 +17,7 @@ pub struct synstate_T {
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub union C2RustUnnamed_19 {
+pub union synstate_sst {
     pub sst_stack: [bufstate_T; 7],
     pub sst_ga: garray_T,
 }

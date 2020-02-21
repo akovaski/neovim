@@ -58,7 +58,7 @@ pub unsafe extern "C" fn socket_watcher_init(
         let mut port: *mut libc::c_char = host_end.offset(1);
         let mut iport: intmax_t = 0;
 
-        let ok = try_getdigits(&mut (port as *mut libc::c_uchar), &mut iport);
+        let ok = try_getdigits(&mut (port as *const libc::c_uchar), &mut iport);
         if !ok || iport < 0 || iport > u16::max_value() as i64 {
             ELOG!("Invalid port: %s", port);
             return UV_EINVAL as libc::c_int;

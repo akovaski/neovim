@@ -974,11 +974,11 @@ pub unsafe fn viml_pexpr_next_token(pstate: &mut ParserState, flags: LexExprFlag
                     if exp_start != 0 {
                         vim_str2nr(
                             pline.data.offset(exp_start as isize) as *const u8,
-                            ptr::null_mut(),
-                            ptr::null_mut(),
+                            None,
+                            None,
                             0,
-                            ptr::null_mut(),
-                            &mut exp_part,
+                            None,
+                            Some(&mut exp_part),
                             (ret.len - exp_start) as libc::c_int,
                         );
                     }
@@ -997,11 +997,11 @@ pub unsafe fn viml_pexpr_next_token(pstate: &mut ParserState, flags: LexExprFlag
                     let mut prep: libc::c_int = 0;
                     vim_str2nr(
                         pline.data as *const libc::c_uchar,
-                        &mut prep,
-                        &mut len,
+                        Some(&mut prep),
+                        Some(&mut len),
                         STR2NR_ALL,
-                        ptr::null_mut(),
-                        &mut ret.data.num.val.integer,
+                        None,
+                        Some(&mut ret.data.num.val.integer),
                         pline.size as libc::c_int,
                     );
                     ret.len = len as libc::size_t;

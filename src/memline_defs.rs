@@ -1,5 +1,4 @@
-use crate::memfile_defs::*;
-use crate::pos::*;
+use crate::*;
 
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -19,4 +18,21 @@ pub struct memline_T {
     pub ml_chunksize: *mut chunksize_T,
     pub ml_numchunks: libc::c_int,
     pub ml_usedchunks: libc::c_int,
+}
+
+pub type chunksize_T = ml_chunksize;
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct ml_chunksize {
+    pub mlcs_numlines: libc::c_int,
+    pub mlcs_totalsize: libc::c_long,
+}
+pub type infoptr_T = info_pointer;
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct info_pointer {
+    pub ip_bnum: blocknr_T,
+    pub ip_low: linenr_T,
+    pub ip_high: linenr_T,
+    pub ip_index: libc::c_int,
 }

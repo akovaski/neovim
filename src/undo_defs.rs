@@ -1,4 +1,4 @@
-use crate::fmark_defs::*;
+use crate::mark_defs::*;
 use crate::mark_extended_defs::*;
 use crate::pos::*;
 
@@ -13,10 +13,10 @@ pub struct visualinfo_T {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct u_header_T {
-    pub uh_next: C2RustUnnamed_24,
-    pub uh_prev: C2RustUnnamed_23,
-    pub uh_alt_next: C2RustUnnamed_22,
-    pub uh_alt_prev: C2RustUnnamed_21,
+    pub uh_next: u_header_next,
+    pub uh_prev: u_header_prev,
+    pub uh_alt_next: u_header_alt_next,
+    pub uh_alt_prev: u_header_alt_prev,
     pub uh_seq: libc::c_long,
     pub uh_walk: libc::c_int,
     pub uh_entry: *mut u_entry_T,
@@ -42,25 +42,25 @@ pub struct u_entry_T {
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub union C2RustUnnamed_21 {
+pub union u_header_alt_prev {
     pub ptr: *mut u_header_T,
     pub seq: libc::c_long,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub union C2RustUnnamed_22 {
+pub union u_header_alt_next {
     pub ptr: *mut u_header_T,
     pub seq: libc::c_long,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub union C2RustUnnamed_23 {
+pub union u_header_prev {
     pub ptr: *mut u_header_T,
     pub seq: libc::c_long,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub union C2RustUnnamed_24 {
+pub union u_header_next {
     pub ptr: *mut u_header_T,
     pub seq: libc::c_long,
 }

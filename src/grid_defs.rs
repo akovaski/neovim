@@ -1,6 +1,6 @@
 use crate::types::*;
 
-const MAX_MCO: usize = 6;
+pub const MAX_MCO: usize = 6;
 pub type schar_T = [libc::c_uchar; (MAX_MCO + 1) * 4 + 1];
 pub type sattr_T = i16;
 

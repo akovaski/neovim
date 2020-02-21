@@ -192,3 +192,22 @@ pub mod iconv_h {
     pub type iconv_t = *mut libc::c_void;
 }
 pub use iconv_h::*;
+pub mod inttypes_h {
+    use crate::*;
+    extern "C" {
+        #[no_mangle]
+        pub fn strtoimax(
+            __nptr: *const libc::c_char,
+            __endptr: *mut *const libc::c_char,
+            __base: libc::c_int,
+        ) -> intmax_t;
+    }
+}
+pub use inttypes_h::*;
+pub mod errno_h {
+    extern "C" {
+        #[no_mangle]
+        pub fn __errno_location() -> *mut libc::c_int;
+    }
+}
+pub use errno_h::*;

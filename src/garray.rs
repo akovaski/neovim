@@ -20,11 +20,11 @@ pub struct growarray {
 pub type garray_T = growarray;
 
 #[allow(non_snake_case)]
-pub unsafe fn GA_APPEND<T>(gap: *mut garray_T, item: T) {
+pub unsafe fn GA_APPEND<T>(gap: &mut garray_T, item: T) {
     ga_grow(gap, 1);
-    let fresh = (*gap).ga_len;
-    (*gap).ga_len = (*gap).ga_len + 1;
-    *((*gap).ga_data as *mut T).offset(fresh as isize) = item;
+    let fresh = gap.ga_len;
+    gap.ga_len = gap.ga_len + 1;
+    *(gap.ga_data as *mut T).offset(fresh as isize) = item;
 }
 
 /// Deep free a garray of specific type using a custom free function.
@@ -72,64 +72,60 @@ pub unsafe extern "C" fn ga_clear_strings(gap: *mut garray_T) {
 
 /// Initialize a growing array.
 #[no_mangle]
-pub unsafe extern "C" fn ga_init(
-    mut gap: *mut garray_T,
-    itemsize: libc::c_int,
-    growsize: libc::c_int,
-) {
-    (*gap).ga_data = ptr::null_mut();
-    (*gap).ga_maxlen = 0;
-    (*gap).ga_len = 0;
-    (*gap).ga_itemsize = itemsize;
+pub unsafe extern "C" fn ga_init(gap: &mut garray_T, itemsize: libc::c_int, growsize: libc::c_int) {
+    gap.ga_data = ptr::null_mut();
+    gap.ga_maxlen = 0;
+    gap.ga_len = 0;
+    gap.ga_itemsize = itemsize;
     ga_set_growsize(gap, growsize);
 }
 
 /// A setter for the growsize that guarantees it will be at least 1.
 #[no_mangle]
-pub unsafe extern "C" fn ga_set_growsize(gap: *mut garray_T, growsize: libc::c_int) {
-    if growsize < 1 as libc::c_int {
+pub unsafe extern "C" fn ga_set_growsize(gap: &mut garray_T, growsize: libc::c_int) {
+    if growsize < 1 {
         WLOG!("trying to set an invalid ga_growsize: %d", growsize);
-        (*gap).ga_growsize = 1;
+        gap.ga_growsize = 1;
     } else {
-        (*gap).ga_growsize = growsize;
+        gap.ga_growsize = growsize;
     };
 }
 
 /// Make room in growing array "gap" for at least "n" items.
 #[no_mangle]
-pub unsafe extern "C" fn ga_grow(mut gap: *mut garray_T, mut n: libc::c_int) {
-    if (*gap).ga_maxlen - (*gap).ga_len >= n {
+pub unsafe extern "C" fn ga_grow(gap: &mut garray_T, mut n: libc::c_int) {
+    if gap.ga_maxlen - gap.ga_len >= n {
         // the garray still has enough space, do nothing
         return;
     }
 
-    if (*gap).ga_growsize < 1 {
-        WLOG!("ga_growsize(%d) is less than 1", (*gap).ga_growsize);
+    if gap.ga_growsize < 1 {
+        WLOG!("ga_growsize(%d) is less than 1", gap.ga_growsize);
     }
 
     // the garray grows by at least growsize
-    if n < (*gap).ga_growsize {
-        n = (*gap).ga_growsize
+    if n < gap.ga_growsize {
+        n = gap.ga_growsize
     }
 
     // A linear growth is very inefficient when the array grows big.  This
     // is a compromise between allocating memory that won't be used and too
     // many copy operations. A factor of 1.5 seems reasonable.
-    if n < (*gap).ga_len / 2 {
-        n = (*gap).ga_len / 2
+    if n < gap.ga_len / 2 {
+        n = gap.ga_len / 2
     }
 
-    let new_maxlen: libc::c_int = (*gap).ga_len + n;
+    let new_maxlen: libc::c_int = gap.ga_len + n;
 
-    let new_size: libc::size_t = ((*gap).ga_itemsize * new_maxlen) as libc::size_t;
-    let old_size: libc::size_t = ((*gap).ga_itemsize * (*gap).ga_maxlen) as libc::size_t;
+    let new_size: libc::size_t = (gap.ga_itemsize * new_maxlen) as libc::size_t;
+    let old_size: libc::size_t = (gap.ga_itemsize * gap.ga_maxlen) as libc::size_t;
 
     // reallocate and clear the new memory
-    let pp: *mut libc::c_char = xrealloc((*gap).ga_data, new_size);
+    let pp: *mut libc::c_char = xrealloc(gap.ga_data, new_size);
     memset(pp.offset(old_size as isize), 0, new_size - old_size);
 
-    (*gap).ga_maxlen = new_maxlen;
-    (*gap).ga_data = pp as *mut libc::c_void;
+    gap.ga_maxlen = new_maxlen;
+    gap.ga_data = pp as *mut libc::c_void;
 }
 
 /// Sort "gap" and remove duplicate entries. "gap" is expected to contain a
@@ -207,7 +203,7 @@ pub unsafe extern "C" fn ga_concat_strings(gap: *const garray_T) -> *mut libc::c
 /// - Does NOT copy the NUL at the end!
 /// - The parameter may not overlap with the growing array
 #[no_mangle]
-pub unsafe extern "C" fn ga_concat(gap: *mut garray_T, s: *const libc::c_uchar) {
+pub unsafe extern "C" fn ga_concat(gap: &mut garray_T, s: *const libc::c_uchar) {
     if s.is_null() {
         return;
     }
@@ -225,20 +221,20 @@ pub unsafe extern "C" fn ga_concat(gap: *mut garray_T, s: *const libc::c_uchar) 
 /// @param[in]  len  String length.
 #[no_mangle]
 pub unsafe extern "C" fn ga_concat_len(
-    gap: *mut garray_T,
+    gap: &mut garray_T,
     s: *const libc::c_char,
     len: libc::size_t,
 ) {
     if len != 0 {
         ga_grow(gap, len as libc::c_int);
-        let data: *mut libc::c_char = (*gap).ga_data as *mut libc::c_char;
-        memcpy(data.offset((*gap).ga_len as isize), s, len);
-        (*gap).ga_len += len as libc::c_int
+        let data: *mut libc::c_char = gap.ga_data as *mut libc::c_char;
+        memcpy(data.offset(gap.ga_len as isize), s, len);
+        gap.ga_len += len as libc::c_int
     };
 }
 
 /// Append one byte to a growarray which contains bytes.
 #[no_mangle]
-pub unsafe extern "C" fn ga_append(gap: *mut garray_T, c: libc::c_char) {
+pub unsafe extern "C" fn ga_append(gap: &mut garray_T, c: libc::c_char) {
     GA_APPEND(gap, c);
 }

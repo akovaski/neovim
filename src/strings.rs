@@ -15,6 +15,7 @@ extern "C" {
 
     // strings.c
     pub fn sort_strings(files: *mut *mut libc::c_uchar, count: libc::c_int);
+    pub fn vim_strsave(string: *const libc::c_uchar) -> *mut libc::c_uchar;
 }
 
 pub unsafe fn strrchr(str: *const libc::c_char, character: char) -> *mut libc::c_char {

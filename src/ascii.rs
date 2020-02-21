@@ -64,7 +64,8 @@ pub fn ascii_iswhite(c: char) -> bool {
 /// what may be used for some optimizations (e.g. simple `return
 /// isdigit_table[c];`).
 #[inline(always)]
-pub fn ascii_isdigit(c: char) -> bool {
+pub fn ascii_isdigit<C: Into<char>>(c: C) -> bool {
+    let c = c.into();
     return c >= '0' && c <= '9';
 }
 
@@ -82,6 +83,14 @@ pub fn ascii_isxdigit(c: char) -> bool {
 #[inline(always)]
 pub fn ascii_isident(c: char) -> bool {
     ASCII_ISALNUM(c) || c == '_'
+}
+
+/// Checks if `c` is a binary digit, that is, 0-1.
+///
+/// @see {ascii_isdigit}
+#[inline(always)]
+pub unsafe extern "C" fn ascii_isbdigit(c: char) -> bool {
+    return c == '0' || c == '1';
 }
 
 pub fn ASCII_ISALNUM(c: char) -> bool {

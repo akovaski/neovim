@@ -1,3 +1,4 @@
+use std::convert::TryInto;
 use std::mem;
 
 extern "C" {
@@ -8,7 +9,8 @@ extern "C" {
         _: *const libc::c_void,
         _: libc::size_t,
     ) -> *mut libc::c_void;
-    pub fn memmove(
+    #[link_name = "memmove"]
+    pub fn c_memmove(
         _: *mut libc::c_void,
         _: *const libc::c_void,
         _: libc::c_ulong,
@@ -46,8 +48,19 @@ pub unsafe fn XFREE_CLEAR<T>(ptr: &mut *mut T) {
     *ptr = std::ptr::null_mut();
 }
 
-pub unsafe fn memcpy<T, U>(dest: *mut T, src: *const U, count: libc::size_t) -> *mut libc::c_void {
+pub unsafe fn memcpy<T>(dest: *mut T, src: *const T, count: libc::size_t) -> *mut libc::c_void {
     c_memcpy(dest as *mut libc::c_void, src as *const libc::c_void, count)
+}
+
+pub unsafe fn memmove<T, N: TryInto<u64>>(dst: *mut T, src: *const T, num: N) -> *mut libc::c_void
+where
+    <N as TryInto<u64>>::Error: std::fmt::Debug,
+{
+    c_memmove(
+        dst as *mut libc::c_void,
+        src as *mut libc::c_void,
+        num.try_into().unwrap(),
+    )
 }
 
 pub unsafe fn memchr<T, N: std::convert::TryInto<u64>, C: Into<char>>(

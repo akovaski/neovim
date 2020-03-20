@@ -190,6 +190,18 @@ pub unsafe extern "C" fn loop_on_put(_queue: &mut MultiQueue, data: *mut libc::c
     uv_stop(&mut loop_0.uv);
 }
 
+unsafe extern "C" fn loop_walk_cb(handle: &mut uv_handle_t, _arg: *mut libc::c_void) {
+    assert!(!exit_free());
+    if uv_is_closing(handle) == 0 {
+        uv_close(handle, None);
+    }
+}
+
+/// Closes `loop` and its handles, and frees its structures.
+///
+/// @param loop  Loop to destroy
+/// @param wait  Wait briefly for handles to deref
+///
 /// @returns false if the loop could not be closed gracefully
 #[no_mangle]
 pub unsafe extern "C" fn loop_close(loop_0: &mut Loop, wait: bool) -> bool {
@@ -200,17 +212,38 @@ pub unsafe extern "C" fn loop_close(loop_0: &mut Loop, wait: bool) -> bool {
     uv_close(&mut loop_0.poll_timer, Some(timer_close_cb));
     uv_close(&mut loop_0.async_0, None);
     let start: u64 = if wait { os_hrtime() } else { 0 };
+    let mut didstop = false;
     loop {
-        uv_run(&mut loop_0.uv, UV_RUN_NOWAIT);
-        if !wait || uv_loop_close(&mut loop_0.uv) != UV_EBUSY {
+        // Run the loop to tickle close-callbacks (which should then free memory).
+        // Use UV_RUN_NOWAIT to avoid a hang. #11820
+        uv_run(
+            &mut loop_0.uv,
+            if didstop {
+                UV_RUN_DEFAULT
+            } else {
+                UV_RUN_NOWAIT
+            },
+        );
+        if uv_loop_close(&mut loop_0.uv) != UV_EBUSY || !wait {
             break;
         }
-        if (os_hrtime() - start) >= (2 * 1000000000) {
+        let elapsed_s = (os_hrtime() - start) / 1000000000; // seconds
+        if elapsed_s >= 2 {
             // Some libuv resource was not correctly deref'd. Log and bail.
             rv = false;
             ELOG!("uv_loop_close() hang?");
             log_uv_handles(&mut loop_0.uv as *mut uv_loop_t as *mut libc::c_void);
             break;
+        }
+        if !exit_free() {
+            if !didstop {
+                // Loop won’t block for I/O after this.
+                uv_stop(&mut loop_0.uv);
+                // XXX: Close all (lua/luv!) handles. But loop_walk_cb() does not call
+                // resource-specific close-callbacks, so this leaks memory...
+                uv_walk(&mut loop_0.uv, Some(loop_walk_cb), ptr::null_mut());
+                didstop = true;
+            }
         }
     }
     multiqueue_free(loop_0.fast_events);

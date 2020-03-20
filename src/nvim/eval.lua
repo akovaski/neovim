@@ -102,6 +102,7 @@ return {
     exists={args=1},
     exp={args=1, func="float_op_wrapper", data="&exp"},
     expand={args={1, 3}},
+    expandcmd={args=1},
     extend={args={2, 3}},
     feedkeys={args={1, 2}},
     file_readable={args=1, func='f_filereadable'},  -- obsolete
@@ -214,6 +215,7 @@ return {
     line={args=1},
     line2byte={args=1},
     lispindent={args=1},
+    list2str={args={1, 2}},
     localtime={},
     log={args=1, func="float_op_wrapper", data="&log"},
     log10={args=1, func="float_op_wrapper", data="&log10"},
@@ -321,6 +323,7 @@ return {
     sqrt={args=1, func="float_op_wrapper", data="&sqrt"},
     stdpath={args=1},
     str2float={args=1},
+    str2list={args={1, 2}},
     str2nr={args={1, 2}},
     strcharpart={args={2, 3}},
     strchars={args={1,2}},

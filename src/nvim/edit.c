@@ -574,10 +574,8 @@ static int insert_check(VimState *state)
     foldCheckClose();
   }
 
-  int cmdchar_todo = s->cmdchar;
   if (bt_prompt(curbuf)) {
-    init_prompt(cmdchar_todo);
-    cmdchar_todo = NUL;
+    init_prompt(s->cmdchar);
   }
 
   // If we inserted a character at the last position of the last line in the
@@ -595,7 +593,7 @@ static int insert_check(VimState *state)
 
     if (curwin->w_wcol < s->mincol - curbuf->b_p_ts
         && curwin->w_wrow == curwin->w_winrow
-        + curwin->w_height_inner - 1 - p_so
+        + curwin->w_height_inner - 1 - get_scrolloff_value()
         && (curwin->w_cursor.lnum != curwin->w_topline
             || curwin->w_topfill > 0)) {
       if (curwin->w_topfill > 0) {
@@ -4085,7 +4083,7 @@ static int ins_compl_get_exp(pos_T *ini)
           type = CTRL_X_PATH_DEFINES;
         else if (*e_cpt == ']' || *e_cpt == 't') {
           type = CTRL_X_TAGS;
-          vim_snprintf((char *)IObuff, IOSIZE, _("Scanning tags."));
+          vim_snprintf((char *)IObuff, IOSIZE, "%s", _("Scanning tags."));
           (void)msg_trunc_attr(IObuff, true, HL_ATTR(HLF_R));
         } else {
           type = -1;
@@ -6217,7 +6215,7 @@ comp_textwidth (
     if (cmdwin_type != 0) {
       textwidth -= 1;
     }
-    textwidth -= curwin->w_p_fdc;
+    textwidth -= win_fdccol_count(curwin);
     textwidth -= win_signcol_count(curwin);
 
     if (curwin->w_p_nu || curwin->w_p_rnu)

@@ -11,6 +11,8 @@ extern "C" {
     pub fn uv_loop_close(loop_0: *mut uv_loop_t) -> libc::c_int;
     pub fn uv_run(_: *mut uv_loop_t, mode: uv_run_mode) -> libc::c_int;
     pub fn uv_stop(_: *mut uv_loop_t);
+    pub fn uv_walk(_: *mut uv_loop_t, _: uv_walk_cb, _: *mut libc::c_void);
+    pub fn uv_is_closing(_: *mut uv_handle_t) -> libc::c_int;
     #[link_name = "uv_close"]
     fn c_uv_close(handle: *mut uv_handle_t, close_cb: uv_close_cb);
     pub fn uv_async_init(
@@ -319,6 +321,8 @@ pub struct uv_handle_s {
     pub flags: libc::c_uint,
 }
 pub type uv_close_cb = Option<unsafe extern "C" fn(_: &mut uv_handle_t) -> ()>;
+pub type uv_walk_cb =
+    Option<unsafe extern "C" fn(_: &mut uv_handle_t, arg: *mut libc::c_void) -> ()>;
 pub type uv_handle_type = libc::c_uint;
 pub const UV_HANDLE_TYPE_MAX: uv_handle_type = 18;
 pub const UV_FILE: uv_handle_type = 17;

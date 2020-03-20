@@ -1783,8 +1783,12 @@ static char_u * do_one_cmd(char_u **cmdlinep,
 
   if (!ea.skip) {
     if (sandbox != 0 && !(ea.argt & SBOXOK)) {
-      /* Command not allowed in sandbox. */
+      // Command not allowed in sandbox.
       errormsg = (char_u *)_(e_sandbox);
+      goto doend;
+    }
+    if (restricted != 0 && (ea.argt & RESTRICT)) {
+      errormsg = (char_u *)_("E981: Command not allowed in restricted mode");
       goto doend;
     }
     if (!MODIFIABLE(curbuf) && (ea.argt & MODIFY)
@@ -7363,7 +7367,7 @@ static void ex_syncbind(exarg_T *eap)
     topline = curwin->w_topline;
     FOR_ALL_WINDOWS_IN_TAB(wp, curtab) {
       if (wp->w_p_scb && wp->w_buffer) {
-        y = wp->w_buffer->b_ml.ml_line_count - p_so;
+        y = wp->w_buffer->b_ml.ml_line_count - get_scrolloff_value();
         if (topline > y) {
           topline = y;
         }

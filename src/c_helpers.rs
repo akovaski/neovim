@@ -7,6 +7,7 @@ extern "C" {
         __function: *const libc::c_char,
     ) -> !;
     pub fn abort() -> !;
+    pub fn exit_free() -> bool;
 }
 
 pub type uintmax_t = libc::c_ulong;

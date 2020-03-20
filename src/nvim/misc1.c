@@ -57,6 +57,14 @@
 #include "nvim/event/stream.h"
 #include "nvim/buffer.h"
 
+bool exit_free(void) {
+#ifdef EXITFREE
+  return true;
+#else
+  return false;
+#endif
+}
+
 #ifdef INCLUDE_GENERATED_DECLARATIONS
 # include "misc1.c.generated.h"
 #endif

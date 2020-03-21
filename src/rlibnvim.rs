@@ -41,6 +41,8 @@ mod cursor;
 pub use cursor::*;
 mod eval;
 pub use eval::*;
+mod extmark_defs;
+pub use extmark_defs::*;
 mod fileio;
 pub use fileio::*;
 mod garray;

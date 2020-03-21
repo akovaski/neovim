@@ -1,5 +1,6 @@
 pub mod kbtree;
 pub use kbtree::*;
+#[macro_use]
 pub mod khash;
 pub use khash::*;
 #[macro_use]

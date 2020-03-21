@@ -4,6 +4,7 @@ use crate::garray::*;
 use crate::grid_defs::*;
 use crate::hashtab::*;
 use crate::lib::kbtree::*;
+use crate::map::*;
 use crate::mark_defs::*;
 
 use crate::mark_extended_defs::*;

@@ -1,23 +1,5 @@
-use crate::lib::khash::*;
 use crate::mark_extended_defs::*;
 
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct Map_uint64_t_ptr_t {
-    pub table: *mut kh_uint64_t_ptr_t_map_t,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct kh_uint64_t_ptr_t_map_t {
-    pub n_buckets: khint_t,
-    pub size: khint_t,
-    pub n_occupied: khint_t,
-    pub upper_bound: khint_t,
-    pub flags: *mut khint_t,
-    pub keys: *mut u64,
-    pub vals: *mut ptr_t,
-}
-pub type ptr_t = *mut libc::c_void;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct kbpos_markitems_t {

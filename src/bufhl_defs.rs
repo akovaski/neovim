@@ -1,3 +1,4 @@
+use crate::extmark_defs::*;
 use crate::pos::*;
 
 #[derive(Copy, Clone)]
@@ -48,17 +49,4 @@ pub struct C2RustUnnamed_10 {
     pub size: libc::size_t,
     pub capacity: libc::size_t,
     pub items: *mut BufhlItem,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct VirtText {
-    pub size: libc::size_t,
-    pub capacity: libc::size_t,
-    pub items: *mut VirtTextChunk,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct VirtTextChunk {
-    pub text: *mut libc::c_char,
-    pub hl_id: libc::c_int,
 }

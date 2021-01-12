@@ -89,7 +89,7 @@ pub fn ascii_isident(c: char) -> bool {
 ///
 /// @see {ascii_isdigit}
 #[inline(always)]
-pub unsafe extern "C" fn ascii_isbdigit(c: char) -> bool {
+pub fn ascii_isbdigit(c: char) -> bool {
     return c == '0' || c == '1';
 }
 

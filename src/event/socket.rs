@@ -136,9 +136,7 @@ pub unsafe extern "C" fn socket_watcher_start(
                 snprintf(
                     watcher.addr.as_mut_ptr().offset(len as isize),
                     (mem::size_of::<[libc::c_char; 256]>() as libc::c_ulong).wrapping_sub(len),
-                    std::ffi::CString::new(":%u")
-                        .expect("CString::new failed")
-                        .as_ptr(),
+                    ":%u\0".as_ptr() as *const i8,
                     ntohs(port) as libc::c_int,
                 );
                 break;

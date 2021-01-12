@@ -109,7 +109,7 @@ pub unsafe fn xmallocz<T: Into<libc::size_t>, U>(size: T) -> *mut U {
 
 pub unsafe fn xstrdup(str: &str) -> *mut libc::c_char {
     let str = std::ffi::CString::new(str)
-        .expect("CString::new failed")
-        .as_ptr();
-    c_xstrdup(str)
+        .expect("CString::new failed");
+    let c_str = str.as_ptr();
+    c_xstrdup(c_str)
 }

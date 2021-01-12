@@ -508,6 +508,7 @@ bitflags! {
     ///  viml_expressions_parser.c, nvim_parse_expression() flags parsing
     ///  alongside with its documentation and flag sets in check_parsing()
     ///  function in expressions parser functional and unit tests.
+    #[repr(C)]
     pub struct ExprParserFlags: u32 {
         // Allow multiple expressions in a row: e.g. for :echo
         //

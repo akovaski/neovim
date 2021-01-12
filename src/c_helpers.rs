@@ -196,7 +196,6 @@ pub use iconv_h::*;
 pub mod inttypes_h {
     use crate::*;
     extern "C" {
-        #[no_mangle]
         pub fn strtoimax(
             __nptr: *const libc::c_char,
             __endptr: *mut *const libc::c_char,
@@ -207,7 +206,6 @@ pub mod inttypes_h {
 pub use inttypes_h::*;
 pub mod errno_h {
     extern "C" {
-        #[no_mangle]
         pub fn __errno_location() -> *mut libc::c_int;
     }
 }

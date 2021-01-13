@@ -1,3 +1,8 @@
+extern "C" {
+    pub fn hash_init(ht: *mut hashtab_T);
+    pub fn hash_find(ht: *const hashtab_T, key: *const u8) -> *mut hashitem_T;
+    pub fn hash_remove(ht: *mut hashtab_T, hi: *mut hashitem_T);
+}
 pub type hash_T = libc::size_t;
 
 #[derive(Copy, Clone)]

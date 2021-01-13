@@ -1,3 +1,5 @@
+use crate::*;
+
 // dummy to pass an ACL to a function
 #[allow(dead_code)]
 pub type vim_acl_T = *mut libc::c_void;
@@ -9,3 +11,5 @@ pub type handle_T = libc::c_int;
 // not needed anymore! LUA_NOREF represents missing reference, i e to indicate
 // absent callback etc.
 pub type LuaRef = libc::c_int;
+
+pub type expand_T = expand;

@@ -1,6 +1,5 @@
 /// Code related to character sets.
 use crate::*;
-use std::cmp::min;
 use std::convert::TryInto;
 use std::mem;
 use std::ptr;
@@ -707,7 +706,7 @@ pub unsafe extern "C" fn ptr2cells(p: *const libc::c_uchar) -> libc::c_int {
 ///
 /// @return number of character cells.
 #[no_mangle]
-pub unsafe extern "C" fn vim_strsize(s: *mut libc::c_uchar) -> libc::c_int {
+pub unsafe extern "C" fn vim_strsize(s: *const libc::c_uchar) -> libc::c_int {
     vim_strnsize(s, MAXCOL)
 }
 
@@ -719,7 +718,7 @@ pub unsafe extern "C" fn vim_strsize(s: *mut libc::c_uchar) -> libc::c_int {
 /// @return Number of character cells.
 #[no_mangle]
 pub unsafe extern "C" fn vim_strnsize(
-    mut s: *mut libc::c_uchar,
+    mut s: *const libc::c_uchar,
     mut len: libc::c_int,
 ) -> libc::c_int {
     assert!(!s.is_null());
@@ -1563,11 +1562,11 @@ pub unsafe extern "C" fn skiptohex(q: *mut libc::c_uchar) -> *mut libc::c_uchar 
 ///
 /// @return Pointer to the next whitespace or NUL character.
 #[no_mangle]
-pub unsafe extern "C" fn skiptowhite(mut p: *mut libc::c_uchar) -> *mut libc::c_uchar {
+pub unsafe extern "C" fn skiptowhite(mut p: *const libc::c_uchar) -> *mut libc::c_uchar {
     while *p != ' ' as u8 && *p != '\t' as u8 && *p != 0 {
         p = p.offset(1);
     }
-    return p;
+    return p as *mut _;
 }
 
 /// skiptowhite_esc: Like skiptowhite(), but also skip escaped chars
@@ -1576,14 +1575,14 @@ pub unsafe extern "C" fn skiptowhite(mut p: *mut libc::c_uchar) -> *mut libc::c_
 ///
 /// @return Pointer to the next whitespace character.
 #[no_mangle]
-pub unsafe extern "C" fn skiptowhite_esc(mut p: *mut libc::c_uchar) -> *mut libc::c_uchar {
+pub unsafe extern "C" fn skiptowhite_esc(mut p: *const libc::c_uchar) -> *mut libc::c_uchar {
     while *p != ' ' as u8 && *p != '\t' as u8 && *p != 0 {
         if (*p == '\\' as u8 || *p == Ctrl_V as u8) && *p.offset(1) != 0 {
             p = p.offset(1);
         }
         p = p.offset(1);
     }
-    return p;
+    return p as *mut _;
 }
 
 /// Gets a number from a string and skips over it, signalling overflow.

@@ -1,5 +1,13 @@
 use crate::pos::*;
 
+pub const ML_CHNK_UPDLINE: libc::c_int = 3 as libc::c_int;
+pub const ML_CHNK_ADDLINE: libc::c_int = 1 as libc::c_int;
+pub const ML_LOCKED_DIRTY: libc::c_int = 4 as libc::c_int;
+pub const ML_LOCKED_POS: libc::c_int = 8 as libc::c_int;
+pub const ML_CHNK_DELLINE: libc::c_int = 2 as libc::c_int;
+pub const ML_LINE_DIRTY: libc::c_int = 2 as libc::c_int;
+pub const ML_EMPTY: libc::c_int = 1 as libc::c_int;
+
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct memfile_T {

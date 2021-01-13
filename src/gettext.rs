@@ -6,16 +6,19 @@ mod libintl {
         pub fn gettext(__msgid: *const libc::c_char) -> *mut libc::c_char;
     }
 }
+pub unsafe fn c_gettext(msgid: *const libc::c_char) -> *mut libc::c_char {
+    libintl::gettext(msgid)
+}
 
 static mut static_cache: Option<HashMap<String, *const u8>> = None;
 
-pub unsafe fn gettext(msgid: &str) -> *const u8 {
+pub unsafe fn gettext<T>(msgid: &str) -> *const T {
     if static_cache.is_none() {
         static_cache = Some(HashMap::new());
     }
     let cache = static_cache.as_mut().unwrap();
     if let Some(result) = cache.get(msgid) {
-        return *result;
+        return *result as *const T;
     }
 
     let cstr_msgid = CString::new(msgid).expect("CString::new failed");
@@ -31,8 +34,9 @@ pub unsafe fn gettext(msgid: &str) -> *const u8 {
     let already_inserted = cache.insert(msgid.to_string(), result).is_some();
     assert!(!already_inserted);
 
-    result
+    result as *const T
 }
+
 pub unsafe fn gettext2(msgid: *const u8) -> *const u8 {
     libintl::gettext(msgid as *const i8) as *const u8
 }

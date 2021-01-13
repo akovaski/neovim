@@ -24,6 +24,8 @@ extern "C" {
     pub fn mb_isupper(a: libc::c_int) -> bool;
     pub fn utf_head_off(base: *const libc::c_uchar, p: *const libc::c_uchar) -> libc::c_int;
     pub fn mb_charlen(str: *mut libc::c_uchar) -> libc::c_int;
+    pub fn mb_stricmp(s1: *const libc::c_char, s2: *const libc::c_char) -> libc::c_int;
+    pub fn mb_tail_off(base: *const u8, p: *const u8) -> libc::c_int;
 }
 
 pub unsafe fn MB_BYTE2LEN(b: u8) -> u8 {
@@ -48,3 +50,17 @@ pub struct vimconv_T {
     pub vc_fd: iconv_t,
     pub vc_fail: bool,
 }
+#[inline]
+pub unsafe extern "C" fn mb_strcmp_ic(
+    ic: bool,
+    s1: *const libc::c_char,
+    s2: *const libc::c_char,
+) -> libc::c_int {
+    return if ic as libc::c_int != 0 {
+        mb_stricmp(s1, s2)
+    } else {
+        strcmp(s1, s2)
+    };
+}
+pub const mb_ptr2len: unsafe extern "C" fn(_: *const u8) -> libc::c_int = utfc_ptr2len;
+pub const mb_char2len: unsafe extern "C" fn(_: libc::c_int) -> libc::c_int = utf_char2len;

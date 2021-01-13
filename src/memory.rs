@@ -1,3 +1,4 @@
+use crate::*;
 use std::convert::TryInto;
 use std::mem;
 
@@ -29,6 +30,8 @@ extern "C" {
     fn c_xrealloc(ptr: *mut libc::c_void, size: libc::size_t) -> *mut libc::c_void;
     #[link_name = "xmallocz"]
     fn c_xmallocz(size: libc::size_t) -> *mut libc::c_void;
+    #[link_name = "xmemdupz"]
+    pub fn c_xmemdupz(data: *const libc::c_void, len: size_t) -> *mut libc::c_void;
     pub fn xstpcpy(dst: *mut libc::c_char, src: *const libc::c_char) -> *mut libc::c_char;
     pub fn xstrlcpy(
         dst: *mut libc::c_char,
@@ -37,6 +40,7 @@ extern "C" {
     ) -> libc::size_t;
     #[link_name = "xstrdup"]
     pub fn c_xstrdup(str: *const libc::c_char) -> *mut libc::c_char;
+    pub fn xstrlcat(dst: *mut libc::c_char, src: *const libc::c_char, dsize: size_t) -> size_t;
 }
 
 pub fn var_size<T>(_: T) -> usize {
@@ -87,8 +91,12 @@ pub unsafe fn memset<T>(dest: *mut T, c: libc::c_int, n: libc::size_t) -> *mut T
     libc::memset(dest as *mut libc::c_void, c, n) as *mut T
 }
 
-pub unsafe fn xmalloc<T>(size: libc::size_t) -> *mut T {
-    c_xmalloc(size) as *mut T
+pub unsafe fn xmalloc<S, T>(size: S) -> *mut T
+where
+    S: TryInto<libc::size_t>,
+    <S as TryInto<libc::size_t>>::Error: std::fmt::Debug,
+{
+    c_xmalloc(size.try_into().unwrap()) as *mut T
 }
 
 pub unsafe fn xfree<T>(ptr: *mut T) {
@@ -108,8 +116,11 @@ pub unsafe fn xmallocz<T: Into<libc::size_t>, U>(size: T) -> *mut U {
 }
 
 pub unsafe fn xstrdup(str: &str) -> *mut libc::c_char {
-    let str = std::ffi::CString::new(str)
-        .expect("CString::new failed");
+    let str = std::ffi::CString::new(str).expect("CString::new failed");
     let c_str = str.as_ptr();
     c_xstrdup(c_str)
+}
+
+pub unsafe fn xmemdupz<S, T: Into<size_t>>(data: *const S, len: T) -> *mut S {
+    c_xmemdupz(data as *const _, len.into()) as *mut S
 }

@@ -1,6 +1,7 @@
 use crate::buffer_defs::*;
 use crate::pos::*;
 use crate::profile::*;
+use std::ptr;
 
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -50,9 +51,19 @@ pub struct regmmatch_T {
 #[repr(C)]
 pub struct regmatch_T {
     pub regprog: *mut regprog_T,
-    pub startp: [*mut libc::c_uchar; 10],
-    pub endp: [*mut libc::c_uchar; 10],
+    pub startp: [*mut u8; 10],
+    pub endp: [*mut u8; 10],
     pub rm_ic: bool,
+}
+impl Default for regmatch_T {
+    fn default() -> Self {
+        regmatch_T {
+            regprog: ptr::null_mut(),
+            startp: [ptr::null_mut(); 10],
+            endp: [ptr::null_mut(); 10],
+            rm_ic: false,
+        }
+    }
 }
 #[derive(Copy, Clone)]
 #[repr(C)]

@@ -2,6 +2,7 @@ pub type linenr_T = libc::c_long;
 pub type colnr_T = libc::c_int;
 
 pub const MAXCOL: libc::c_int = 0x7fffffff;
+pub const MAXLNUM: linenr_T = 2147483647;
 
 /// position in file or buffer
 #[derive(Copy, Clone)]

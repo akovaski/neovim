@@ -1,8 +1,4 @@
-use crate::garray::garray_T;
-use crate::hashtab::hashtab_T;
-use crate::lib::queue::QUEUE;
-use crate::pos::linenr_T;
-use crate::profile::proftime_T;
+use crate::*;
 
 extern "C" {
     pub type funccall_T;
@@ -14,8 +10,25 @@ extern "C" {
     ) -> libc::c_int;
     pub fn tv_dict_clear(d: *mut dict_T);
     pub fn tv_dict_set_keys_readonly(dict: *mut dict_T);
+    pub fn callback_free(callback: *mut Callback);
+    pub fn tv_dict_watcher_notify(
+        dict: *mut dict_T,
+        key: *const libc::c_char,
+        newtv: *mut typval_T,
+        oldtv: *mut typval_T,
+    );
+    pub fn tv_dict_item_copy(di: *mut dictitem_T) -> *mut dictitem_T;
+    pub fn tv_dict_alloc() -> *mut dict_T;
+    pub fn tv_dict_unref(d: *mut dict_T);
+    pub fn tv_dict_find(
+        d: *const dict_T,
+        key: *const libc::c_char,
+        len: ptrdiff_t,
+    ) -> *mut dictitem_T;
+    pub fn tv_dict_add(d: *mut dict_T, item: *mut dictitem_T) -> libc::c_int;
 }
 
+pub const DO_NOT_FREE_CNT: i32 = 1073741823;
 pub const VARNUMBER_MAX: i64 = i64::max_value();
 #[allow(dead_code)]
 pub const UVARNUMBER_MAX: u64 = u64::max_value();
@@ -68,7 +81,7 @@ pub struct listwatch_T {
     pub lw_next: *mut listwatch_T,
 }
 #[allow(dead_code)]
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq, Eq)]
 #[repr(C)]
 pub enum VarType {
     VAR_UNKNOWN, //< Unknown (unspecified) value.
@@ -82,6 +95,7 @@ pub enum VarType {
     //< is used.
     VAR_PARTIAL, //< Partial, .v_partial is used.
 }
+pub use VarType::*;
 #[allow(dead_code)]
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -90,6 +104,7 @@ pub enum SpecialVarValue {
     kSpecialVarTrue,  //< v:true
     kSpecialVarNull,  //< v:null
 }
+pub use SpecialVarValue::*;
 #[allow(dead_code)]
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -99,6 +114,7 @@ pub enum ScopeType {
     VAR_DEF_SCOPE = 2, //< Scope dictionary which may be accessed without prefix
                       //< (l:, g:).
 }
+pub use ScopeType::*;
 
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -125,13 +141,14 @@ pub struct list_T {
     pub lv_lock: VarLockStatus,
 }
 #[allow(dead_code)]
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq, Eq)]
 #[repr(C)]
 pub enum VarLockStatus {
     VAR_UNLOCKED = 0, //< Not locked.
     VAR_LOCKED = 1,   //< User lock, can be unlocked.
     VAR_FIXED = 2,    //< Locked forever.
 }
+pub use VarLockStatus::*;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct listitem_T {
@@ -181,4 +198,37 @@ pub struct dict_T {
     pub dv_used_next: *mut dict_T,
     pub dv_used_prev: *mut dict_T,
     pub watchers: QUEUE,
+}
+pub type CallbackType = libc::c_uint;
+pub const kCallbackPartial: CallbackType = 2;
+pub const kCallbackFuncref: CallbackType = 1;
+pub const kCallbackNone: CallbackType = 0;
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct Callback {
+    pub data: Callback_data,
+    pub type_0: CallbackType,
+}
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub union Callback_data {
+    pub funcref: *mut u8,
+    pub partial: *mut partial_T,
+}
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct dictitem_T {
+    pub di_tv: typval_T,
+    pub di_flags: u8,
+    pub di_key: [u8; 0],
+}
+pub type DIFlagsType = u8;
+pub const DI_FLAGS_RO: DIFlagsType = 1;
+pub const DI_FLAGS_RO_SBX: DIFlagsType = 2;
+pub const DI_FLAGS_FIX: DIFlagsType = 4;
+pub const DI_FLAGS_LOCK: DIFlagsType = 8;
+pub const DI_FLAGS_ALLOC: DIFlagsType = 16;
+#[inline]
+pub unsafe extern "C" fn tv_dict_is_watched(d: *const dict_T) -> bool {
+    return !d.is_null() && QUEUE_EMPTY(&(*d).watchers) == false;
 }

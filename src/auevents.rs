@@ -117,3 +117,4 @@ pub enum event_T {
     EVENT_WINNEW = 111,
     NUM_EVENTS = 112,
 }
+pub use event_T::*;

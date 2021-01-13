@@ -1,27 +1,14 @@
-use crate::bufhl_defs::*;
-use crate::eval::typval::*;
-use crate::garray::*;
-use crate::grid_defs::*;
-use crate::hashtab::*;
-use crate::lib::kbtree::*;
-use crate::map::*;
-use crate::mark_defs::*;
-
-use crate::mark_extended_defs::*;
-use crate::memline_defs::*;
-use crate::option_defs::*;
-use crate::os::fs_defs::*;
-use crate::pos::*;
-use crate::profile::*;
-use crate::regexp_defs::*;
-use crate::sign_defs::*;
-use crate::syntax_defs::*;
-use crate::terminal::*;
-use crate::types::*;
-use crate::undo_defs::*;
+use crate::*;
 
 extern "C" {
     pub type qf_info_T;
+}
+
+pub fn GETFILE_SUCCESS(x: i32) -> bool {
+    x <= 0
+}
+pub unsafe fn MODIFIABLE(buf: *const buf_T) -> bool {
+    (*buf).b_p_ma != 0
 }
 
 pub type disptick_T = u16;
@@ -42,12 +29,13 @@ pub struct FloatConfig {
     pub style: WinStyle,
 }
 #[allow(dead_code)]
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq, Eq)]
 #[repr(C)]
 pub enum WinStyle {
     kWinStyleUnused = 0,
     kWinStyleMinimal, // Minimal UI: no number column, eob markers, etc
 }
+pub use WinStyle::*;
 #[allow(dead_code)]
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -56,6 +44,7 @@ pub enum FloatRelative {
     kFloatRelativeWindow = 1,
     kFloatRelativeCursor = 2,
 }
+pub use FloatRelative::*;
 pub type FloatAnchor = libc::c_int;
 pub type Window = handle_T;
 pub type taggy_T = taggy;
@@ -69,9 +58,12 @@ pub struct taggy {
     pub user_data: *mut libc::c_uchar,
 }
 
+pub const MAX_MAPHASH: usize = 256;
+
+pub type buf_T = file_buffer;
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub struct buf_T {
+pub struct file_buffer {
     pub handle: handle_T,
     pub b_ml: memline_T,
     pub b_next: *mut buf_T,
@@ -79,9 +71,9 @@ pub struct buf_T {
     pub b_nwindows: libc::c_int,
     pub b_flags: libc::c_int,
     pub b_locked: libc::c_int,
-    pub b_ffname: *mut libc::c_uchar,
-    pub b_sfname: *mut libc::c_uchar,
-    pub b_fname: *mut libc::c_uchar,
+    pub b_ffname: *mut u8,
+    pub b_sfname: *mut u8,
+    pub b_fname: *mut u8,
     pub file_id_valid: bool,
     pub file_id: FileID,
     pub b_changed: libc::c_int,
@@ -98,17 +90,17 @@ pub struct buf_T {
     pub b_mtime_read: libc::c_long,
     pub b_orig_size: u64,
     pub b_orig_mode: libc::c_int,
-    pub b_namedm: [fmark_T; 26],
+    pub b_namedm: [fmark_T; NMARKS],
     pub b_visual: visualinfo_T,
     pub b_visual_mode_eval: libc::c_int,
     pub b_last_cursor: fmark_T,
     pub b_last_insert: fmark_T,
     pub b_last_change: fmark_T,
-    pub b_changelist: [fmark_T; 100],
+    pub b_changelist: [fmark_T; JUMPLISTSIZE],
     pub b_changelistlen: libc::c_int,
     pub b_new_change: bool,
     pub b_chartab: [u64; 4],
-    pub b_maphash: [*mut mapblock_T; 256],
+    pub b_maphash: [*mut mapblock_T; MAX_MAPHASH],
     pub b_first_abbr: *mut mapblock_T,
     pub b_ucmds: garray_T,
     pub b_op_start: pos_T,
@@ -123,9 +115,9 @@ pub struct buf_T {
     pub b_u_seq_last: libc::c_long,
     pub b_u_save_nr_last: libc::c_long,
     pub b_u_seq_cur: libc::c_long,
-    pub b_u_time_cur: libc::time_t,
+    pub b_u_time_cur: time_t,
     pub b_u_save_nr_cur: libc::c_long,
-    pub b_u_line_ptr: *mut libc::c_uchar,
+    pub b_u_line_ptr: *mut u8,
     pub b_u_line_lnum: linenr_T,
     pub b_u_line_colnr: colnr_T,
     pub b_scanned: bool,
@@ -134,71 +126,71 @@ pub struct buf_T {
     pub b_kmap_state: libc::c_short,
     pub b_kmap_ga: garray_T,
     pub b_p_initialized: bool,
-    pub b_p_script_ctx: [LastSet; 80],
+    pub b_p_script_ctx: [LastSet; BV::COUNT as usize],
     pub b_p_ai: libc::c_int,
     pub b_p_ai_nopaste: libc::c_int,
-    pub b_p_bkc: *mut libc::c_uchar,
+    pub b_p_bkc: *mut u8,
     pub b_bkc_flags: libc::c_uint,
     pub b_p_ci: libc::c_int,
     pub b_p_bin: libc::c_int,
     pub b_p_bomb: libc::c_int,
-    pub b_p_bh: *mut libc::c_uchar,
-    pub b_p_bt: *mut libc::c_uchar,
+    pub b_p_bh: *mut u8,
+    pub b_p_bt: *mut u8,
     pub b_has_qf_entry: libc::c_int,
     pub b_p_bl: libc::c_int,
     pub b_p_channel: libc::c_long,
     pub b_p_cin: libc::c_int,
-    pub b_p_cino: *mut libc::c_uchar,
-    pub b_p_cink: *mut libc::c_uchar,
-    pub b_p_cinw: *mut libc::c_uchar,
-    pub b_p_com: *mut libc::c_uchar,
-    pub b_p_cms: *mut libc::c_uchar,
-    pub b_p_cpt: *mut libc::c_uchar,
-    pub b_p_cfu: *mut libc::c_uchar,
-    pub b_p_ofu: *mut libc::c_uchar,
-    pub b_p_tfu: *mut libc::c_uchar,
+    pub b_p_cino: *mut u8,
+    pub b_p_cink: *mut u8,
+    pub b_p_cinw: *mut u8,
+    pub b_p_com: *mut u8,
+    pub b_p_cms: *mut u8,
+    pub b_p_cpt: *mut u8,
+    pub b_p_cfu: *mut u8,
+    pub b_p_ofu: *mut u8,
+    pub b_p_tfu: *mut u8,
     pub b_p_eol: libc::c_int,
     pub b_p_fixeol: libc::c_int,
     pub b_p_et: libc::c_int,
     pub b_p_et_nobin: libc::c_int,
     pub b_p_et_nopaste: libc::c_int,
-    pub b_p_fenc: *mut libc::c_uchar,
-    pub b_p_ff: *mut libc::c_uchar,
-    pub b_p_ft: *mut libc::c_uchar,
-    pub b_p_fo: *mut libc::c_uchar,
-    pub b_p_flp: *mut libc::c_uchar,
+    pub b_p_fenc: *mut u8,
+    pub b_p_ff: *mut u8,
+    pub b_p_ft: *mut u8,
+    pub b_p_fo: *mut u8,
+    pub b_p_flp: *mut u8,
     pub b_p_inf: libc::c_int,
-    pub b_p_isk: *mut libc::c_uchar,
-    pub b_p_def: *mut libc::c_uchar,
-    pub b_p_inc: *mut libc::c_uchar,
-    pub b_p_inex: *mut libc::c_uchar,
+    pub b_p_isk: *mut u8,
+    pub b_p_def: *mut u8,
+    pub b_p_inc: *mut u8,
+    pub b_p_inex: *mut u8,
     pub b_p_inex_flags: u32,
-    pub b_p_inde: *mut libc::c_uchar,
+    pub b_p_inde: *mut u8,
     pub b_p_inde_flags: u32,
-    pub b_p_indk: *mut libc::c_uchar,
-    pub b_p_fp: *mut libc::c_uchar,
-    pub b_p_fex: *mut libc::c_uchar,
+    pub b_p_indk: *mut u8,
+    pub b_p_fp: *mut u8,
+    pub b_p_fex: *mut u8,
     pub b_p_fex_flags: u32,
-    pub b_p_kp: *mut libc::c_uchar,
+    pub b_p_kp: *mut u8,
     pub b_p_lisp: libc::c_int,
-    pub b_p_menc: *mut libc::c_uchar,
-    pub b_p_mps: *mut libc::c_uchar,
+    pub b_p_menc: *mut u8,
+    pub b_p_mps: *mut u8,
     pub b_p_ml: libc::c_int,
     pub b_p_ml_nobin: libc::c_int,
     pub b_p_ma: libc::c_int,
-    pub b_p_nf: *mut libc::c_uchar,
+    pub b_p_nf: *mut u8,
     pub b_p_pi: libc::c_int,
-    pub b_p_qe: *mut libc::c_uchar,
+    pub b_p_qe: *mut u8,
     pub b_p_ro: libc::c_int,
     pub b_p_sw: libc::c_long,
     pub b_p_scbk: libc::c_long,
     pub b_p_si: libc::c_int,
     pub b_p_sts: libc::c_long,
     pub b_p_sts_nopaste: libc::c_long,
-    pub b_p_sua: *mut libc::c_uchar,
+    pub b_p_sua: *mut u8,
     pub b_p_swf: libc::c_int,
     pub b_p_smc: libc::c_long,
-    pub b_p_syn: *mut libc::c_uchar,
+    pub b_p_syn: *mut u8,
     pub b_p_ts: libc::c_long,
     pub b_p_tw: libc::c_long,
     pub b_p_tw_nobin: libc::c_long,
@@ -206,21 +198,21 @@ pub struct buf_T {
     pub b_p_wm: libc::c_long,
     pub b_p_wm_nobin: libc::c_long,
     pub b_p_wm_nopaste: libc::c_long,
-    pub b_p_keymap: *mut libc::c_uchar,
-    pub b_p_gp: *mut libc::c_uchar,
-    pub b_p_mp: *mut libc::c_uchar,
-    pub b_p_efm: *mut libc::c_uchar,
-    pub b_p_ep: *mut libc::c_uchar,
-    pub b_p_path: *mut libc::c_uchar,
+    pub b_p_keymap: *mut u8,
+    pub b_p_gp: *mut u8,
+    pub b_p_mp: *mut u8,
+    pub b_p_efm: *mut u8,
+    pub b_p_ep: *mut u8,
+    pub b_p_path: *mut u8,
     pub b_p_ar: libc::c_int,
-    pub b_p_tags: *mut libc::c_uchar,
-    pub b_p_tc: *mut libc::c_uchar,
+    pub b_p_tags: *mut u8,
+    pub b_p_tc: *mut u8,
     pub b_tc_flags: libc::c_uint,
-    pub b_p_dict: *mut libc::c_uchar,
-    pub b_p_tsr: *mut libc::c_uchar,
+    pub b_p_dict: *mut u8,
+    pub b_p_tsr: *mut u8,
     pub b_p_ul: libc::c_long,
     pub b_p_udf: libc::c_int,
-    pub b_p_lw: *mut libc::c_uchar,
+    pub b_p_lw: *mut u8,
     pub b_ind_level: libc::c_int,
     pub b_ind_open_imag: libc::c_int,
     pub b_ind_no_brace: libc::c_int,
@@ -260,7 +252,7 @@ pub struct buf_T {
     pub b_no_eol_lnum: linenr_T,
     pub b_start_eol: libc::c_int,
     pub b_start_ffc: libc::c_int,
-    pub b_start_fenc: *mut libc::c_uchar,
+    pub b_start_fenc: *mut u8,
     pub b_bad_char: libc::c_int,
     pub b_start_bomb: libc::c_int,
     pub b_bufvar: ScopeDictDictItem,
@@ -269,6 +261,10 @@ pub struct buf_T {
     pub b_did_warn: bool,
     pub b_help: bool,
     pub b_spell: bool,
+    pub b_prompt_text: *mut u8,
+    pub b_prompt_callback: Callback,
+    pub b_prompt_interrupt: Callback,
+    pub b_prompt_insert: libc::c_int,
     pub b_s: synblock_T,
     pub b_signlist: *mut signlist_T,
     pub b_signcols_max: libc::c_int,
@@ -276,17 +272,15 @@ pub struct buf_T {
     pub terminal: *mut Terminal,
     pub additional_data: *mut dict_T,
     pub b_mapped_ctrl_c: libc::c_int,
-    pub b_bufhl_info: BufhlInfo,
-    pub b_bufhl_move_space: C2RustUnnamed_16,
-    pub b_extmark_ns: *mut Map_uint64_t_ptr_t,
-    pub b_extlines: kbtree_extmarklines_t,
-    pub b_extmark_move_space: C2RustUnnamed_15,
-    pub update_channels: C2RustUnnamed_14,
-    pub update_callbacks: C2RustUnnamed_13,
+    pub b_marktree: [MarkTree; 1],
+    pub b_extmark_index: *mut Map_uint64_t_ExtmarkItem,
+    pub b_extmark_ns: *mut Map_uint64_t_ExtmarkNs,
+    pub update_channels: kvec_t<u64>,
+    pub update_callbacks: kvec_t<BufUpdateCallbacks>,
     pub update_need_codepoints: bool,
-    pub deleted_bytes: libc::size_t,
-    pub deleted_codepoints: libc::size_t,
-    pub deleted_codeunits: libc::size_t,
+    pub deleted_bytes: size_t,
+    pub deleted_codepoints: size_t,
+    pub deleted_codeunits: size_t,
     pub flush_count: libc::c_int,
     pub b_luahl: bool,
     pub b_luahl_start: LuaRef,
@@ -297,7 +291,14 @@ pub struct buf_T {
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub struct win_T {
+pub struct file_buffer_update_callbacks {
+    pub size: size_t,
+    pub capacity: size_t,
+    pub items: *mut BufUpdateCallbacks,
+}
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct window_S {
     pub handle: handle_T,
     pub w_buffer: *mut buf_T,
     pub w_s: *mut synblock_T,
@@ -322,8 +323,8 @@ pub struct win_T {
     pub w_old_visual_lnum: linenr_T,
     pub w_old_visual_col: colnr_T,
     pub w_old_curswant: colnr_T,
-    pub w_p_lcs_chars: C2RustUnnamed_18,
-    pub w_p_fcs_chars: C2RustUnnamed_17,
+    pub w_p_lcs_chars: window_w_p_lcs_chars,
+    pub w_p_fcs_chars: window_w_p_fcs_chars,
     pub w_topline: linenr_T,
     pub w_topline_was_set: libc::c_char,
     pub w_topfill: libc::c_int,
@@ -376,7 +377,7 @@ pub struct win_T {
     pub w_alist: *mut alist_T,
     pub w_arg_idx: libc::c_int,
     pub w_arg_idx_invalid: libc::c_int,
-    pub w_localdir: *mut libc::c_uchar,
+    pub w_localdir: *mut u8,
     pub w_onebuf_opt: winopt_T,
     pub w_allbuf_opt: winopt_T,
     pub w_p_stl_flags: u32,
@@ -386,6 +387,8 @@ pub struct win_T {
     pub w_p_brimin: libc::c_int,
     pub w_p_brishift: libc::c_int,
     pub w_p_brisbr: bool,
+    pub w_p_siso: libc::c_long,
+    pub w_p_so: libc::c_long,
     pub w_scbind_pos: libc::c_long,
     pub w_winvar: ScopeDictDictItem,
     pub w_vars: *mut dict_T,
@@ -410,6 +413,35 @@ pub struct win_T {
     pub w_nrwidth_width: libc::c_int,
     pub w_llist: *mut qf_info_T,
     pub w_llist_ref: *mut qf_info_T,
+}
+pub type win_T = window_S;
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct window_w_p_fcs_chars {
+    pub stl: libc::c_int,
+    pub stlnc: libc::c_int,
+    pub vert: libc::c_int,
+    pub fold: libc::c_int,
+    pub foldopen: libc::c_int,
+    pub foldclosed: libc::c_int,
+    pub foldsep: libc::c_int,
+    pub diff: libc::c_int,
+    pub msgsep: libc::c_int,
+    pub eob: libc::c_int,
+}
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct window_w_p_lcs_chars {
+    pub eol: libc::c_int,
+    pub ext: libc::c_int,
+    pub prec: libc::c_int,
+    pub nbsp: libc::c_int,
+    pub space: libc::c_int,
+    pub tab1: libc::c_int,
+    pub tab2: libc::c_int,
+    pub tab3: libc::c_int,
+    pub trail: libc::c_int,
+    pub conceal: libc::c_int,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -459,22 +491,22 @@ pub struct llpos_T {
 pub struct winopt_T {
     pub wo_arab: libc::c_int,
     pub wo_bri: libc::c_int,
-    pub wo_briopt: *mut libc::c_uchar,
+    pub wo_briopt: *mut u8,
     pub wo_diff: libc::c_int,
-    pub wo_fdc: libc::c_long,
-    pub wo_fdc_save: libc::c_int,
+    pub wo_fdc: *mut u8,
+    pub wo_fdc_save: *mut u8,
     pub wo_fen: libc::c_int,
     pub wo_fen_save: libc::c_int,
-    pub wo_fdi: *mut libc::c_uchar,
+    pub wo_fdi: *mut u8,
     pub wo_fdl: libc::c_long,
     pub wo_fdl_save: libc::c_int,
-    pub wo_fdm: *mut libc::c_uchar,
-    pub wo_fdm_save: *mut libc::c_uchar,
+    pub wo_fdm: *mut u8,
+    pub wo_fdm_save: *mut u8,
     pub wo_fml: libc::c_long,
     pub wo_fdn: libc::c_long,
-    pub wo_fde: *mut libc::c_uchar,
-    pub wo_fdt: *mut libc::c_uchar,
-    pub wo_fmr: *mut libc::c_uchar,
+    pub wo_fde: *mut u8,
+    pub wo_fdt: *mut u8,
+    pub wo_fmr: *mut u8,
     pub wo_lbr: libc::c_int,
     pub wo_list: libc::c_int,
     pub wo_nu: libc::c_int,
@@ -484,28 +516,28 @@ pub struct winopt_T {
     pub wo_wfw: libc::c_int,
     pub wo_pvw: libc::c_int,
     pub wo_rl: libc::c_int,
-    pub wo_rlc: *mut libc::c_uchar,
+    pub wo_rlc: *mut u8,
     pub wo_scr: libc::c_long,
     pub wo_spell: libc::c_int,
     pub wo_cuc: libc::c_int,
     pub wo_cul: libc::c_int,
-    pub wo_cc: *mut libc::c_uchar,
-    pub wo_stl: *mut libc::c_uchar,
+    pub wo_cc: *mut u8,
+    pub wo_stl: *mut u8,
     pub wo_scb: libc::c_int,
     pub wo_diff_saved: libc::c_int,
     pub wo_scb_save: libc::c_int,
     pub wo_wrap: libc::c_int,
     pub wo_wrap_save: libc::c_int,
-    pub wo_cocu: *mut libc::c_uchar,
+    pub wo_cocu: *mut u8,
     pub wo_cole: libc::c_long,
     pub wo_crb: libc::c_int,
     pub wo_crb_save: libc::c_int,
-    pub wo_scl: *mut libc::c_uchar,
-    pub wo_winhl: *mut libc::c_uchar,
-    pub wo_fcs: *mut libc::c_uchar,
-    pub wo_lcs: *mut libc::c_uchar,
+    pub wo_scl: *mut u8,
+    pub wo_winhl: *mut u8,
+    pub wo_fcs: *mut u8,
+    pub wo_lcs: *mut u8,
     pub wo_winbl: libc::c_long,
-    pub wo_script_ctx: [LastSet; 40],
+    pub wo_script_ctx: [LastSet; 42],
 }
 pub type alist_T = arglist;
 #[derive(Copy, Clone)]
@@ -532,34 +564,6 @@ pub struct pos_save_T {
     pub w_topline_corr: libc::c_int,
     pub w_cursor_save: pos_T,
     pub w_cursor_corr: pos_T,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct C2RustUnnamed_17 {
-    pub stl: libc::c_int,
-    pub stlnc: libc::c_int,
-    pub vert: libc::c_int,
-    pub fold: libc::c_int,
-    pub foldopen: libc::c_int,
-    pub foldclosed: libc::c_int,
-    pub foldsep: libc::c_int,
-    pub diff: libc::c_int,
-    pub msgsep: libc::c_int,
-    pub eob: libc::c_int,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct C2RustUnnamed_18 {
-    pub eol: libc::c_int,
-    pub ext: libc::c_int,
-    pub prec: libc::c_int,
-    pub nbsp: libc::c_int,
-    pub space: libc::c_int,
-    pub tab1: libc::c_int,
-    pub tab2: libc::c_int,
-    pub tab3: libc::c_int,
-    pub trail: libc::c_int,
-    pub conceal: libc::c_int,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -672,29 +676,80 @@ pub struct syn_time_T {
 
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub struct C2RustUnnamed_13 {
-    pub size: libc::size_t,
-    pub capacity: libc::size_t,
-    pub items: *mut BufUpdateCallbacks,
+pub struct bufref_T {
+    pub br_buf: *mut buf_T,
+    pub br_fnum: libc::c_int,
+    pub br_buf_free_count: libc::c_int,
+}
+impl Default for bufref_T {
+    fn default() -> Self {
+        bufref_T {
+            br_buf: 0 as *mut buf_T,
+            br_fnum: 0,
+            br_buf_free_count: 0,
+        }
+    }
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub struct C2RustUnnamed_14 {
-    pub size: libc::size_t,
-    pub capacity: libc::size_t,
-    pub items: *mut u64,
+pub struct tabpage_S {
+    pub handle: handle_T,
+    pub tp_next: *mut tabpage_T,
+    pub tp_topframe: *mut frame_T,
+    pub tp_curwin: *mut win_T,
+    pub tp_prevwin: *mut win_T,
+    pub tp_firstwin: *mut win_T,
+    pub tp_lastwin: *mut win_T,
+    pub tp_old_Rows: libc::c_long,
+    pub tp_old_Columns: libc::c_long,
+    pub tp_ch_used: libc::c_long,
+    pub tp_first_diff: *mut diff_T,
+    pub tp_diffbuf: [*mut buf_T; 8],
+    pub tp_diff_invalid: libc::c_int,
+    pub tp_diff_update: libc::c_int,
+    pub tp_snapshot: [*mut frame_T; 2],
+    pub tp_winvar: ScopeDictDictItem,
+    pub tp_vars: *mut dict_T,
+    pub tp_localdir: *mut u8,
+}
+pub type tabpage_T = tabpage_S;
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct diffblock_S {
+    pub df_next: *mut diff_T,
+    pub df_lnum: [linenr_T; 8],
+    pub df_count: [linenr_T; 8],
+}
+pub type diff_T = diffblock_S;
+pub const BF_NEVERLOADED: libc::c_int = 0x4 as libc::c_int;
+pub const BF_CHECK_RO: libc::c_int = 0x2 as libc::c_int;
+pub const BF_WRITE_MASK: libc::c_int = BF_NOTEDITED + BF_NEW + BF_READERR;
+pub const BF_NOTEDITED: libc::c_int = 0x8 as libc::c_int;
+pub const BF_NEW: libc::c_int = 0x10 as libc::c_int;
+pub const VALID_TOPLINE: libc::c_int = 0x80 as libc::c_int;
+pub const BF_READERR: libc::c_int = 0x40 as libc::c_int;
+pub const KEYMAP_INIT: i16 = 1;
+pub const BF_DUMMY: libc::c_int = 0x80 as libc::c_int;
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct stl_hlrec {
+    pub start: *mut u8,
+    pub userhl: libc::c_int,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub struct C2RustUnnamed_15 {
-    pub size: libc::size_t,
-    pub capacity: libc::size_t,
-    pub items: *mut *mut ExtmarkLine,
+pub struct argentry {
+    pub ae_fname: *mut u8,
+    pub ae_fnum: libc::c_int,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct C2RustUnnamed_16 {
-    pub size: libc::size_t,
-    pub capacity: libc::size_t,
-    pub items: *mut *mut BufhlLine,
+pub type aentry_T = argentry;
+
+pub unsafe fn ALIST(win: *const win_T) -> *mut alist_T {
+    (*win).w_alist
+}
+pub unsafe fn AARGLIST(al: &mut alist_T) -> *mut aentry_T {
+    al.al_ga.ga_data as *mut aentry_T
+}
+pub unsafe fn ARGCOUNT() -> i32 {
+    (*ALIST(curwin)).al_ga.ga_len
 }

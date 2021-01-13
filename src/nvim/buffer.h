@@ -124,5 +124,140 @@ static inline void buf_inc_changedtick(buf_T *const buf)
 {
   buf_set_changedtick(buf, buf_get_changedtick(buf) + 1);
 }
+int open_buffer( int read_stdin, exarg_T *eap, int flags);
+void set_bufref(bufref_T *bufref, buf_T *buf);
+bool bufref_valid(bufref_T *bufref);
+bool buf_valid(buf_T *buf);
+void close_buffer(win_T *win, buf_T *buf, int action, bool abort_if_last);
+
+void buf_clear_file(buf_T *buf);
+void buf_clear(void);
+void buf_freeall(buf_T *buf, int flags);
+void free_buffer(buf_T *buf);
+void free_buffer_stuff(buf_T *buf, int free_flags);
+void goto_buffer(exarg_T *eap, int start, int dir, int count);
+void handle_swap_exists(bufref_T *old_curbuf);
+char_u *
+do_bufdel(
+    int command,
+    char_u *arg,               // pointer to extra arguments
+    int addr_count,
+    int start_bnr,             // first buffer number in a range
+    int end_bnr,               // buffer nr or last buffer nr in a range
+    int forceit
+);
+int
+do_buffer(
+    int action,
+    int start,
+    int dir,                        // FORWARD or BACKWARD
+    int count,                      // buffer number or number of buffers
+    int forceit                     // true for :...!
+);
+void set_curbuf(buf_T *buf, int action);
+void enter_buffer(buf_T *buf);
+void do_autochdir(void);
+void no_write_message(void);
+void no_write_message_nobang(void);
+buf_T * buflist_new(char_u *ffname, char_u *sfname, linenr_T lnum, int flags);
+bool curbuf_reusable(void);
+void free_buf_options(buf_T *buf, int free_p_ff);
+int buflist_getfile(int n, linenr_T lnum, int options, int forceit);
+void buflist_getfpos(void);
+buf_T *buflist_findname_exp(char_u *fname);
+buf_T *buflist_findname(char_u *ffname);
+int buflist_findpat(
+    const char_u *pattern,
+    const char_u *pattern_end,  // pointer to first char after pattern
+    int unlisted,               // find unlisted buffers
+    int diffmode,               // find diff-mode buffers only
+    int curtab_only             // find buffers in current tab only
+);
+int ExpandBufnames(char_u *pat, int *num_file, char_u ***file, int options);
+buf_T *buflist_findnr(int nr);
+char_u *
+buflist_nr2name(
+    int n,
+    int fullname,
+    int helptail                   // for help buffers return tail only
+);
+void buflist_setfpos(buf_T *const buf, win_T *const win,
+                     linenr_T lnum, colnr_T col,
+                     bool copy_options);
+void get_winopts(buf_T *buf);
+pos_T *buflist_findfpos(buf_T *buf);
+linenr_T buflist_findlnum(buf_T *buf);
+void buflist_list(exarg_T *eap);
+int buflist_name_nr(int fnum, char_u **fname, linenr_T *lnum);
+int
+setfname(
+    buf_T *buf,
+    char_u *ffname,
+    char_u *sfname,
+    bool message                  // give message when buffer already exists
+);
+void buf_set_name(int fnum, char_u *name);
+void buf_name_changed(buf_T *buf);
+buf_T *setaltfname(char_u *ffname, char_u *sfname, linenr_T lnum);
+char_u * getaltfname(
+    bool errmsg                   // give error message
+);
+int buflist_add(char_u *fname, int flags);
+void buflist_altfpos(win_T *win);
+bool otherfile(char_u *ffname);
+void buf_set_file_id(buf_T *buf);
+void
+fileinfo(
+    int fullname,               // when non-zero print full path
+    int shorthelp,
+    int dont_truncate
+);
+void col_print(char_u *buf, size_t buflen, int col, int vcol);
+void maketitle(void);
+void resettitle(void);
+int build_stl_str_hl(
+    win_T *wp,
+    char_u *out,
+    size_t outlen,
+    char_u *fmt,
+    int use_sandbox,
+    char_u fillchar,
+    int maxwidth,
+    struct stl_hlrec *hltab,
+    StlClickRecord *tabtab
+);
+void get_rel_pos(win_T *wp, char_u *buf, int buflen);
+void fname_expand(buf_T *buf, char_u **ffname, char_u **sfname);
+char_u *alist_name(aentry_T *aep);
+void
+do_arg_all(
+    int count,
+    int forceit,                  // hide buffers in current windows
+    int keep_tabs                 // keep current tabs, for ":tab drop file"
+);
+int bt_prompt(buf_T *buf);
+void ex_buffer_all(exarg_T *eap);
+void do_modelines(int flags);
+bool bt_help(const buf_T *const buf);
+bool bt_normal(const buf_T *const buf);
+bool bt_quickfix(const buf_T *const buf);
+bool bt_terminal(const buf_T *const buf);
+bool bt_nofile(const buf_T *const buf);
+bool bt_dontwrite(const buf_T *const buf);
+bool bt_dontwrite_msg(const buf_T *const buf);
+bool buf_hide(const buf_T *const buf);
+char_u *buf_spname(buf_T *buf);
+bool find_win_for_buf(buf_T *buf, win_T **wp, tabpage_T **tp);
+int buf_signcols(buf_T *buf);
+void set_buflisted(int on);
+bool buf_contents_changed(buf_T *buf);
+void
+wipe_buffer(
+    buf_T *buf,
+    int aucmd                   // When true trigger autocommands.
+);
+void buf_open_scratch(handle_T bufnr, char *bufname);
+int empty_curbuf(int close_others, int forceit, int action);
+void clear_wininfo(buf_T *buf);
 
 #endif  // NVIM_BUFFER_H

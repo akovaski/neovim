@@ -2,8 +2,11 @@
 #![feature(c_variadic)]
 #![allow(non_camel_case_types, non_snake_case, non_upper_case_globals)]
 #![feature(concat_idents)]
+#![feature(label_break_value)]
 
 use libc::{c_char, c_int};
+pub use std::cmp::min;
+pub use std::ptr;
 
 #[macro_use]
 mod macros;
@@ -23,6 +26,9 @@ pub use lib::*;
 #[macro_use]
 mod event;
 pub use event::*;
+#[macro_use]
+mod globals;
+pub use globals::*;
 
 mod ascii;
 pub use ascii::*;
@@ -48,8 +54,6 @@ mod garray;
 pub use garray::*;
 mod gettext;
 pub use gettext::*;
-mod globals;
-pub use globals::*;
 mod grid_defs;
 pub use grid_defs::*;
 mod hashtab;
@@ -120,7 +124,90 @@ mod vim;
 pub use vim::*;
 mod viml;
 pub use viml::*;
+mod buffer;
+pub use buffer::*;
+mod stdbool;
+pub use stdbool::*;
+mod change;
+pub use change::*;
+mod message;
+pub use message::*;
+mod fs;
+pub use fs::*;
+mod stat;
+pub use stat::*;
+mod ex_cmds;
+pub use ex_cmds::*;
+mod ex_eval;
+pub use ex_eval::*;
+mod ex_cmds_enum;
+pub use ex_cmds_enum::*;
+mod ex_cmds_defs;
+pub use ex_cmds_defs::*;
+mod fold;
+pub use fold::*;
+mod window;
+pub use window::*;
+mod diff;
+pub use diff::*;
+mod normal;
+pub use normal::*;
+mod buffer_updates;
+pub use buffer_updates::*;
+mod syntax;
+pub use syntax::*;
+mod undo;
+pub use undo::*;
+mod handle;
+pub use handle::*;
+mod ex_docmd;
+pub use ex_docmd::*;
+mod sign;
+pub use sign::*;
+mod extmark;
+pub use extmark::*;
+mod getchar;
+pub use getchar::*;
+mod ex_cmds2;
+pub use ex_cmds2::*;
+mod spell;
+pub use spell::*;
+mod digraph;
+pub use digraph::*;
+mod ui;
+pub use ui::*;
+mod screen;
+pub use screen::*;
+mod file_search;
+pub use file_search::*;
+mod regexp;
+pub use regexp::*;
+mod ex_getln;
+pub use ex_getln::*;
+mod channel;
+pub use channel::*;
+mod api;
+pub use api::*;
+mod ui_events_call;
+pub use ui_events_call::*;
+mod helpers;
+pub use helpers::*;
+mod stdlib;
+pub use stdlib::*;
+mod ctype;
+pub use ctype::*;
+mod version;
+pub use version::*;
+mod marktree;
+pub use marktree::*;
 
+pub type size_t = libc::size_t;
+pub type ptrdiff_t = libc::c_long;
+pub type time_t = libc::c_long;
+extern "C" {
+    // main.h
+    pub fn getout(exitval: libc::c_int) -> !;
+}
 extern "C" {
     pub fn nvim_main(argc: c_int, argv: *const *const c_char) -> c_int;
     pub static mut main_loop: Loop;

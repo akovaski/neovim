@@ -1,5 +1,14 @@
 use crate::*;
 
+pub const STL_MAX_ITEM: usize = 80;
+
+pub type Direction = libc::c_int;
+pub const BACKWARD_FILE: Direction = -3;
+pub const FORWARD_FILE: Direction = 3;
+pub const BACKWARD: Direction = -1;
+pub const FORWARD: Direction = 1;
+pub const kDirectionNotSet: Direction = 0;
+
 pub const FAIL: libc::c_int = 0;
 pub const OK: libc::c_int = 1;
 pub const NOTDONE: libc::c_int = 2; // not OK or FAIL but skipped

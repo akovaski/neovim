@@ -61,6 +61,69 @@ macro_rules! snprintf {
     }}
 }
 
+/// iterator like a simple C for loop
+/// ex:
+/// C:    for (int n = num; n > base; n /= base)
+/// Rust: for n in it!(n = num; n > base; n / base)
+macro_rules! it {
+    ($var:ident = $init: expr; $cond: expr; $inc: expr) => {
+        itertools::iterate($init, |&$var| $inc).take_while(|&$var| $cond)
+    };
+}
+
+macro_rules! cfor {
+    ($init: expr; $cond: expr; $inc: expr; $blk: block) => {{
+        $init;
+        while $cond {
+            let mut first_pass = true;
+            let mut _continue = false;
+            loop {
+                if !first_pass {
+                    // handle continue, continue the while loop with increment
+                    _continue = true;
+                    break;
+                }
+                first_pass = false;
+                $blk;
+            }
+            if !_continue {
+                break;
+            }
+            $inc;
+        }
+    }};
+}
+
+/// post-increment a pointer
+/// ex:
+/// C:    *out_p++ = *t++;
+/// Rust: *post_off!(out_p) = *post_inc!(t);
+macro_rules! post_off {
+    ($var: ident) => {{
+        let temp = $var;
+        $var = $var.offset(1);
+        temp
+    }};
+}
+
+macro_rules! pre_inc {
+    ($var: ident) => {{
+        $var += 1;
+        $var
+    }};
+}
+
+/// post-decrement an integer
+/// x--
+/// post_dec!(x)
+macro_rules! post_dec {
+    ($var: ident) => {{
+        let temp = $var;
+        $var -= 1;
+        temp
+    }};
+}
+
 pub mod socket_h {
     pub type socklen_t = libc::c_uint;
     pub type sa_family_t = libc::c_ushort;

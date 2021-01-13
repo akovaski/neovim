@@ -19,3 +19,11 @@ pub unsafe extern "C" fn lt(a: pos_T, b: pos_T) -> bool {
 pub unsafe extern "C" fn ltoreq(a: pos_T, b: pos_T) -> bool {
     return lt(a, b) as libc::c_int != 0 || equalpos(a, b) as libc::c_int != 0;
 }
+extern "C" {
+    pub fn free_fmark(fm: fmark_T);
+    pub fn clear_fmark(fm: *mut fmark_T);
+    pub fn setpcmark();
+    pub fn fmarks_check_names(buf: *mut buf_T);
+    pub fn clrallmarks(buf: *mut buf_T);
+    pub fn set_last_cursor(win: *mut win_T);
+}

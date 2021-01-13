@@ -1,4 +1,4 @@
-pub const NUL: char = 0o00 as char;
+pub const NUL: i32 = 0o00 as i32;
 pub const BELL: char = 0o07 as char;
 pub const BS: char = 0o10 as char;
 pub const TAB: char = 0o11 as char;
@@ -98,4 +98,8 @@ pub fn ASCII_ISALNUM(c: char) -> bool {
 }
 pub fn ASCII_ISALPHA(c: char) -> bool {
     c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z'
+}
+#[inline(always)]
+pub unsafe extern "C" fn ascii_isspace(c: libc::c_int) -> bool {
+    return c >= 9 as libc::c_int && c <= 13 as libc::c_int || c == ' ' as i32;
 }

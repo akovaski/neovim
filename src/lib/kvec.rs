@@ -2,6 +2,66 @@ use crate::*;
 use std::mem;
 use std::ptr;
 
+#[repr(C)]
+#[allow(dead_code)]
+#[derive(Clone, Copy)]
+pub struct kvec_t<T> {
+    size: libc::size_t,
+    capacity: libc::size_t,
+    pub items: *mut T,
+}
+#[allow(dead_code)]
+impl<T> kvec_t<T>
+where
+    T: Copy,
+{
+    fn sizeof_item(&self) -> usize {
+        mem::size_of::<T>() as usize
+    }
+
+    /// Initialize vector with preallocated array
+    pub fn init(&mut self) {
+        *self = Self {
+            size: 0,
+            capacity: 0,
+            items: std::ptr::null_mut(),
+        };
+    }
+    pub unsafe fn destroy(&mut self) {
+        xfree(self.items);
+        self.init();
+    }
+    pub unsafe fn A(&mut self, i: usize) -> &mut T {
+        &mut *self.items.offset(i as isize)
+    }
+    pub unsafe fn pop(&mut self) -> T {
+        self.size -= 1;
+        *self.items.offset(self.size as isize)
+    }
+    pub fn size(&self) -> libc::size_t {
+        self.size
+    }
+    pub fn is_empty(&self) -> bool {
+        self.size == 0
+    }
+    pub unsafe fn Z(&mut self, i: usize) -> &mut T {
+        self.A(self.size() - i - 1)
+    }
+    pub unsafe fn last(&mut self) -> &mut T {
+        self.Z(0)
+    }
+
+    /// Drop last n items from kvec without resizing
+    ///
+    /// Previously spelled as `(void)kv_pop(v)`, repeated n times.
+    ///
+    /// @param[out]  v  Kvec to drop items from.
+    /// @param[in]  n  Number of elements to drop.
+    pub unsafe fn lop(&mut self, n: usize) {
+        self.size -= n;
+    }
+}
+
 /// Type of a vector with a few first members allocated on stack
 ///
 /// Is compatible with #kv_A, #kv_pop, #kv_size, #kv_max, #kv_last.

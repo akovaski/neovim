@@ -1,10 +1,25 @@
 pub mod gc;
 pub use gc::*;
 pub mod typval;
+use crate::*;
 pub use typval::*;
 
 extern "C" {
     pub fn get_vim_var_dict(idx: VimVar) -> *mut dict_T;
+    pub fn set_internal_string_var(name: *const u8, value: *const u8);
+    pub fn eval_to_string_safe(
+        arg: *mut u8,
+        nextcmd: *mut *mut u8,
+        use_sandbox: libc::c_int,
+    ) -> *mut u8;
+    pub fn do_unlet(
+        name: *const libc::c_char,
+        name_len: size_t,
+        forceit: libc::c_int,
+    ) -> libc::c_int;
+    pub fn init_var_dict(dict: *mut dict_T, dict_var: *mut ScopeDictDictItem, scope: libc::c_int);
+    pub fn unref_var_dict(dict: *mut dict_T);
+    pub fn vars_clear(ht: *mut hashtab_T);
 }
 
 #[allow(dead_code)]

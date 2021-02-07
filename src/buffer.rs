@@ -1,4 +1,3 @@
-//TODO: FUNC_ATTR_WARN_UNUSED_RESULT
 //
 // buffer.c: functions for dealing with the buffer structure
 //
@@ -105,12 +104,6 @@ bitflags! {
 pub const BFA_DEL: i32 = bfa_values::DEL.bits;
 pub const BFA_WIPE: i32 = bfa_values::WIPE.bits;
 pub const BFA_KEEP_UNDO: i32 = bfa_values::KEEP_UNDO.bits;
-
-macro_rules! S {
-    ($s: expr) => {
-        concat!($s, "\x00").as_bytes().as_ptr() as *const u8 as *const _
-    };
-}
 
 /// Set b:changedtick, also checking b: for consistency in debug build
 ///

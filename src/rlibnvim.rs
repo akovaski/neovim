@@ -132,8 +132,6 @@ mod change;
 pub use change::*;
 mod message;
 pub use message::*;
-mod fs;
-pub use fs::*;
 mod stat;
 pub use stat::*;
 mod ex_cmds;
@@ -201,9 +199,7 @@ pub use version::*;
 mod marktree;
 pub use marktree::*;
 
-pub type size_t = libc::size_t;
-pub type ptrdiff_t = libc::c_long;
-pub type time_t = libc::c_long;
+pub use libc::{backtrace, fclose, fopen, iovec, ptrdiff_t, size_t, time_t, timeval, tm, FILE};
 extern "C" {
     // main.h
     pub fn getout(exitval: libc::c_int) -> !;
@@ -212,3 +208,5 @@ extern "C" {
     pub fn nvim_main(argc: c_int, argv: *const *const c_char) -> c_int;
     pub static mut main_loop: Loop;
 }
+
+pub const MIN_LOG_LEVEL: i32 = 1; // build variable 1(INFO) - 3(DEBUG)

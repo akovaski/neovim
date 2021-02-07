@@ -1,3 +1,5 @@
+use crate::*;
+
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct FileID {
@@ -12,4 +14,15 @@ impl Default for FileID {
             device_id: 0,
         }
     }
+}
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct FileInfo {
+    pub stat: uv_stat_t,
+}
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct Directory {
+    pub request: uv_fs_t,
+    pub ent: uv_dirent_t,
 }

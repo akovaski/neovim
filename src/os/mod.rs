@@ -16,3 +16,7 @@ pub mod env;
 pub use env::*;
 pub mod os_defs;
 pub use os_defs::*;
+pub mod stdpaths_defs;
+pub use stdpaths_defs::*;
+pub mod stdpaths;
+pub use stdpaths::*;

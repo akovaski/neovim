@@ -1,4 +1,5 @@
 use crate::c_helpers::*;
+use libc::FILE;
 use std::ptr;
 extern "C" {
     pub fn uv_signal_start(
@@ -127,6 +128,7 @@ extern "C" {
         cb: uv_connect_cb,
     ) -> libc::c_int;
     pub fn uv_accept(server: uv_stream_mut, client: uv_stream_mut) -> libc::c_int;
+    pub fn uv_print_all_handles(loop_0: *mut uv_loop_t, stream: *mut FILE);
 }
 
 pub unsafe fn uv_write<D>(
@@ -371,6 +373,23 @@ pub type uv_mutex_t = pthread_mutex_t;
 impl Default for uv_mutex_t {
     fn default() -> uv_mutex_t {
         unsafe { std::mem::zeroed() }
+    }
+}
+pub const fn uv_mutex_t_zero() -> uv_mutex_t {
+    uv_mutex_t {
+        __data: __pthread_mutex_s {
+            __lock: 0,
+            __count: 0,
+            __owner: 0,
+            __nusers: 0,
+            __kind: 0,
+            __spins: 0,
+            __elision: 0,
+            __list: __pthread_list_t {
+                __prev: ptr::null_mut(),
+                __next: ptr::null_mut(),
+            },
+        },
     }
 }
 #[derive(Copy, Clone)]
@@ -957,3 +976,11 @@ impl<'a> Default for uv_getaddrinfo_s<'a> {
 pub type uv_getaddrinfo_cb =
     Option<unsafe extern "C" fn(_: *mut uv_getaddrinfo_t, _: libc::c_int, _: *mut addrinfo) -> ()>;
 pub type uv_getaddrinfo_t<'a> = uv_getaddrinfo_s<'a>;
+pub type uv_dirent_t = uv_dirent_s;
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct uv_dirent_s {
+    pub name: *const i8,
+    pub type_0: uv_dirent_type_t,
+}
+pub type uv_dirent_type_t = u32;

@@ -1,3 +1,7 @@
+#![allow(dead_code)]
+use crate::*;
+use std::convert::TryInto;
+
 extern "C" {
     #[doc(hidden)]
     pub fn __assert_fail(
@@ -8,11 +12,47 @@ extern "C" {
     ) -> !;
     pub fn abort() -> !;
     pub fn exit_free() -> bool;
+    pub fn strftime(
+        __s: *mut i8,
+        __maxsize: size_t,
+        __format: *const i8,
+        __tp: *const tm,
+    ) -> size_t;
+    pub fn gettimeofday(__tv: *mut timeval, __tz: __timezone_ptr_t) -> i32;
+    pub static mut stdout: *mut FILE;
+    pub static mut stderr: *mut FILE;
+    pub fn fclose(__stream: *mut FILE) -> i32;
+    pub fn fflush(__stream: *mut FILE) -> i32;
+    pub fn fopen(__filename: *const i8, __modes: *const i8) -> *mut FILE;
+    pub fn fprintf(_: *mut FILE, _: *const i8, _: ...) -> i32;
+    pub fn vfprintf(_: *mut FILE, _: *const i8, _: ::std::ffi::VaList) -> i32;
+    pub fn snprintf(_: *mut i8, _: u64, _: *const i8, _: ...) -> i32;
+    pub fn fputc(__c: i32, __stream: *mut FILE) -> i32;
+    pub fn fgets(__s: *mut i8, __n: i32, __stream: *mut FILE) -> *mut i8;
+    pub fn popen(__command: *const i8, __modes: *const i8) -> *mut FILE;
+    pub fn pclose(__stream: *mut FILE) -> i32;
 }
+
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct timezone {
+    pub tz_minuteswest: i32,
+    pub tz_dsttime: i32,
+}
+pub type __timezone_ptr_t = *mut timezone;
 
 pub type uintmax_t = libc::c_ulong;
 pub type intmax_t = libc::c_long;
 pub type uintptr_t = libc::c_ulong;
+
+macro_rules! S {
+    ($($s:expr),*) => {
+        concat!($($s),*, "\x00").as_bytes().as_ptr() as *const u8 as *const _
+    };
+    ($($s:expr) *) => {
+        S!($($s),*)
+    };
+}
 
 macro_rules! vargs {
     ( $($arg:expr),* $(,)?) => {
@@ -21,7 +61,7 @@ macro_rules! vargs {
 }
 
 macro_rules! offset_of {
-    ( $type:ty, $field: ident ) => {{
+    ( $type:ty, $field:ident ) => {{
         type tt = $type;
         let x: tt = std::mem::zeroed();
         let tt { ref $field, .. } = x;
@@ -29,6 +69,39 @@ macro_rules! offset_of {
         std::mem::forget(x);
         offset as isize
     }};
+}
+
+macro_rules! var_size {
+    ( $var:ident ) => {{
+        std::mem::size_of_val(&$var)
+    }};
+}
+pub fn var_size<T>(_: T) -> usize {
+    std::mem::size_of::<T>()
+}
+
+pub trait PointerHelpers<T> {
+    unsafe fn idx<I: TryInto<isize>>(&self, i: I) -> T
+    where
+        <I as TryInto<isize>>::Error: std::fmt::Debug;
+}
+
+impl<T: Copy> PointerHelpers<T> for *const T {
+    unsafe fn idx<I: TryInto<isize>>(&self, i: I) -> T
+    where
+        <I as TryInto<isize>>::Error: std::fmt::Debug,
+    {
+        *self.offset(i.try_into().unwrap())
+    }
+}
+
+impl<T: Copy> PointerHelpers<T> for *mut T {
+    unsafe fn idx<I: TryInto<isize>>(&self, i: I) -> T
+    where
+        <I as TryInto<isize>>::Error: std::fmt::Debug,
+    {
+        *self.offset(i.try_into().unwrap())
+    }
 }
 
 #[allow(dead_code)]
@@ -273,3 +346,27 @@ pub mod errno_h {
     }
 }
 pub use errno_h::*;
+
+pub const EOF: i32 = -1;
+
+pub fn tm_zero() -> tm {
+    tm {
+        tm_sec: 0,
+        tm_min: 0,
+        tm_hour: 0,
+        tm_mday: 0,
+        tm_mon: 0,
+        tm_year: 0,
+        tm_wday: 0,
+        tm_yday: 0,
+        tm_isdst: 0,
+        tm_gmtoff: 0,
+        tm_zone: 0 as *const i8,
+    }
+}
+pub fn timeval_zero() -> timeval {
+    timeval {
+        tv_sec: 0,
+        tv_usec: 0,
+    }
+}

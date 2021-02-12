@@ -6786,14 +6786,6 @@ pub mod nvim_iconv_h {
 pub mod asm_generic_errno_h {
     pub const EILSEQ: i32 = 84;
 }
-pub mod strings_h_generated_h {
-    extern "C" {
-        #[no_mangle]
-        pub fn vim_strsave(string: *const u8) -> *mut u8;
-        #[no_mangle]
-        pub fn vim_strchr(string: *const u8, c: i32) -> *mut u8;
-    }
-}
 pub mod libintl_h {
     extern "C" {
         #[no_mangle]
@@ -7024,34 +7016,6 @@ pub mod charset_h {
     }
     // NVIM_CHARSET_H
 }
-pub mod cursor_h_generated_h {
-    extern "C" {
-        #[no_mangle]
-        pub fn get_cursor_pos_ptr() -> *mut u8;
-    }
-}
-pub mod memline_h_generated_h {
-    use super::buffer_defs_h::buf_T;
-    use super::pos_h::linenr_T;
-    extern "C" {
-        #[no_mangle]
-        pub fn ml_get_buf(buf: *mut buf_T, lnum: linenr_T, will_change: bool) -> *mut u8;
-    }
-}
-pub mod misc1_h_generated_h {
-    extern "C" {
-        #[no_mangle]
-        pub fn beep_flush();
-    }
-}
-pub mod arabic_h_generated_h {
-    extern "C" {
-        #[no_mangle]
-        pub fn arabic_combine(one: i32, two: i32) -> bool;
-        #[no_mangle]
-        pub fn arabic_maycombine(two: i32) -> bool;
-    }
-}
 pub mod arabic_h {
     // / Whether c belongs to the range of Arabic characters that might be shaped.
     #[inline]
@@ -7126,14 +7090,6 @@ pub mod mark_h {
     use super::mark_defs_h::NMARKS;
     use super::pos_h::{colnr_T, linenr_T, pos_T};
     // NVIM_MARK_H
-}
-pub mod mark_h_generated_h {
-    use super::buffer_defs_h::buf_T;
-    use super::pos_h::pos_T;
-    extern "C" {
-        #[no_mangle]
-        pub fn mark_mb_adjustpos(buf: *mut buf_T, lp: *mut pos_T);
-    }
 }
 pub mod unicode_tables_generated_h {
     pub static mut toLower: [convertStruct; 172] = [
@@ -16928,18 +16884,6 @@ pub mod unicode_tables_generated_h {
     ];
     use super::{convertStruct, interval};
 }
-use self::arabic_h_generated_h::{arabic_combine, arabic_maycombine};
-use self::cursor_h_generated_h::get_cursor_pos_ptr;
-use self::env_h_generated_h::os_getenv;
-use self::libintl_h::gettext;
-use self::log_h_generated_h::logmsg;
-use self::mark_h_generated_h::mark_mb_adjustpos;
-use self::memline_h_generated_h::ml_get_buf;
-use self::misc1_h_generated_h::beep_flush;
-use self::stdlib_h::{abort, calloc, free, malloc, realloc};
-use self::string_h::{memcpy, memmove, memset, strchr, strcmp, strcpy, strlen, strncmp};
-use self::strings_h::strncasecmp;
-use self::wctype_wchar_h::{towlower, towupper};
 /*
  * Canonical encoding names and their properties.
  * "iso-8859-n" is handled by enc_canonize() directly.

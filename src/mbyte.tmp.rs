@@ -1,4 +1,3 @@
-use ::libc;
 pub mod internal {
     pub type __builtin_va_list = [__va_list_tag; 1];
     #[derive(Copy, Clone)]
@@ -29,14 +28,12 @@ pub mod stdint_intn_h {
     pub type int16_t = __int16_t;
     pub type i32 = __int32_t;
     pub type i64 = __int64_t;
-    use super::types_h::{__int16_t, __int32_t, __int64_t, __int8_t};
 }
 pub mod stdint_uintn_h {
     pub type u8 = __uint8_t;
     pub type uint16_t = __uint16_t;
     pub type u32 = __uint32_t;
     pub type u64 = __uint64_t;
-    use super::types_h::{__uint16_t, __uint32_t, __uint64_t, __uint8_t};
 }
 pub mod stddef_h {
     pub type size_t = u64;
@@ -47,7 +44,6 @@ pub mod stddef_h {
 }
 pub mod stdarg_h {
     pub type va_list = __builtin_va_list;
-    use super::internal::__builtin_va_list;
 }
 pub mod wint_t_h {
     pub type wint_t = u32;
@@ -659,17 +655,6 @@ pub mod typval_h {
     pub unsafe extern "C" fn tv_is_func(tv: typval_T) -> bool {
         return tv.v_type as u32 == VAR_FUNC as i32 as u32 || tv.v_type as u32 == VAR_PARTIAL as i32 as u32;
     }
-    use super::assert_h::{__assert_fail, __ASSERT_FUNCTION_0};
-    use super::garray_h::garray_T;
-    use super::hashtab_h::hashtab_T;
-    use super::libintl_h::gettext;
-    use super::message_h_generated_h::emsgf;
-    use super::pos_h::linenr_T;
-    use super::profile_h::proftime_T;
-    use super::queue_h::{QUEUE, QUEUE_EMPTY};
-    use super::stdbool_h::{false_0, true_0};
-    use super::stddef_h::{size_t, NULL_1};
-    use super::string_h::memset;
     extern "C" {
         pub type funccall_S;
     }
@@ -730,7 +715,6 @@ pub mod ctype_h {
 }
 pub mod stdio_h {
     pub type ssize_t = __ssize_t;
-    use super::types_h::__ssize_t;
     extern "C" {
         #[no_mangle]
         pub fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
@@ -739,11 +723,9 @@ pub mod stdio_h {
 pub mod sys_types_h {
     pub type gid_t = __gid_t;
     pub type uid_t = __uid_t;
-    use super::types_h::{__gid_t, __uid_t};
 }
 pub mod time_t_h {
     pub type time_t = __time_t;
-    use super::types_h::__time_t;
 }
 pub mod pthreadtypes_arch_h {
     #[derive(Copy, Clone)]
@@ -799,8 +781,6 @@ pub mod pthreadtypes_h {
         pub __size: [i8; 56],
         pub __align: i64,
     }
-    use super::pthreadtypes_arch_h::__pthread_rwlock_arch_t;
-    use super::thread_shared_types_h::__pthread_mutex_s;
 }
 pub mod hashtab_h {
     // / Type for hash number (hash calculation result).
@@ -850,7 +830,6 @@ pub mod hashtab_h {
         pub ht_smallarray: [hashitem_T; 16],
     }
     pub type hashtab_T = hashtable_S;
-    use super::stddef_h::size_t;
     // / initial array
     // NVIM_HASHTAB_H
     // / Iterate over a hashtab
@@ -894,10 +873,6 @@ pub mod garray_h {
         (*gap).ga_len = (*gap).ga_len + 1;
         return ((*gap).ga_data as *mut i8).offset(item_size.wrapping_mul(fresh0 as size_t) as isize) as *mut libc::c_void;
     }
-    use super::log_h::WARN_LOG_LEVEL;
-    use super::log_h_generated_h::logmsg;
-    use super::stdbool_h::true_0;
-    use super::stddef_h::{size_t, NULL};
     extern "C" {
         #[no_mangle]
         pub fn ga_grow(gap: *mut garray_T, n: i32);
@@ -917,7 +892,6 @@ pub mod garray_h {
 }
 pub mod iconv_h {
     pub type iconv_t = *mut libc::c_void;
-    use super::stddef_h::size_t;
     extern "C" {
         #[no_mangle]
         pub fn iconv_open(__tocode: *const i8, __fromcode: *const i8) -> iconv_t;
@@ -985,9 +959,6 @@ pub mod mbyte_h {
     pub unsafe extern "C" fn mb_strcmp_ic(mut ic: bool, mut s1: *const i8, mut s2: *const i8) -> i32 {
         return if ic as i32 != 0 { mb_stricmp(s1, s2) } else { strcmp(s1, s2) };
     }
-    use super::iconv_h::iconv_t;
-    use super::string_h::strcmp;
-    use super::{mb_stricmp, utfc_ptr2len};
     // NVIM_MBYTE_H
 }
 pub mod buffer_defs_h {
@@ -2071,29 +2042,6 @@ pub mod buffer_defs_h {
     pub unsafe extern "C" fn win_hl_attr(mut wp: *mut win_T, mut hlf: i32) -> i32 {
         return (*wp).w_hl_attrs[hlf as usize];
     }
-    use super::defs_h::Window;
-    use super::fs_defs_h::FileID;
-    use super::garray_h::garray_T;
-    use super::grid_defs_h::ScreenGrid;
-    use super::hashtab_h::hashtab_T;
-    use super::map_h::{Map_uint64_t_ExtmarkItem, Map_uint64_t_ExtmarkNs};
-    use super::mark_defs_h::{fmark_T, xfmark_T};
-    use super::marktree_h::MarkTree;
-    use super::memline_defs_h::memline_T;
-    use super::nvim_types_h::{handle_T, u8, LuaRef};
-    use super::option_defs_h::LastSet;
-    use super::pos_h::{colnr_T, linenr_T, lpos_T, pos_T};
-    use super::profile_h::proftime_T;
-    use super::regexp_defs_h::{regmmatch_T, regprog_T};
-    use super::sign_defs_h::signlist_T;
-    use super::stddef_h::size_t;
-    use super::stdint_intn_h::int16_t;
-    use super::stdint_uintn_h::{u32, u64, u8, uint16_t};
-    use super::syntax_defs_h::synstate_T;
-    use super::terminal_h::Terminal;
-    use super::time_t_h::time_t;
-    use super::typval_h::{dict_T, sctx_T, typval_T, varnumber_T, Callback, ScopeDictDictItem};
-    use super::undo_defs_h::{u_header_T, visualinfo_T};
     extern "C" {
         pub type qf_info_S;
     }
@@ -2187,9 +2135,6 @@ pub mod map_h {
     pub struct Map_cstr_t_ptr_t {
         pub table: *mut kh_cstr_t_ptr_t_map_t,
     }
-    use super::extmark_defs_h::ExtmarkItem;
-    use super::khash_h::{khint32_t, khint_t};
-    use super::map_defs_h::{cstr_t, ptr_t};
     extern "C" {
         #[no_mangle]
         pub fn map_uint64_t_ptr_t_get(map: *mut Map_uint64_t_ptr_t, key: u64) -> ptr_t;
@@ -2436,7 +2381,6 @@ pub mod extmark_defs_h {
         pub items: *mut ExtmarkUndoObject,
     }
     pub type ExtmarkUndoObject = undo_object;
-    use super::stddef_h::size_t;
     extern "C" {
         pub type undo_object;
     }
@@ -2474,8 +2418,6 @@ pub mod marktree_h {
         pub row: i32,
         pub col: i32,
     }
-    use super::map_h::Map_uint64_t_ptr_t;
-    use super::stddef_h::size_t;
     // NVIM_MARKTREE_H
 }
 pub mod map_defs_h {
@@ -2585,8 +2527,6 @@ pub mod sign_defs_h {
         pub next_sign_id: i32,
         pub sg_name: [u8; 1],
     }
-    use super::pos_h::linenr_T;
-    use super::stdint_uintn_h::uint16_t;
     // NVIM_SIGN_DEFS_H
 }
 pub mod regexp_defs_h {
@@ -2703,10 +2643,6 @@ pub mod regexp_defs_h {
         pub refcnt: int16_t,
         pub matches: [*mut u8; 10],
     }
-    use super::buffer_defs_h::{buf_T, win_T};
-    use super::pos_h::{colnr_T, linenr_T, lpos_T};
-    use super::profile_h::proftime_T;
-    use super::stdint_intn_h::int16_t;
     // NVIM_REGEXP_DEFS_H
 }
 pub mod profile_h {
@@ -2792,8 +2728,6 @@ pub mod defs_h {
     pub unsafe extern "C" fn is_internal_call(channel_id: u64) -> bool {
         return channel_id & (1) << (::std::mem::size_of::<u64>() as u64).wrapping_mul(8).wrapping_sub(1) != 0;
     }
-    use super::nvim_types_h::{handle_T, LuaRef};
-    use super::stddef_h::size_t;
     // NVIM_API_PRIVATE_DEFS_H
 }
 pub mod grid_defs_h {
@@ -2822,9 +2756,6 @@ pub mod grid_defs_h {
     pub type sattr_T = int16_t;
     pub type schar_T = [u8; 29];
     pub const MAX_MCO: i32 = 6;
-    use super::nvim_types_h::{handle_T, u8};
-    use super::stddef_h::size_t;
-    use super::stdint_intn_h::int16_t;
     // NVIM_GRID_DEFS_H
 }
 pub mod mark_defs_h {
@@ -2864,9 +2795,6 @@ pub mod mark_defs_h {
         pub fname: *mut u8,
     }
     pub const NMARKS: i32 = 'z' as i32 - 'a' as i32 + 1;
-    use super::pos_h::pos_T;
-    use super::time_h::Timestamp;
-    use super::typval_h::dict_T;
     // /< Actual mark.
     // /< File name, used when fnum == 0.
     // NVIM_MARK_DEFS_H
@@ -2884,7 +2812,6 @@ pub mod option_defs_h {
     }
     pub const CMP_INTERNAL: i32 = 0x1 as i32;
     pub const CMP_KEEPASCII: i32 = 0x2 as i32;
-    use super::typval_h::sctx_T;
     extern "C" {
         #[no_mangle]
         pub static mut p_ambw: *mut u8;
@@ -2958,11 +2885,6 @@ pub mod syntax_defs_h {
         pub bs_cchar: i32,
         pub bs_extmatch: *mut reg_extmatch_T,
     }
-    use super::buffer_defs_h::disptick_T;
-    use super::garray_h::garray_T;
-    use super::pos_h::linenr_T;
-    use super::regexp_defs_h::reg_extmatch_T;
-    use super::stdint_intn_h::int16_t;
     // NVIM_SYNTAX_DEFS_H
     // when non-zero, change in this line
     // may have made the state invalid
@@ -3044,10 +2966,6 @@ pub mod undo_defs_h {
         pub ptr: *mut u_header_T,
         pub seq: i64,
     }
-    use super::extmark_defs_h::extmark_undo_vec_t;
-    use super::mark_defs_h::fmark_T;
-    use super::pos_h::{colnr_T, linenr_T, pos_T};
-    use super::time_t_h::time_t;
     // NVIM_UNDO_DEFS_H
 }
 pub mod fs_defs_h {
@@ -3127,8 +3045,6 @@ pub mod memline_defs_h {
         pub ip_high: linenr_T,
         pub ip_index: i32,
     }
-    use super::memfile_defs_h::{bhdr_T, blocknr_T, memfile_T};
-    use super::pos_h::linenr_T;
     // number of lines in the buffer
     // pointer to associated memfile
     // empty buffer
@@ -3251,7 +3167,6 @@ pub mod memfile_defs_h {
         pub mht_buckets: *mut *mut mf_hashitem_T,
         pub mht_small_buckets: [*mut mf_hashitem_T; 64],
     }
-    use super::stddef_h::size_t;
     // / name of the file
     // / idem, full path
     // / file descriptor
@@ -3295,7 +3210,6 @@ pub mod globals_h {
     // euc-tw
     // 2byte-
     pub const DBCS_DEBUG: i32 = -(1);
-    use super::buffer_defs_h::{buf_T, win_T};
     extern "C" {
         // previous window
         // NOLINT
@@ -3996,7 +3910,6 @@ pub mod langinfo_h {
     pub const ABDAY_2: C2RustUnnamed_33 = 131073;
     pub const ABDAY_1: C2RustUnnamed_33 = 131072;
     pub const CODESET_0: i32 = CODESET as i32;
-    use super::nl_types_h::nl_item;
     extern "C" {
         #[no_mangle]
         pub fn nl_langinfo(__item: nl_item) -> *mut i8;
@@ -4012,7 +3925,6 @@ pub mod struct_iovec_h {
         pub iov_base: *mut libc::c_void,
         pub iov_len: size_t,
     }
-    use super::stddef_h::size_t;
 }
 pub mod uv_h {
     #[derive(Copy, Clone)]
@@ -4403,9 +4315,6 @@ pub mod uv_h {
         pub gid: uv_gid_t,
     }
     pub type uv_process_options_t = uv_process_options_s;
-    use super::stddef_h::size_t;
-    use super::stdio_h::ssize_t;
-    use super::unix_h::{uv__io_t, uv_buf_t, uv_gid_t, uv_mutex_t, uv_rwlock_t, uv_uid_t};
 }
 pub mod unix_h {
     pub type uv__io_t = uv__io_s;
@@ -4431,10 +4340,6 @@ pub mod unix_h {
     pub type uv_file = i32;
     pub type uv_gid_t = gid_t;
     pub type uv_uid_t = uid_t;
-    use super::pthreadtypes_h::{pthread_mutex_t, pthread_rwlock_t};
-    use super::stddef_h::size_t;
-    use super::sys_types_h::{gid_t, uid_t};
-    use super::uv_h::uv_loop_s;
 }
 pub mod event_defs_h {
     pub type argv_callback = Option<unsafe extern "C" fn(_: *mut *mut libc::c_void) -> ()>;
@@ -4468,7 +4373,6 @@ pub mod event_defs_h {
         }
         return event;
     }
-    use super::assert_h::__assert_fail;
     // NVIM_EVENT_DEFS_H
 }
 pub mod multiqueue_h {
@@ -4612,12 +4516,6 @@ pub mod loop_h {
         kmp_free_WatcherPtr((*kl).mp, p);
         return d;
     }
-    use super::assert_h::__assert_fail;
-    use super::memory_h_generated_h::{xcalloc, xfree, xrealloc};
-    use super::multiqueue_h::MultiQueue;
-    use super::stddef_h::{size_t, NULL_2};
-    use super::unix_h::uv_mutex_t;
-    use super::uv_h::{uv_async_t, uv_loop_t, uv_signal_t, uv_timer_t};
     // NVIM_EVENT_LOOP_H
 }
 pub mod rbuffer_h {
@@ -4636,7 +4534,6 @@ pub mod rbuffer_h {
     }
     pub type rbuffer_callback = Option<unsafe extern "C" fn(_: *mut RBuffer, _: *mut libc::c_void) -> ()>;
     pub type RBuffer = rbuffer;
-    use super::stddef_h::size_t;
     extern "C" {
         #[no_mangle]
         pub fn rbuffer_size(buf: *mut RBuffer) -> size_t;
@@ -4679,11 +4576,6 @@ pub mod stream_h {
         pub tcp: uv_tcp_t,
         pub idle: uv_idle_t,
     }
-    use super::multiqueue_h::MultiQueue;
-    use super::rbuffer_h::RBuffer;
-    use super::stddef_h::size_t;
-    use super::unix_h::{uv_buf_t, uv_file};
-    use super::uv_h::{uv_idle_t, uv_pipe_t, uv_stream_t, uv_tcp_t};
     // NVIM_EVENT_STREAM_H
 }
 pub mod process_h {
@@ -4918,15 +4810,6 @@ pub mod process_h {
         let mut exited = (*proc_0).status >= 0;
         return exited as i32 != 0 || (*proc_0).stopped_time != 0;
     }
-    use super::loop_h::Loop;
-    use super::multiqueue_h::MultiQueue;
-    use super::rbuffer_h::RBuffer;
-    use super::stdbool_h::false_0;
-    use super::stddef_h::{size_t, NULL_0};
-    use super::stdint_uintn_h::{u64, u8};
-    use super::stream_h::{stream_close_cb, stream_read_cb, stream_write_cb, C2RustUnnamed_28, Stream};
-    use super::unix_h::{uv__io_cb, uv__io_t, uv_buf_t, uv_file};
-    use super::uv_h::{uv_alloc_cb, uv_close_cb, uv_connect_t, uv_connection_cb, uv_handle_t, uv_handle_type, uv_loop_t, uv_pipe_t, uv_read_cb, uv_shutdown_t, uv_stream_t, C2RustUnnamed_23, UV_UNKNOWN_HANDLE};
     // NVIM_EVENT_PROCESS_H
 }
 pub mod ioctl_types_h {
@@ -5148,16 +5031,6 @@ pub mod pty_process_unix_h {
         rv.tty_fd = -(1);
         return rv;
     }
-    use super::ioctl_types_h::winsize;
-    use super::loop_h::Loop;
-    use super::multiqueue_h::MultiQueue;
-    use super::process_h::{internal_process_cb, kProcessTypePty, process_exit_cb, process_init, Process, ProcessType};
-    use super::rbuffer_h::RBuffer;
-    use super::stddef_h::{size_t, NULL_0};
-    use super::stdint_uintn_h::{u64, u8, uint16_t};
-    use super::stream_h::{stream_close_cb, stream_read_cb, stream_write_cb, C2RustUnnamed_28, Stream};
-    use super::unix_h::{uv_buf_t, uv_file};
-    use super::uv_h::uv_stream_t;
     // NVIM_OS_PTY_PROCESS_UNIX_H
 }
 pub mod libuv_process_h {
@@ -5210,10 +5083,6 @@ pub mod libuv_process_h {
         };
         return rv;
     }
-    use super::loop_h::Loop;
-    use super::process_h::{kProcessTypeUv, process_init, Process, ProcessType};
-    use super::unix_h::{uv_gid_t, uv_uid_t};
-    use super::uv_h::{uv_close_cb, uv_exit_cb, uv_handle_t, uv_handle_type, uv_loop_t, uv_process_options_t, uv_process_t, uv_stdio_container_t, uv_stdio_flags, uv_stream_t, C2RustUnnamed_26, C2RustUnnamed_27, UV_IGNORE};
     // NVIM_EVENT_LIBUV_PROCESS_H
 }
 pub mod zone_h {
@@ -5290,8 +5159,6 @@ pub mod zone_h {
         *a = *b;
         *b = tmp;
     }
-    use super::stdbool_h::true_0;
-    use super::stddef_h::{size_t, NULL_0};
     extern "C" {
         pub type msgpack_zone_chunk;
         #[no_mangle]
@@ -5372,8 +5239,6 @@ pub mod object_h {
         pub size: u32,
         pub ptr: *mut msgpack_object,
     }
-    use super::stdint_intn_h::{i64, i8};
-    use super::stdint_uintn_h::{u32, u64};
 }
 pub mod pack_h {
     pub type msgpack_packer_write = Option<unsafe extern "C" fn(_: *mut libc::c_void, _: *const i8, _: size_t) -> i32>;
@@ -5401,8 +5266,6 @@ pub mod pack_h {
     pub unsafe extern "C" fn msgpack_packer_free(mut pk: *mut msgpack_packer) {
         free(pk as *mut libc::c_void);
     }
-    use super::stddef_h::{size_t, NULL_0};
-    use super::stdlib_h::{calloc, free};
 }
 pub mod pack_template_h {
     #[derive(Copy, Clone)]
@@ -6184,14 +6047,6 @@ pub mod pack_template_h {
     pub unsafe extern "C" fn msgpack_pack_ext_body(mut x: *mut msgpack_packer, mut b: *const libc::c_void, mut l: size_t) -> i32 {
         return Some((*x).callback.expect("non-null function pointer")).expect("non-null function pointer")((*x).data, b as *const libc::c_uchar as *const i8, l);
     }
-    use super::byteswap_h::__bswap_64;
-    use super::in_h::{ntohl, ntohs};
-    use super::pack_h::msgpack_packer;
-    use super::stddef_h::size_t;
-    use super::stdint_intn_h::{i32, i64, i8, int16_t};
-    use super::stdint_uintn_h::{u32, u64, u8, uint16_t};
-    use super::string_h::memcpy;
-    use super::types_h::__uint64_t;
 }
 pub mod unpack_h {
     #[derive(Copy, Clone)]
@@ -6261,11 +6116,6 @@ pub mod unpack_h {
     pub unsafe extern "C" fn msgpack_unpacker_parsed_size(mut mpac: *const msgpack_unpacker) -> size_t {
         return (*mpac).parsed;
     }
-    use super::object_h::msgpack_object;
-    use super::stdbool_h::true_0;
-    use super::stddef_h::{size_t, NULL_0};
-    use super::string_h::memset;
-    use super::zone_h::{msgpack_zone, msgpack_zone_free};
     extern "C" {
         #[no_mangle]
         pub fn msgpack_unpacker_expand_buffer(mpac: *mut msgpack_unpacker, size: size_t) -> bool;
@@ -6338,9 +6188,6 @@ pub mod sbuffer_h {
     pub unsafe extern "C" fn msgpack_sbuffer_clear(mut sbuf: *mut msgpack_sbuffer) {
         (*sbuf).size = 0;
     }
-    use super::stddef_h::{size_t, NULL_0};
-    use super::stdlib_h::{calloc, free, realloc};
-    use super::string_h::{memcpy, memset};
 }
 pub mod vrefbuffer_h {
     #[derive(Copy, Clone)]
@@ -6397,9 +6244,6 @@ pub mod vrefbuffer_h {
     pub unsafe extern "C" fn msgpack_vrefbuffer_veclen(mut vref: *const msgpack_vrefbuffer) -> size_t {
         return (*vref).tail.offset_from((*vref).array) as i64 as size_t;
     }
-    use super::stddef_h::{size_t, NULL_0};
-    use super::stdlib_h::{free, malloc};
-    use super::struct_iovec_h::iovec;
     extern "C" {
         pub type msgpack_vrefbuffer_chunk;
         #[no_mangle]
@@ -6503,18 +6347,6 @@ pub mod channel_h {
         }
         abort();
     }
-    use super::channel_defs_h::RpcState;
-    use super::garray_h::garray_T;
-    use super::libuv_process_h::LibuvProcess;
-    use super::map_h::{map_uint64_t_ptr_t_get, Map_uint64_t_ptr_t};
-    use super::multiqueue_h::MultiQueue;
-    use super::process_h::Process;
-    use super::pty_process_unix_h::PtyProcess;
-    use super::stddef_h::size_t;
-    use super::stdlib_h::abort;
-    use super::stream_h::Stream;
-    use super::terminal_h::Terminal;
-    use super::typval_h::{dict_T, kCallbackNone, C2RustUnnamed_8, Callback, CallbackType};
     extern "C" {
         #[no_mangle]
         pub static mut channels: *mut Map_uint64_t_ptr_t;
@@ -6547,10 +6379,6 @@ pub mod channel_defs_h {
         pub errored: bool,
         pub result: Object,
     }
-    use super::defs_h::{Dictionary, Object};
-    use super::map_h::Map_cstr_t_ptr_t;
-    use super::stddef_h::size_t;
-    use super::unpack_h::msgpack_unpacker;
     // NVIM_MSGPACK_RPC_CHANNEL_DEFS_H
 }
 pub mod fileio_h {
@@ -6584,7 +6412,6 @@ pub mod fileio_h {
     pub unsafe extern "C" fn file_fd(fp: *const FileDescriptor) -> i32 {
         return (*fp).fd;
     }
-    use super::rbuffer_h::{rbuffer_size, RBuffer};
     // NVIM_OS_FILEIO_H
 }
 pub mod stdint_h {
@@ -6640,7 +6467,6 @@ pub mod byteswap_h {
             | (__bsx as libc::c_ulonglong & 0xff00 as libc::c_ulonglong) << 40
             | (__bsx as libc::c_ulonglong & 0xff as libc::c_ulonglong) << 56) as __uint64_t;
     }
-    use super::types_h::{__uint16_t, __uint32_t, __uint64_t};
 }
 pub mod uintn_identity_h {
     #[inline]
@@ -6655,10 +6481,8 @@ pub mod uintn_identity_h {
     pub unsafe extern "C" fn __uint16_identity(mut __x: __uint16_t) -> __uint16_t {
         return __x;
     }
-    use super::types_h::{__uint16_t, __uint32_t, __uint64_t};
 }
 pub mod wctype_wchar_h {
-    use super::wint_t_h::wint_t;
     extern "C" {
         #[no_mangle]
         pub fn towlower(__wc: wint_t) -> wint_t;
@@ -6702,7 +6526,6 @@ pub mod errno_h {
 pub mod macros_h {
     pub const TOUPPER_LOC: unsafe extern "C" fn(_: i32) -> i32 = toupper;
     pub const TOLOWER_LOC: unsafe extern "C" fn(_: i32) -> i32 = tolower;
-    use super::ctype_h::{tolower, toupper};
     // NVIM_MACROS_H
     // /
     // / PRAGMA_DIAG_PUSH_IGNORE_MISSING_PROTOTYPES
@@ -6778,9 +6601,6 @@ pub mod nvim_iconv_h {
     pub const ICONV_ERRNO: i32 = *__errno_location();
     pub const ICONV_EINVAL: i32 = EINVAL;
     pub const ICONV_EILSEQ: i32 = EILSEQ;
-    use super::asm_generic_errno_h::EILSEQ;
-    use super::errno_base_h::{E2BIG, EINVAL};
-    use super::errno_h::__errno_location;
     // NVIM_ICONV_H
 }
 pub mod asm_generic_errno_h {
@@ -6807,8 +6627,6 @@ pub mod nvim_strings_h {
         let src_len = strlen(src);
         return (memmove(dst as *mut libc::c_void, src as *const libc::c_void, src_len) as *mut i8).offset(src_len as isize);
     }
-    use super::stddef_h::size_t;
-    use super::string_h::{memmove, strlen};
     // NVIM_STRINGS_H
 }
 pub mod kvec_h {
@@ -6872,9 +6690,6 @@ pub mod kvec_h {
         *ptr_ = NULL_1 as *mut libc::c_void;
         return dest;
     }
-    use super::memory_h_generated_h::xfree;
-    use super::stddef_h::{size_t, NULL_1};
-    use super::string_h::memcpy;
     // NVIM_LIB_KVEC_H
     // / Free array of elements of a vector with preallocated array if needed
     // /
@@ -6907,7 +6722,6 @@ pub mod kvec_h {
     // -V:kvi_push:512
 }
 pub mod in_h {
-    use super::stdint_uintn_h::{u32, uint16_t};
     extern "C" {
         #[no_mangle]
         pub fn ntohl(__netlong: u32) -> u32;
@@ -6990,7 +6804,6 @@ pub mod locale_h {
 }
 pub mod include_locale_h {
     pub const LC_CTYPE: i32 = __LC_CTYPE;
-    use super::locale_h::__LC_CTYPE;
     extern "C" {
         #[no_mangle]
         pub fn setlocale(__category: i32, __locale: *const i8) -> *mut i8;
@@ -7003,7 +6816,6 @@ pub mod charset_h {
     pub unsafe extern "C" fn vim_isbreak(mut c: i32) -> bool {
         return breakat_flags[c as u8 as usize] != 0;
     }
-    use super::option_defs_h::breakat_flags;
     extern "C" {
         #[no_mangle]
         pub fn char2cells(c: i32) -> i32;
@@ -7086,9 +6898,6 @@ pub mod mark_h {
             return a.coladd < b.coladd;
         };
     }
-    use super::ascii_h::ascii_isdigit;
-    use super::mark_defs_h::NMARKS;
-    use super::pos_h::{colnr_T, linenr_T, pos_T};
     // NVIM_MARK_H
 }
 pub mod unicode_tables_generated_h {
@@ -16882,7 +16691,6 @@ pub mod unicode_tables_generated_h {
             init
         },
     ];
-    use super::{convertStruct, interval};
 }
 /*
  * Canonical encoding names and their properties.

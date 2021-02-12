@@ -1,3 +1,5 @@
+use crate::*;
+
 pub mod internal {
     pub type __builtin_va_list = [__va_list_tag; 1];
     #[derive(Copy, Clone)]

@@ -38,7 +38,6 @@ pub mod stdint_uintn_h {
     pub type u64 = __uint64_t;
     use super::types_h::{__uint16_t, __uint32_t, __uint64_t, __uint8_t};
 }
-#[c2rust::header_src = "/usr/lib/llvm-6.0/lib/clang/6.0.1/include/stddef.h:30"]
 pub mod stddef_h {
     pub type size_t = u64;
     pub const NULL_0: i32 = 0;
@@ -46,7 +45,6 @@ pub mod stddef_h {
     pub const NULL_1: i32 = 0;
     pub const NULL_2: i32 = 0;
 }
-#[c2rust::header_src = "/usr/lib/llvm-6.0/lib/clang/6.0.1/include/stdarg.h:31"]
 pub mod stdarg_h {
     pub type va_list = __builtin_va_list;
     use super::internal::__builtin_va_list;
@@ -747,7 +745,6 @@ pub mod time_t_h {
     pub type time_t = __time_t;
     use super::types_h::__time_t;
 }
-#[c2rust::header_src = "/usr/include/x86_64-linux-gnu/bits/pthreadtypes-arch.h:34"]
 pub mod pthreadtypes_arch_h {
     #[derive(Copy, Clone)]
     #[repr(C)]
@@ -766,7 +763,6 @@ pub mod pthreadtypes_arch_h {
         pub __flags: u32,
     }
 }
-#[c2rust::header_src = "/usr/include/x86_64-linux-gnu/bits/thread-shared-types.h:34"]
 pub mod thread_shared_types_h {
     #[derive(Copy, Clone)]
     #[repr(C)]
@@ -4009,7 +4005,6 @@ pub mod langinfo_h {
 pub mod nl_types_h {
     pub type nl_item = i32;
 }
-#[c2rust::header_src = "/usr/include/x86_64-linux-gnu/bits/types/struct_iovec.h:34"]
 pub mod struct_iovec_h {
     #[derive(Copy, Clone)]
     #[repr(C)]
@@ -5221,7 +5216,6 @@ pub mod libuv_process_h {
     use super::uv_h::{uv_close_cb, uv_exit_cb, uv_handle_t, uv_handle_type, uv_loop_t, uv_process_options_t, uv_process_t, uv_stdio_container_t, uv_stdio_flags, uv_stream_t, C2RustUnnamed_26, C2RustUnnamed_27, UV_IGNORE};
     // NVIM_EVENT_LIBUV_PROCESS_H
 }
-#[c2rust::header_src = "/home/vole/neovim/.deps/usr/include/msgpack/zone.h:39"]
 pub mod zone_h {
     #[derive(Copy, Clone)]
     #[repr(C)]
@@ -5308,7 +5302,6 @@ pub mod zone_h {
         pub fn msgpack_zone_push_finalizer_expand(zone: *mut msgpack_zone, func: Option<unsafe extern "C" fn(_: *mut libc::c_void) -> ()>, data: *mut libc::c_void) -> bool;
     }
 }
-#[c2rust::header_src = "/home/vole/neovim/.deps/usr/include/msgpack/object.h:39"]
 pub mod object_h {
     pub type msgpack_object_type = u32;
     pub const MSGPACK_OBJECT_EXT: msgpack_object_type = 9;
@@ -5382,7 +5375,6 @@ pub mod object_h {
     use super::stdint_intn_h::{i64, i8};
     use super::stdint_uintn_h::{u32, u64};
 }
-#[c2rust::header_src = "/home/vole/neovim/.deps/usr/include/msgpack/pack.h:39"]
 pub mod pack_h {
     pub type msgpack_packer_write = Option<unsafe extern "C" fn(_: *mut libc::c_void, _: *const i8, _: size_t) -> i32>;
     #[derive(Copy, Clone)]
@@ -5412,7 +5404,6 @@ pub mod pack_h {
     use super::stddef_h::{size_t, NULL_0};
     use super::stdlib_h::{calloc, free};
 }
-#[c2rust::header_src = "/home/vole/neovim/.deps/usr/include/msgpack/pack_template.h:39"]
 pub mod pack_template_h {
     #[derive(Copy, Clone)]
     #[repr(C)]
@@ -6202,7 +6193,6 @@ pub mod pack_template_h {
     use super::string_h::memcpy;
     use super::types_h::__uint64_t;
 }
-#[c2rust::header_src = "/home/vole/neovim/.deps/usr/include/msgpack/unpack.h:39"]
 pub mod unpack_h {
     #[derive(Copy, Clone)]
     #[repr(C)]
@@ -6281,7 +6271,6 @@ pub mod unpack_h {
         pub fn msgpack_unpacker_expand_buffer(mpac: *mut msgpack_unpacker, size: size_t) -> bool;
     }
 }
-#[c2rust::header_src = "/home/vole/neovim/.deps/usr/include/msgpack/sbuffer.h:39"]
 pub mod sbuffer_h {
     #[derive(Copy, Clone)]
     #[repr(C)]
@@ -6353,7 +6342,6 @@ pub mod sbuffer_h {
     use super::stdlib_h::{calloc, free, realloc};
     use super::string_h::{memcpy, memset};
 }
-#[c2rust::header_src = "/home/vole/neovim/.deps/usr/include/msgpack/vrefbuffer.h:39"]
 pub mod vrefbuffer_h {
     #[derive(Copy, Clone)]
     #[repr(C)]
@@ -6533,7 +6521,6 @@ pub mod channel_h {
     }
     // NVIM_CHANNEL_H
 }
-#[c2rust::header_src = "/home/vole/neovim/src/nvim/msgpack_rpc/channel_defs.h:39"]
 pub mod channel_defs_h {
     #[derive(Copy, Clone)]
     #[repr(C)]
@@ -6603,7 +6590,6 @@ pub mod fileio_h {
 pub mod stdint_h {
     pub const SIZE_MAX: u64 = 18446744073709551615;
 }
-#[c2rust::header_src = "/usr/lib/llvm-6.0/lib/clang/6.0.1/include/stdbool.h:29"]
 pub mod stdbool_h {
     pub const true_0: i32 = 1;
     pub const false_0: i32 = 0;
@@ -6656,7 +6642,6 @@ pub mod byteswap_h {
     }
     use super::types_h::{__uint16_t, __uint32_t, __uint64_t};
 }
-#[c2rust::header_src = "/usr/include/x86_64-linux-gnu/bits/uintn-identity.h:32"]
 pub mod uintn_identity_h {
     #[inline]
     pub unsafe extern "C" fn __uint64_identity(mut __x: __uint64_t) -> __uint64_t {
@@ -6740,7 +6725,6 @@ pub mod macros_h {
     // / This should be called with a real array. Calling this with a pointer is an
     // / error.
 }
-#[c2rust::header_src = "/home/vole/neovim/build/include/message.h.generated.h:34"]
 pub mod vim_h {
     pub const OK: i32 = 1;
     pub const FAIL: i32 = 0;
@@ -6784,7 +6768,6 @@ pub mod vim_h {
     // Prefer using emsgf(), because perror() may send the output to the wrong
     // destination and mess up the screen.
 }
-#[c2rust::header_src = "/home/vole/neovim/build/include/memory.h.generated.h:34"]
 pub mod errno_base_h {
     pub const E2BIG: i32 = 7;
     pub const EINVAL: i32 = 22;
@@ -6803,7 +6786,6 @@ pub mod nvim_iconv_h {
 pub mod asm_generic_errno_h {
     pub const EILSEQ: i32 = 84;
 }
-#[c2rust::header_src = "/home/vole/neovim/build/include/strings.h.generated.h:34"]
 pub mod strings_h_generated_h {
     extern "C" {
         #[no_mangle]
@@ -7042,15 +7024,12 @@ pub mod charset_h {
     }
     // NVIM_CHARSET_H
 }
-#[c2rust::header_src = "/home/vole/neovim/build/include/cursor.h.generated.h:44"]
 pub mod cursor_h_generated_h {
     extern "C" {
         #[no_mangle]
         pub fn get_cursor_pos_ptr() -> *mut u8;
     }
 }
-#[c2rust::header_src = "/home/vole/neovim/build/include/os/env.h.generated.h:45"]
-#[c2rust::header_src = "/home/vole/neovim/build/include/memline.h.generated.h:47"]
 pub mod memline_h_generated_h {
     use super::buffer_defs_h::buf_T;
     use super::pos_h::linenr_T;
@@ -7059,14 +7038,12 @@ pub mod memline_h_generated_h {
         pub fn ml_get_buf(buf: *mut buf_T, lnum: linenr_T, will_change: bool) -> *mut u8;
     }
 }
-#[c2rust::header_src = "/home/vole/neovim/build/include/misc1.h.generated.h:49"]
 pub mod misc1_h_generated_h {
     extern "C" {
         #[no_mangle]
         pub fn beep_flush();
     }
 }
-#[c2rust::header_src = "/home/vole/neovim/build/include/arabic.h.generated.h:56"]
 pub mod arabic_h_generated_h {
     extern "C" {
         #[no_mangle]
@@ -7150,7 +7127,6 @@ pub mod mark_h {
     use super::pos_h::{colnr_T, linenr_T, pos_T};
     // NVIM_MARK_H
 }
-#[c2rust::header_src = "/home/vole/neovim/build/include/mark.h.generated.h:57"]
 pub mod mark_h_generated_h {
     use super::buffer_defs_h::buf_T;
     use super::pos_h::pos_T;
@@ -7159,7 +7135,6 @@ pub mod mark_h_generated_h {
         pub fn mark_mb_adjustpos(buf: *mut buf_T, lp: *mut pos_T);
     }
 }
-#[c2rust::header_src = "/home/vole/neovim/build/src/nvim/auto/unicode_tables.generated.h:73"]
 pub mod unicode_tables_generated_h {
     pub static mut toLower: [convertStruct; 172] = [
         {
@@ -17016,7 +16991,7 @@ pub static mut e_loadfunc: [u8; 41] = unsafe { *::std::mem::transmute::<&[u8; 41
 // length 1.
 #[no_mangle]
 pub static mut utf8len_tab: [u8; 256] = [
-    1 as i32 as u8,
+    1,
     1,
     1,
     1,
@@ -17276,7 +17251,7 @@ pub static mut utf8len_tab: [u8; 256] = [
 // Like utf8len_tab above, but using a zero for illegal lead bytes.
 #[no_mangle]
 pub static mut utf8len_tab_zero: [u8; 256] = [
-    1 as i32 as u8,
+    1,
     1,
     1,
     1,

@@ -1575,11 +1575,7 @@ pub unsafe extern "C" fn utfc_ptr2char(p: *const u8, pcc: *mut i32) -> i32 {
  * @param [out] pcc: composing chars, last one is 0
  */
 #[no_mangle]
-pub unsafe extern "C" fn utfc_ptr2char_len(
-    p: *const u8,
-    pcc: *mut i32,
-    maxlen: i32,
-) -> i32 {
+pub unsafe extern "C" fn utfc_ptr2char_len(p: *const u8, pcc: *mut i32, maxlen: i32) -> i32 {
     if maxlen > 0 {
     } else {
         assert!(false, "maxlen > 0");
@@ -2614,11 +2610,7 @@ pub unsafe extern "C" fn utf_ambiguous_width(c: i32) -> bool {
  * Return the converted equivalent of "a", which is a UCS-4 character.  Use
  * the given conversion "table".  Uses binary search on "table".
  */
-unsafe extern "C" fn utf_convert(
-    a: i32,
-    table: *const convertStruct,
-    n_items: size_t,
-) -> i32 {
+unsafe extern "C" fn utf_convert(a: i32, table: *const convertStruct, n_items: size_t) -> i32 {
     let mut start: size_t = 0; /* indices into table */
     let mut mid: size_t = 0;
     let mut end: size_t = 0;
@@ -3766,11 +3758,7 @@ unsafe extern "C" fn iconv_string(
  * Return FAIL when conversion is not supported, OK otherwise.
  */
 #[no_mangle]
-pub unsafe extern "C" fn convert_setup(
-    vcp: *mut vimconv_T,
-    from: *mut u8,
-    to: *mut u8,
-) -> i32 {
+pub unsafe extern "C" fn convert_setup(vcp: *mut vimconv_T, from: *mut u8, to: *mut u8) -> i32 {
     return convert_setup_ext(vcp, from, true, to, true);
 }
 /*

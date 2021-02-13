@@ -6,6 +6,11 @@ extern "C" {
     pub static mut VIsual: pos_T;
 }
 
+pub type WorkingStatus = u32;
+pub const kBroken: WorkingStatus = 2;
+pub const kWorking: WorkingStatus = 1;
+pub const kUnknown: WorkingStatus = 0;
+
 pub const DBCS_JPN: i32 = 932;
 pub const DBCS_JPNU: i32 = 9932;
 pub const DBCS_KOR: i32 = 949;
@@ -82,6 +87,7 @@ extern "C" {
     pub static mut swap_exists_did_quit: libc::c_int;
     // Selected "quit" at the dialog.
     pub static mut IObuff: [u8; 1025];
+    pub static mut fenc_default: *mut u8;
     // /< Buffer for sprintf, I/O, etc.
     pub static mut NameBuff: [u8; 4096];
     // /< Buffer for the os/ layer

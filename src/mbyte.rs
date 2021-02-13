@@ -2877,7 +2877,7 @@ pub unsafe extern "C" fn mb_off_next(mut base: *mut u8, mut p: *mut u8) -> i32 {
  * into.  Can start anywhere in a stream of bytes.
  */
 #[no_mangle]
-pub unsafe extern "C" fn mb_tail_off(mut base: *mut u8, mut p: *mut u8) -> i32 {
+pub unsafe extern "C" fn mb_tail_off(mut base: *const u8, mut p: *const u8) -> i32 {
     let mut i: i32 = 0;
     let mut j: i32 = 0;
     if *p as i32 == NUL {
@@ -3327,10 +3327,10 @@ pub unsafe extern "C" fn my_iconv_open(mut to: *mut u8, mut from: *mut u8) -> *m
     let mut tolen: size_t = 0;
     static mut iconv_working: WorkingStatus = kUnknown;
     if iconv_working as u32 == kBroken as i32 as u32 {
-        return -(1) as *mut libc::c_void;
+        return (-1i32) as *mut libc::c_void;
     }
     fd = iconv_open(enc_skip(to) as *mut i8, enc_skip(from) as *mut i8);
-    if fd != -(1) as iconv_t && iconv_working as u32 == kUnknown as i32 as u32 {
+    if fd != (-1i32) as iconv_t && iconv_working as u32 == kUnknown as i32 as u32 {
         /*
          * Do a dummy iconv() call to check if it actually works.  There is a
          * version of iconv() on Linux that is broken.  We can't ignore it,
@@ -3344,7 +3344,7 @@ pub unsafe extern "C" fn my_iconv_open(mut to: *mut u8, mut from: *mut u8) -> *m
         if p.is_null() {
             iconv_working = kBroken;
             iconv_close(fd);
-            fd = -(1) as iconv_t
+            fd = (-1i32) as iconv_t
         } else {
             iconv_working = kWorking
         }
@@ -3364,7 +3364,7 @@ unsafe extern "C" fn iconv_string(vcp: *const vimconv_T, mut str: *mut u8, mut s
     let mut fromlen: size_t = 0;
     let mut to = 0 as *mut i8;
     let mut tolen: size_t = 0;
-    let mut len = 0;
+    let mut len: usize = 0;
     let mut done = 0;
     let mut result = NULL_0 as *mut u8;
     let mut p = 0 as *mut u8;
@@ -3387,7 +3387,7 @@ unsafe extern "C" fn iconv_string(vcp: *const vimconv_T, mut str: *mut u8, mut s
         tolen = len.wrapping_sub(done).wrapping_sub(2);
         // Avoid a warning for systems with a wrong iconv() prototype by
         // casting the second argument to void *.
-        if iconv((*vcp).vc_fd, &mut from as *mut *const i8 as *mut libc::c_void as *mut *mut i8, &mut fromlen, &mut to, &mut tolen) != SIZE_MAX {
+        if iconv((*vcp).vc_fd, &mut from as *mut *const i8 as *mut libc::c_void as *mut *mut i8, &mut fromlen, &mut to, &mut tolen) != SIZE_MAX as usize {
             // Finished, append a NUL.
             *to = NUL as i8;
             break;
@@ -3457,7 +3457,7 @@ pub unsafe extern "C" fn convert_setup_ext(mut vcp: *mut vimconv_T, mut from: *m
     let mut from_is_utf8: i32 = 0;
     let mut to_is_utf8: i32 = 0;
     // Reset to no conversion.
-    if (*vcp).vc_type == CONV_ICONV as i32 && (*vcp).vc_fd != -(1) as iconv_t {
+    if (*vcp).vc_type == CONV_ICONV as i32 && (*vcp).vc_fd != (-1i32) as iconv_t {
         iconv_close((*vcp).vc_fd);
     }
     *vcp = {
@@ -3505,7 +3505,7 @@ pub unsafe extern "C" fn convert_setup_ext(mut vcp: *mut vimconv_T, mut from: *m
         // NOLINT(readability/braces)
         // Use iconv() for conversion.
         (*vcp).vc_fd = my_iconv_open(if to_is_utf8 != 0 { b"utf-8\x00" as *const u8 as *const i8 as *mut u8 } else { to }, if from_is_utf8 != 0 { b"utf-8\x00" as *const u8 as *const i8 as *mut u8 } else { from });
-        if (*vcp).vc_fd != -(1) as iconv_t {
+        if (*vcp).vc_fd != (-1i32) as iconv_t {
             (*vcp).vc_type = CONV_ICONV as i32;
             (*vcp).vc_factor = 4
             /* could be longer too... */
@@ -3540,7 +3540,7 @@ pub unsafe extern "C" fn string_convert_ext(vcp: *const vimconv_T, mut ptr: *mut
     let mut c: i32 = 0;
     let mut len: size_t = 0;
     if lenp.is_null() {
-        len = strlen(ptr as *mut i8)
+        len = strlen(ptr as *mut i8) as usize
     } else {
         len = *lenp
     }
@@ -3622,9 +3622,9 @@ pub unsafe extern "C" fn string_convert_ext(vcp: *const vimconv_T, mut ptr: *mut
                         xfree(retval as *mut libc::c_void);
                         return NULL_0 as *mut u8;
                     }
-                    if !unconvlenp.is_null() && l_w as u64 > len.wrapping_sub(i_1) {
+                    if !unconvlenp.is_null() && l_w as u64 > len.wrapping_sub(i_1) as u64 {
                         /* Incomplete sequence at the end. */
-                        *unconvlenp = len.wrapping_sub(i_1);
+                        *unconvlenp = len.wrapping_sub(i_1) as usize;
                         break;
                     } else {
                         let fresh18 = d;

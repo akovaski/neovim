@@ -31,7 +31,12 @@ extern "C" {
     pub fn fgets(__s: *mut i8, __n: i32, __stream: *mut FILE) -> *mut i8;
     pub fn popen(__command: *const i8, __modes: *const i8) -> *mut FILE;
     pub fn pclose(__stream: *mut FILE) -> i32;
+    pub fn towlower(__wc: wint_t) -> wint_t;
+    pub fn towupper(__wc: wint_t) -> wint_t;
+    pub fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
 }
+
+pub type wint_t = u32;
 
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -370,3 +375,6 @@ pub fn timeval_zero() -> timeval {
         tv_usec: 0,
     }
 }
+pub const NULL_0: i32 = 0;
+pub const NULL_1: i32 = 0;
+pub const NULL_2: i32 = 0;

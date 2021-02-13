@@ -12,6 +12,7 @@ pub const _ISalpha: _ISFlag = 1024;
 pub const _ISlower: _ISFlag = 512;
 pub const _ISupper: _ISFlag = 256;
 extern "C" {
-    pub fn toupper(_: libc::c_int) -> libc::c_int;
     pub fn __ctype_b_loc() -> *mut *const libc::c_ushort;
+    pub fn toupper(_: i32) -> i32;
+    pub fn tolower(_: i32) -> i32;
 }

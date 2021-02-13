@@ -8,6 +8,9 @@ extern "C" {
     pub static mut p_sbr: *mut libc::c_uchar;
 }
 
+pub const CMP_INTERNAL: i32 = 0x1 as i32;
+pub const CMP_KEEPASCII: i32 = 0x2 as i32;
+
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct LastSet {
@@ -132,6 +135,10 @@ pub const STL_ALL: [u8; 38] = [
 ];
 pub const NO_LOCAL_UNDOLEVEL: i64 = -123456;
 extern "C" {
+    pub static mut p_ambw: *mut u8;
+    pub static mut p_emoji: i32;
+    pub static mut cmp_flags: u32;
+    pub static mut p_enc: *mut u8;
     pub static mut p_acd: libc::c_int;
     pub static mut breakat_flags: [libc::c_char; 256];
     pub static mut p_ch: libc::c_long;

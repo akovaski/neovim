@@ -200,6 +200,8 @@ mod marktree;
 pub use marktree::*;
 mod arabic;
 pub use arabic::*;
+mod unicode_tables;
+pub use unicode_tables::*;
 
 pub use libc::{backtrace, fclose, fopen, iovec, ptrdiff_t, size_t, ssize_t, time_t, timeval, tm, FILE};
 extern "C" {

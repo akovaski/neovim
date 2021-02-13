@@ -872,15 +872,6 @@ pub mod garray_h {
     // / @param free_item_fn free function that takes (*item_type) as parameter
 }
 pub mod iconv_h {
-    pub type iconv_t = *mut libc::c_void;
-    extern "C" {
-        #[no_mangle]
-        pub fn iconv_open(__tocode: *const i8, __fromcode: *const i8) -> iconv_t;
-        #[no_mangle]
-        pub fn iconv(__cd: iconv_t, __inbuf: *mut *mut i8, __inbytesleft: *mut size_t, __outbuf: *mut *mut i8, __outbytesleft: *mut size_t) -> size_t;
-        #[no_mangle]
-        pub fn iconv_close(__cd: iconv_t) -> i32;
-    }
 }
 pub mod buffer_defs_h {
     // for FILE
@@ -5618,7 +5609,6 @@ pub mod fileio_h {
     // NVIM_OS_FILEIO_H
 }
 pub mod stdint_h {
-    pub const SIZE_MAX: u64 = 18446744073709551615;
 }
 pub mod stdbool_h {
     pub const true_0: i32 = 1;
@@ -5642,12 +5632,6 @@ pub mod string_h {
         pub fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
         #[no_mangle]
         pub fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
-    }
-}
-pub mod strings_h {
-    extern "C" {
-        #[no_mangle]
-        pub fn strncasecmp(_: *const i8, _: *const i8, _: u64) -> i32;
     }
 }
 pub mod byteswap_h {
@@ -5786,16 +5770,8 @@ pub mod vim_h {
     // Prefer using emsgf(), because perror() may send the output to the wrong
     // destination and mess up the screen.
 }
-pub mod errno_base_h {
-    pub const E2BIG: i32 = 7;
-    pub const EINVAL: i32 = 22;
-}
 pub mod nvim_iconv_h {
     // define some missing constants if necessary
-    pub const ICONV_E2BIG: i32 = E2BIG;
-    pub const ICONV_ERRNO: i32 = *__errno_location();
-    pub const ICONV_EINVAL: i32 = EINVAL;
-    pub const ICONV_EILSEQ: i32 = EILSEQ;
     // NVIM_ICONV_H
 }
 pub mod asm_generic_errno_h {

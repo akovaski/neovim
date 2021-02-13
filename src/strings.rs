@@ -19,6 +19,7 @@ extern "C" {
 
     pub fn strncmp(_: *const libc::c_char, _: *const libc::c_char, _: libc::c_ulong)
         -> libc::c_int;
+    pub fn strncasecmp(_: *const i8, _: *const i8, _: u64) -> i32;
 
     // strings.c
     pub fn vim_strsave(string: *const u8) -> *mut u8;

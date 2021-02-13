@@ -36,6 +36,7 @@ extern "C" {
     pub fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
 }
 
+pub const SIZE_MAX: u64 = 18446744073709551615;
 pub type wint_t = u32;
 
 #[derive(Copy, Clone)]

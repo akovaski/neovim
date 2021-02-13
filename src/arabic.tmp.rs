@@ -172,7 +172,7 @@ pub const a_s_LAM_ALEF: i32 = 0xfefb as i32;
 pub const a_f_LAM_ALEF: i32 = 0xfefc as i32;
 pub const a_BYTE_ORDER_MARK: i32 = 0xfeff as i32;
 extern "C" {
-    pub fn arabic_shape(mut c: i32, mut ccp: *mut i32, mut c1p: *mut i32, mut prev_c: i32, mut prev_c1: i32, mut next_c: i32) -> i32;
-    pub fn arabic_combine(mut one: i32, mut two: i32) -> bool;
-    pub fn arabic_maycombine(mut two: i32) -> bool;
+    pub fn arabic_shape(c: i32, ccp: *mut i32, c1p: *mut i32, prev_c: i32, prev_c1: i32, next_c: i32) -> i32;
+    pub fn arabic_combine(one: i32, two: i32) -> bool;
+    pub fn arabic_maycombine(two: i32) -> bool;
 }

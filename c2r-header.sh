@@ -34,4 +34,6 @@ echo "remove 'extern \"C\"'"; sed -i 's/ extern "C"//g' $1
 echo "remove start 'extern \"C\"' block"; sed -i '0,/^\(pub unsafe\|static mut\)/ s/^\(pub unsafe\|static mut\)/extern "C" {\n\1/' $1
 echo "Add brace to end of file"; echo '}' >> $1
 
+echo "remove mut"; sed -i 's/\(, *\|(\)mut /\1/g' $1
+
 rustfmt --edition 2018 --config max_width=600 $1

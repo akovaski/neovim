@@ -10,6 +10,11 @@ rustfmt --edition 2018 --config max_width=600 $1
 
 echo "remove mods"; sed -i '/^pub mod .* {/,/^\}/d' $1
 echo "remove private fn"; sed -i '/^unsafe .* fn /,/^}/d' $1
+
+STRUCT_FILE=`mktemp`
+echo "save structs"; awk      '/^pub struct/,/^}/' $1 > $STRUCT_FILE
+echo "delete structs"; sed -i '/^pub struct/,/^}/d' $1
+
 echo "remove open brackets"; sed -i 's/{.*$/;/g' $1
 echo "remove close brackets"; sed -i '/^}/d' $1
 echo "remove indented lines"; sed -i '/^ \+/d' $1
@@ -25,6 +30,11 @@ grep    '^.* const .*$' $1 > $CONST_FILE
 grep -v '^.* const .*$' $1 >> $CONST_FILE
 cat $CONST_FILE > $1
 rm $CONST_FILE
+
+echo "restore structs to file"
+cat $1 >> $STRUCT_FILE
+cat $STRUCT_FILE > $1
+rm $STRUCT_FILE
 
 
 echo "insert use crate::\*"; sed -i '1iuse crate::*;' $1

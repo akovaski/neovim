@@ -1,5 +1,40 @@
 use crate::*;
 
+pub struct data_block {
+    pub db_id: uint16_t,
+    pub db_free: u32,
+    pub db_txt_start: u32,
+    pub db_txt_end: u32,
+    pub db_line_count: linenr_T,
+    pub db_index: [u32; 1],
+}
+pub struct pointer_entry {
+    pub pe_bnum: blocknr_T,
+    pub pe_line_count: linenr_T,
+    pub pe_old_lnum: linenr_T,
+    pub pe_page_count: i32,
+}
+pub struct pointer_block {
+    pub pb_id: uint16_t,
+    pub pb_count: uint16_t,
+    pub pb_count_max: uint16_t,
+    pub pb_pointer: [PTR_EN; 1],
+}
+pub struct block0 {
+    pub b0_id: [u8; 2],
+    pub b0_version: [u8; 10],
+    pub b0_page_size: [u8; 4],
+    pub b0_mtime: [u8; 4],
+    pub b0_ino: [u8; 4],
+    pub b0_pid: [u8; 4],
+    pub b0_uname: [u8; 40],
+    pub b0_hname: [u8; 40],
+    pub b0_fname: [u8; 900],
+    pub b0_magic_long: i64,
+    pub b0_magic_int: i32,
+    pub b0_magic_short: i16,
+    pub b0_magic_char: u8,
+}
 pub const UB_SAME_DIR: upd_block0_T = 1;
 pub const UB_FNAME: upd_block0_T = 0;
 pub const DATA_ID: i32 = (('d' as i32) << 8) + 'a' as i32;
@@ -28,13 +63,9 @@ pub const ML_FLUSH: i32 = 0x2 as i32;
 pub const MLCS_MAXL: i32 = 800;
 pub const MLCS_MINL: i32 = 400;
 pub type DATA_BL = data_block;
-pub struct data_block;
 pub type PTR_EN = pointer_entry;
-pub struct pointer_entry;
 pub type PTR_BL = pointer_block;
-pub struct pointer_block;
 pub type ZERO_BL = block0;
-pub struct block0;
 pub type upd_block0_T = u32;
 extern "C" {
     static mut lowest_marked: linenr_T;

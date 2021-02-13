@@ -3074,12 +3074,12 @@ pub unsafe extern "C" fn mb_charlen_len(mut str: *mut u8, mut len: i32) -> i32 {
 #[no_mangle]
 pub unsafe extern "C" fn mb_unescape(pp: *mut *const i8) -> *const i8 {
     static mut buf: [i8; 6] = [0; 6];
-    let mut buf_idx: i32 = 0;
+    let mut buf_idx: usize = 0;
     let mut str = *pp as *mut u8;
     // Must translate K_SPECIAL KS_SPECIAL KE_FILLER to K_SPECIAL and CSI
     // KS_EXTRA KE_CSI to CSI.
     // Maximum length of a utf-8 character is 4 bytes.
-    let mut str_idx: i32 = 0;
+    let mut str_idx: usize = 0;
     while *str.offset(str_idx as isize) as i32 != NUL && buf_idx < 4 {
         if *str.offset(str_idx as isize) as i32 == K_SPECIAL && *str.offset(str_idx.wrapping_add(1) as isize) as i32 == KS_SPECIAL && *str.offset(str_idx.wrapping_add(2) as isize) as i32 == KE_FILLER {
             let fresh7 = buf_idx;
@@ -3219,7 +3219,7 @@ pub unsafe extern "C" fn enc_locale() -> *mut u8 {
     let mut i: i32 = 0;
     let mut buf: [i8; 50] = [0; 50];
     let mut s = 0 as *const i8;
-    s = nl_langinfo(CODESET_0);
+    s = nl_langinfo(CODESET_0 as u32);
     if s.is_null() || *s as i32 == NUL {
         s = setlocale(LC_CTYPE, NULL_0 as *const i8);
         if s.is_null() || *s as i32 == NUL {
@@ -3255,7 +3255,7 @@ pub unsafe extern "C" fn enc_locale() -> *mut u8 {
             memmove(buf.as_mut_ptr() as *mut libc::c_void, b"euc-\x00" as *const u8 as *const i8 as *const libc::c_void, 4);
             buf[4 as i32 as usize] = if *p.offset(-(2) as isize) as u32 >= 'A' as i32 as u32 && *p.offset(-(2) as isize) as u32 <= 'Z' as i32 as u32
                 || *p.offset(-(2) as isize) as u32 >= 'a' as i32 as u32 && *p.offset(-(2) as isize) as u32 <= 'z' as i32 as u32
-                || ascii_isdigit(*p.offset(-(2) as isize) as i32) as i32 != 0
+                || ascii_isdigit(*p.offset(-(2) ) as u8 as char) as i32 != 0
             {
                 if (*p.offset(-(2) as isize) as i32) < 'A' as i32 || *p.offset(-(2) as isize) as i32 > 'Z' as i32 {
                     *p.offset(-(2) as isize) as i32
@@ -3267,7 +3267,7 @@ pub unsafe extern "C" fn enc_locale() -> *mut u8 {
             } as i8;
             buf[5 as i32 as usize] = if *p.offset(-(1) as isize) as u32 >= 'A' as i32 as u32 && *p.offset(-(1) as isize) as u32 <= 'Z' as i32 as u32
                 || *p.offset(-(1) as isize) as u32 >= 'a' as i32 as u32 && *p.offset(-(1) as isize) as u32 <= 'z' as i32 as u32
-                || ascii_isdigit(*p.offset(-(1) as isize) as i32) as i32 != 0
+                || ascii_isdigit(*p.offset(-(1)) as u8 as char) as i32 != 0
             {
                 if (*p.offset(-(1) as isize) as i32) < 'A' as i32 || *p.offset(-(1) as isize) as i32 > 'Z' as i32 {
                     *p.offset(-(1) as isize) as i32
@@ -3295,7 +3295,7 @@ pub unsafe extern "C" fn enc_locale() -> *mut u8 {
                 } else {
                     if !(*s.offset(i as isize) as u8 as u32 >= 'A' as i32 as u32 && *s.offset(i as isize) as u8 as u32 <= 'Z' as i32 as u32
                         || *s.offset(i as isize) as u8 as u32 >= 'a' as i32 as u32 && *s.offset(i as isize) as u8 as u32 <= 'z' as i32 as u32
-                        || ascii_isdigit(*s.offset(i as isize) as u8 as i32) as i32 != 0)
+                        || ascii_isdigit(*s.offset(i as isize) as u8 as char) as i32 != 0)
                     {
                         break;
                     }

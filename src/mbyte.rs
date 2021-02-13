@@ -1089,7 +1089,7 @@ unsafe extern "C" fn enc_canon_search(name: *const u8) -> i32 {
  */
 #[no_mangle]
 pub unsafe extern "C" fn enc_canon_props(name: *const u8) -> i32 {
-    let mut i: i32;
+    let i: i32;
     i = enc_canon_search(name);
     if i >= 0 {
         return enc_canon_table[i as usize].prop;
@@ -1302,7 +1302,7 @@ pub unsafe extern "C" fn utf_char2cells(c: i32) -> i32 {
 // / This doesn't take care of unprintable characters, use ptr2cells() for that.
 #[no_mangle]
 pub unsafe extern "C" fn utf_ptr2cells(p: *const u8) -> i32 {
-    let mut c: i32;
+    let c: i32;
     /* Need to convert to a wide character. */
     if *p as i32 >= 0x80 as i32 {
         c = utf_ptr2char(p);
@@ -1322,7 +1322,7 @@ pub unsafe extern "C" fn utf_ptr2cells(p: *const u8) -> i32 {
 // / For an empty string or truncated character returns 1.
 #[no_mangle]
 pub unsafe extern "C" fn utf_ptr2cells_len(p: *const u8, size: i32) -> i32 {
-    let mut c: i32;
+    let c: i32;
     /* Need to convert to a wide character. */
     if size > 0 && *p as i32 >= 0x80 as i32 {
         if utf_ptr2len_len(p, size) < utf8len_tab[*p as usize] as i32 {
@@ -1450,7 +1450,7 @@ pub unsafe extern "C" fn utf_ptr2char(p: *const u8) -> i32 {
  * "s".
  */
 unsafe extern "C" fn utf_safe_read_char_adv(s: *mut *const u8, n: *mut size_t) -> i32 {
-    let mut c: i32;
+    let c: i32;
     if *n == 0 {
         /* end of buffer */
         return 0;
@@ -1489,7 +1489,7 @@ unsafe extern "C" fn utf_safe_read_char_adv(s: *mut *const u8, n: *mut size_t) -
  */
 #[no_mangle]
 pub unsafe extern "C" fn mb_ptr2char_adv(pp: *mut *const u8) -> i32 {
-    let mut c: i32;
+    let c: i32;
     c = utf_ptr2char(*pp);
     *pp = (*pp).offset(Some(Some(mb_ptr2len).expect("non-null function pointer"))
         .expect("non-null function pointer")(*pp) as isize);
@@ -1501,7 +1501,7 @@ pub unsafe extern "C" fn mb_ptr2char_adv(pp: *mut *const u8) -> i32 {
  */
 #[no_mangle]
 pub unsafe extern "C" fn mb_cptr2char_adv(pp: *mut *const u8) -> i32 {
-    let mut c: i32;
+    let c: i32;
     c = utf_ptr2char(*pp);
     *pp = (*pp).offset(utf_ptr2len(*pp) as isize);
     return c;
@@ -1513,7 +1513,7 @@ pub unsafe extern "C" fn mb_cptr2char_adv(pp: *mut *const u8) -> i32 {
  */
 #[no_mangle]
 pub unsafe extern "C" fn utf_composinglike(p1: *const u8, p2: *const u8) -> bool {
-    let mut c2: i32;
+    let c2: i32;
     c2 = utf_ptr2char(p2);
     if utf_iscomposing(c2) {
         return true;
@@ -1534,7 +1534,7 @@ pub unsafe extern "C" fn utf_composinglike(p1: *const u8, p2: *const u8) -> bool
 #[no_mangle]
 pub unsafe extern "C" fn utfc_ptr2char(p: *const u8, pcc: *mut i32) -> i32 {
     let mut len: i32;
-    let mut c: i32;
+    let c: i32;
     let mut cc: i32;
     let mut i = 0;
     c = utf_ptr2char(p);
@@ -1660,9 +1660,9 @@ pub unsafe extern "C" fn utf_byte2len(b: i32) -> i32 {
  */
 #[no_mangle]
 pub unsafe extern "C" fn utf_ptr2len_len(p: *const u8, size: i32) -> i32 {
-    let mut len: i32; /* NUL, ascii or illegal lead byte */
+    let len: i32; /* NUL, ascii or illegal lead byte */
     let mut i: i32; /* incomplete byte sequence. */
-    let mut m: i32;
+    let m: i32;
     len = utf8len_tab[*p as usize] as i32;
     if len == 1 {
         return 1;
@@ -1743,7 +1743,7 @@ pub unsafe extern "C" fn utfc_ptr2len_len(p: *const u8, size: i32) -> i32 {
      */
     prevlen = 0;
     while len < size {
-        let mut len_next_char: i32;
+        let len_next_char: i32;
         if (*p.offset(len as isize) as i32) < 0x80 as i32 {
             break;
         }
@@ -2915,9 +2915,9 @@ pub unsafe extern "C" fn mb_stricmp(s1: *const i8, s2: *const i8) -> i32 {
  */
 #[no_mangle]
 pub unsafe extern "C" fn show_utf8() {
-    let mut len: i32;
+    let len: i32;
     let mut rlen = 0;
-    let mut line: *mut u8;
+    let line: *mut u8;
     let mut clen: i32;
     let mut i: i32;
     /* Get the byte length of the char under the cursor, including composing
@@ -3036,8 +3036,8 @@ pub unsafe extern "C" fn mb_copy_char(fp: *mut *const u8, tp: *mut *mut u8) {
  */
 #[no_mangle]
 pub unsafe extern "C" fn mb_off_next(base: *mut u8, p: *mut u8) -> i32 {
-    let mut i: i32 = 0;
-    let mut j: i32 = 0;
+    let mut i: i32;
+    let mut j: i32;
     if (*p as i32) < 0x80 as i32 {
         // be quick for ASCII
         return 0;
@@ -3349,7 +3349,7 @@ pub unsafe extern "C" fn enc_skip(p: *mut u8) -> *mut u8 {
 pub unsafe extern "C" fn enc_canonize(enc: *mut u8) -> *mut u8 {
     let mut p: *mut u8;
     let mut s: *mut u8;
-    let mut i: i32;
+    let i: i32;
     if strcmp(
         enc as *mut i8,
         b"default\x00" as *const u8 as *const i8 as *mut i8,
@@ -3771,10 +3771,10 @@ pub unsafe extern "C" fn convert_setup_ext(
     to: *mut u8,
     to_unicode_is_utf8: bool,
 ) -> i32 {
-    let mut from_prop: i32;
-    let mut to_prop: i32;
-    let mut from_is_utf8: i32;
-    let mut to_is_utf8: i32;
+    let from_prop: i32;
+    let to_prop: i32;
+    let from_is_utf8: i32;
+    let to_is_utf8: i32;
     // Reset to no conversion.
     if (*vcp).vc_type == CONV_ICONV as i32 && (*vcp).vc_fd != (-1i32) as iconv_t {
         iconv_close((*vcp).vc_fd);
@@ -3882,7 +3882,7 @@ pub unsafe extern "C" fn string_convert_ext(
     let mut d: *mut u8;
     let mut l: i32;
     let mut c: i32;
-    let mut len: size_t;
+    let len: size_t;
     if lenp.is_null() {
         len = strlen(ptr as *mut i8) as usize
     } else {

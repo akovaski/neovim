@@ -1149,7 +1149,7 @@ pub unsafe extern "C" fn mb_get_class(mut p: *const u8) -> i32 {
 #[no_mangle]
 pub unsafe extern "C" fn mb_get_class_tab(mut p: *const u8, chartab: *const u64) -> i32 {
     if utf8len_tab[*p.offset(0) as usize] as i32 == 1 {
-        if *p.offset(0) as i32 == NUL || ascii_iswhite(*p.offset(0) as i32) as i32 != 0 {
+        if *p.offset(0) as i32 == NUL || ascii_iswhite(*p.offset(0) as char) as i32 != 0 {
             return 0;
         }
         if vim_iswordc_tab(*p.offset(0) as i32, chartab) {
@@ -1204,7 +1204,7 @@ pub unsafe extern "C" fn utf_char2cells(mut c: i32) -> i32 {
             doublewidth.as_ptr(),
             (::std::mem::size_of::<[interval; 113]>() as u64)
                 .wrapping_div(::std::mem::size_of::<interval>() as u64)
-                .wrapping_div(((::std::mem::size_of::<[interval; 113]>() as u64).wrapping_rem(::std::mem::size_of::<interval>() as u64) == 0) as i32 as size_t),
+                .wrapping_div(((::std::mem::size_of::<[interval; 113]>() as u64).wrapping_rem(::std::mem::size_of::<interval>() as u64) == 0) as u64) as usize,
             c,
         ) {
             return 2;
@@ -1214,7 +1214,7 @@ pub unsafe extern "C" fn utf_char2cells(mut c: i32) -> i32 {
                 emoji_width.as_ptr(),
                 (::std::mem::size_of::<[interval; 39]>() as u64)
                     .wrapping_div(::std::mem::size_of::<interval>() as u64)
-                    .wrapping_div(((::std::mem::size_of::<[interval; 39]>() as u64).wrapping_rem(::std::mem::size_of::<interval>() as u64) == 0) as i32 as size_t),
+                    .wrapping_div(((::std::mem::size_of::<[interval; 39]>() as u64).wrapping_rem(::std::mem::size_of::<interval>() as u64) == 0) as u64) as usize,
                 c,
             ) as i32
                 != 0
@@ -1232,7 +1232,7 @@ pub unsafe extern "C" fn utf_char2cells(mut c: i32) -> i32 {
             ambiguous.as_ptr(),
             (::std::mem::size_of::<[interval; 179]>() as u64)
                 .wrapping_div(::std::mem::size_of::<interval>() as u64)
-                .wrapping_div(((::std::mem::size_of::<[interval; 179]>() as u64).wrapping_rem(::std::mem::size_of::<interval>() as u64) == 0) as i32 as size_t),
+                .wrapping_div(((::std::mem::size_of::<[interval; 179]>() as u64).wrapping_rem(::std::mem::size_of::<interval>() as u64) == 0) as u64) as usize,
             c,
         ) as i32
             != 0
@@ -1311,7 +1311,7 @@ pub unsafe extern "C" fn mb_string2cells_len(mut str: *const u8, mut size: size_
     let mut p = str;
     while *p as i32 != NUL && p < str.offset(size as isize) {
         clen = (clen as u64).wrapping_add(utf_ptr2cells(p) as u64) as size_t as size_t;
-        p = p.offset(utf_ptr2len_len(p, size.wrapping_add(p.offset_from(str) as i64 as u64) as i32) as isize)
+        p = p.offset(utf_ptr2len_len(p, size.wrapping_add(p.offset_from(str) as usize) as i32) as isize)
     }
     return clen;
 }

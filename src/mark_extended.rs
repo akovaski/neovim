@@ -93,3 +93,4 @@ pub enum UndoObjectType {
     kExtmarkCopyPlace,
     kExtmarkClear,
 }
+pub type ExtmarkOp = u32;

@@ -201,7 +201,7 @@ pub use marktree::*;
 mod arabic;
 pub use arabic::*;
 
-pub use libc::{backtrace, fclose, fopen, iovec, ptrdiff_t, size_t, time_t, timeval, tm, FILE};
+pub use libc::{backtrace, fclose, fopen, iovec, ptrdiff_t, size_t, ssize_t, time_t, timeval, tm, FILE};
 extern "C" {
     // main.h
     pub fn getout(exitval: libc::c_int) -> !;

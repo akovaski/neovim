@@ -59,7 +59,11 @@ pub const mb_ptr2len: unsafe extern "C" fn(_: *const u8) -> i32 = utfc_ptr2len;
 // / @return 0 if s1 == s2, <0 if s1 < s2, >0 if s1 > s2.
 #[inline]
 pub unsafe extern "C" fn mb_strcmp_ic(mut ic: bool, mut s1: *const i8, mut s2: *const i8) -> i32 {
-    return if ic as i32 != 0 { mb_stricmp(s1, s2) } else { strcmp(s1, s2) };
+    return if ic as i32 != 0 {
+        mb_stricmp(s1, s2)
+    } else {
+        strcmp(s1, s2)
+    };
 }
 /*
  * Canonical encoding names and their properties.
@@ -1058,7 +1062,10 @@ static mut enc_alias_table: [C2RustUnnamed_13; 64] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_13 { name: NULL_0 as *const i8, canon: 0 };
+        let mut init = C2RustUnnamed_13 {
+            name: NULL_0 as *const i8,
+            canon: 0,
+        };
         init
     },
 ];
@@ -1088,10 +1095,25 @@ pub unsafe extern "C" fn enc_canon_props(mut name: *const u8) -> i32 {
     if i >= 0 {
         return enc_canon_table[i as usize].prop;
     }
-    if strncmp(name as *mut i8, b"2byte-\x00" as *const u8 as *const i8 as *mut i8, 6) == 0 {
+    if strncmp(
+        name as *mut i8,
+        b"2byte-\x00" as *const u8 as *const i8 as *mut i8,
+        6,
+    ) == 0
+    {
         return ENC_DBCS;
     }
-    if strncmp(name as *mut i8, b"8bit-\x00" as *const u8 as *const i8 as *mut i8, 5) == 0 || strncmp(name as *mut i8, b"iso-8859-\x00" as *const u8 as *const i8 as *mut i8, 9) == 0 {
+    if strncmp(
+        name as *mut i8,
+        b"8bit-\x00" as *const u8 as *const i8 as *mut i8,
+        5,
+    ) == 0
+        || strncmp(
+            name as *mut i8,
+            b"iso-8859-\x00" as *const u8 as *const i8 as *mut i8,
+            9,
+        ) == 0
+    {
         return ENC_8BIT;
     }
     return 0;
@@ -1107,11 +1129,31 @@ pub unsafe extern "C" fn enc_canon_props(mut name: *const u8) -> i32 {
 pub unsafe extern "C" fn bomb_size() -> i32 {
     let mut n = 0;
     if (*curbuf).b_p_bomb != 0 && (*curbuf).b_p_bin == 0 {
-        if *(*curbuf).b_p_fenc as i32 == NUL || strcmp((*curbuf).b_p_fenc as *mut i8, b"utf-8\x00" as *const u8 as *const i8 as *mut i8) == 0 {
+        if *(*curbuf).b_p_fenc as i32 == NUL
+            || strcmp(
+                (*curbuf).b_p_fenc as *mut i8,
+                b"utf-8\x00" as *const u8 as *const i8 as *mut i8,
+            ) == 0
+        {
             n = 3
-        } else if strncmp((*curbuf).b_p_fenc as *mut i8, b"ucs-2\x00" as *const u8 as *const i8 as *mut i8, 5) == 0 || strncmp((*curbuf).b_p_fenc as *mut i8, b"utf-16\x00" as *const u8 as *const i8 as *mut i8, 6) == 0 {
+        } else if strncmp(
+            (*curbuf).b_p_fenc as *mut i8,
+            b"ucs-2\x00" as *const u8 as *const i8 as *mut i8,
+            5,
+        ) == 0
+            || strncmp(
+                (*curbuf).b_p_fenc as *mut i8,
+                b"utf-16\x00" as *const u8 as *const i8 as *mut i8,
+                6,
+            ) == 0
+        {
             n = 2
-        } else if strncmp((*curbuf).b_p_fenc as *mut i8, b"ucs-4\x00" as *const u8 as *const i8 as *mut i8, 5) == 0 {
+        } else if strncmp(
+            (*curbuf).b_p_fenc as *mut i8,
+            b"ucs-4\x00" as *const u8 as *const i8 as *mut i8,
+            5,
+        ) == 0
+        {
             n = 4
         }
     }
@@ -1129,7 +1171,11 @@ pub unsafe extern "C" fn remove_bom(mut s: *mut u8) {
             break;
         }
         if *p.offset(1) as u8 as i32 == 0xbb as i32 && *p.offset(2) as u8 as i32 == 0xbf as i32 {
-            memmove(p as *mut libc::c_void, p.offset(3) as *const libc::c_void, strlen(p.offset(3)).wrapping_add(1));
+            memmove(
+                p as *mut libc::c_void,
+                p.offset(3) as *const libc::c_void,
+                strlen(p.offset(3)).wrapping_add(1),
+            );
         } else {
             p = p.offset(1)
         }
@@ -1204,7 +1250,11 @@ pub unsafe extern "C" fn utf_char2cells(mut c: i32) -> i32 {
             doublewidth.as_ptr(),
             (::std::mem::size_of::<[interval; 113]>() as u64)
                 .wrapping_div(::std::mem::size_of::<interval>() as u64)
-                .wrapping_div(((::std::mem::size_of::<[interval; 113]>() as u64).wrapping_rem(::std::mem::size_of::<interval>() as u64) == 0) as u64) as usize,
+                .wrapping_div(
+                    ((::std::mem::size_of::<[interval; 113]>() as u64)
+                        .wrapping_rem(::std::mem::size_of::<interval>() as u64)
+                        == 0) as u64,
+                ) as usize,
             c,
         ) {
             return 2;
@@ -1214,7 +1264,11 @@ pub unsafe extern "C" fn utf_char2cells(mut c: i32) -> i32 {
                 emoji_width.as_ptr(),
                 (::std::mem::size_of::<[interval; 39]>() as u64)
                     .wrapping_div(::std::mem::size_of::<interval>() as u64)
-                    .wrapping_div(((::std::mem::size_of::<[interval; 39]>() as u64).wrapping_rem(::std::mem::size_of::<interval>() as u64) == 0) as u64) as usize,
+                    .wrapping_div(
+                        ((::std::mem::size_of::<[interval; 39]>() as u64)
+                            .wrapping_rem(::std::mem::size_of::<interval>() as u64)
+                            == 0) as u64,
+                    ) as usize,
                 c,
             ) as i32
                 != 0
@@ -1232,7 +1286,11 @@ pub unsafe extern "C" fn utf_char2cells(mut c: i32) -> i32 {
             ambiguous.as_ptr(),
             (::std::mem::size_of::<[interval; 179]>() as u64)
                 .wrapping_div(::std::mem::size_of::<interval>() as u64)
-                .wrapping_div(((::std::mem::size_of::<[interval; 179]>() as u64).wrapping_rem(::std::mem::size_of::<interval>() as u64) == 0) as u64) as usize,
+                .wrapping_div(
+                    ((::std::mem::size_of::<[interval; 179]>() as u64)
+                        .wrapping_rem(::std::mem::size_of::<interval>() as u64)
+                        == 0) as u64,
+                ) as usize,
             c,
         ) as i32
             != 0
@@ -1295,7 +1353,8 @@ pub unsafe extern "C" fn mb_string2cells(mut str: *const u8) -> size_t {
     let mut p = str;
     while *p as i32 != NUL {
         clen = (clen as u64).wrapping_add(utf_ptr2cells(p) as u64) as size_t as size_t;
-        p = p.offset(Some(Some(mb_ptr2len).expect("non-null function pointer")).expect("non-null function pointer")(p) as isize)
+        p = p.offset(Some(Some(mb_ptr2len).expect("non-null function pointer"))
+            .expect("non-null function pointer")(p) as isize)
     }
     return clen;
 }
@@ -1311,7 +1370,9 @@ pub unsafe extern "C" fn mb_string2cells_len(mut str: *const u8, mut size: size_
     let mut p = str;
     while *p as i32 != NUL && p < str.offset(size as isize) {
         clen = (clen as u64).wrapping_add(utf_ptr2cells(p) as u64) as size_t as size_t;
-        p = p.offset(utf_ptr2len_len(p, size.wrapping_add(p.offset_from(str) as usize) as i32) as isize)
+        p = p.offset(
+            utf_ptr2len_len(p, size.wrapping_add(p.offset_from(str) as usize) as i32) as isize,
+        )
     }
     return clen;
 }
@@ -1334,22 +1395,37 @@ pub unsafe extern "C" fn utf_ptr2char(p: *const u8) -> i32 {
     let len = utf8len_tab_zero[*p.offset(0) as usize];
     if len as i32 > 1 && *p.offset(1) as i32 & 0xc0 as i32 == 0x80 as i32 {
         if len as i32 == 2 {
-            return ((*p.offset(0) as i32 & 0x1f as i32) << 6) + (*p.offset(1) as i32 & 0x3f as i32);
+            return ((*p.offset(0) as i32 & 0x1f as i32) << 6)
+                + (*p.offset(1) as i32 & 0x3f as i32);
         }
         if *p.offset(2) as i32 & 0xc0 as i32 == 0x80 as i32 {
             if len as i32 == 3 {
-                return ((*p.offset(0) as i32 & 0xf as i32) << 12) + ((*p.offset(1) as i32 & 0x3f as i32) << 6) + (*p.offset(2) as i32 & 0x3f as i32);
+                return ((*p.offset(0) as i32 & 0xf as i32) << 12)
+                    + ((*p.offset(1) as i32 & 0x3f as i32) << 6)
+                    + (*p.offset(2) as i32 & 0x3f as i32);
             }
             if *p.offset(3) as i32 & 0xc0 as i32 == 0x80 as i32 {
                 if len as i32 == 4 {
-                    return ((*p.offset(0) as i32 & 0x7 as i32) << 18) + ((*p.offset(1) as i32 & 0x3f as i32) << 12) + ((*p.offset(2) as i32 & 0x3f as i32) << 6) + (*p.offset(3) as i32 & 0x3f as i32);
+                    return ((*p.offset(0) as i32 & 0x7 as i32) << 18)
+                        + ((*p.offset(1) as i32 & 0x3f as i32) << 12)
+                        + ((*p.offset(2) as i32 & 0x3f as i32) << 6)
+                        + (*p.offset(3) as i32 & 0x3f as i32);
                 }
                 if *p.offset(4) as i32 & 0xc0 as i32 == 0x80 as i32 {
                     if len as i32 == 5 {
-                        return ((*p.offset(0) as i32 & 0x3 as i32) << 24) + ((*p.offset(1) as i32 & 0x3f as i32) << 18) + ((*p.offset(2) as i32 & 0x3f as i32) << 12) + ((*p.offset(3) as i32 & 0x3f as i32) << 6) + (*p.offset(4) as i32 & 0x3f as i32);
+                        return ((*p.offset(0) as i32 & 0x3 as i32) << 24)
+                            + ((*p.offset(1) as i32 & 0x3f as i32) << 18)
+                            + ((*p.offset(2) as i32 & 0x3f as i32) << 12)
+                            + ((*p.offset(3) as i32 & 0x3f as i32) << 6)
+                            + (*p.offset(4) as i32 & 0x3f as i32);
                     }
                     if *p.offset(5) as i32 & 0xc0 as i32 == 0x80 as i32 && len as i32 == 6 {
-                        return ((*p.offset(0) as i32 & 0x1 as i32) << 30) + ((*p.offset(1) as i32 & 0x3f as i32) << 24) + ((*p.offset(2) as i32 & 0x3f as i32) << 18) + ((*p.offset(3) as i32 & 0x3f as i32) << 12) + ((*p.offset(4) as i32 & 0x3f as i32) << 6) + (*p.offset(5) as i32 & 0x3f as i32);
+                        return ((*p.offset(0) as i32 & 0x1 as i32) << 30)
+                            + ((*p.offset(1) as i32 & 0x3f as i32) << 24)
+                            + ((*p.offset(2) as i32 & 0x3f as i32) << 18)
+                            + ((*p.offset(3) as i32 & 0x3f as i32) << 12)
+                            + ((*p.offset(4) as i32 & 0x3f as i32) << 6)
+                            + (*p.offset(5) as i32 & 0x3f as i32);
                     }
                 }
             }
@@ -1416,7 +1492,8 @@ unsafe extern "C" fn utf_safe_read_char_adv(mut s: *mut *const u8, mut n: *mut s
 pub unsafe extern "C" fn mb_ptr2char_adv(pp: *mut *const u8) -> i32 {
     let mut c: i32 = 0;
     c = utf_ptr2char(*pp);
-    *pp = (*pp).offset(Some(Some(mb_ptr2len).expect("non-null function pointer")).expect("non-null function pointer")(*pp) as isize);
+    *pp = (*pp).offset(Some(Some(mb_ptr2len).expect("non-null function pointer"))
+        .expect("non-null function pointer")(*pp) as isize);
     return c;
 }
 /*
@@ -1464,7 +1541,10 @@ pub unsafe extern "C" fn utfc_ptr2char(mut p: *const u8, mut pcc: *mut i32) -> i
     c = utf_ptr2char(p);
     len = utf_ptr2len(p);
     /* Only accept a composing char when the first char isn't illegal. */
-    if (len > 1 || (*p as i32) < 0x80 as i32) && *p.offset(len as isize) as i32 >= 0x80 as i32 && utf_composinglike(p, p.offset(len as isize)) as i32 != 0 {
+    if (len > 1 || (*p as i32) < 0x80 as i32)
+        && *p.offset(len as isize) as i32 >= 0x80 as i32
+        && utf_composinglike(p, p.offset(len as isize)) as i32 != 0
+    {
         cc = utf_ptr2char(p.offset(len as isize));
         loop {
             let fresh4 = i;
@@ -1495,7 +1575,11 @@ pub unsafe extern "C" fn utfc_ptr2char(mut p: *const u8, mut pcc: *mut i32) -> i
  * @param [out] pcc: composing chars, last one is 0
  */
 #[no_mangle]
-pub unsafe extern "C" fn utfc_ptr2char_len(mut p: *const u8, mut pcc: *mut i32, mut maxlen: i32) -> i32 {
+pub unsafe extern "C" fn utfc_ptr2char_len(
+    mut p: *const u8,
+    mut pcc: *mut i32,
+    mut maxlen: i32,
+) -> i32 {
     if maxlen > 0 {
     } else {
         assert!(false, "maxlen > 0");
@@ -1504,9 +1588,16 @@ pub unsafe extern "C" fn utfc_ptr2char_len(mut p: *const u8, mut pcc: *mut i32, 
     let mut len = utf_ptr2len_len(p, maxlen);
     // Is it safe to use utf_ptr2char()?
     let mut safe = len > 1 && len <= maxlen;
-    let mut c = if safe as i32 != 0 { utf_ptr2char(p) } else { *p as i32 };
+    let mut c = if safe as i32 != 0 {
+        utf_ptr2char(p)
+    } else {
+        *p as i32
+    };
     // Only accept a composing char when the first char isn't illegal.
-    if (safe as i32 != 0 || c < 0x80 as i32) && len < maxlen && *p.offset(len as isize) as i32 >= 0x80 as i32 {
+    if (safe as i32 != 0 || c < 0x80 as i32)
+        && len < maxlen
+        && *p.offset(len as isize) as i32 >= 0x80 as i32
+    {
         while i < MAX_MCO {
             let mut len_cc = utf_ptr2len_len(p.offset(len as isize), maxlen - len);
             safe = len_cc > 1 && len_cc <= maxlen - len;
@@ -1516,7 +1607,11 @@ pub unsafe extern "C" fn utfc_ptr2char_len(mut p: *const u8, mut pcc: *mut i32, 
                     *fresh5 = utf_ptr2char(p.offset(len as isize));
                     (*fresh5) < 0x80 as i32
                 }
-                || (if i == 0 { utf_composinglike(p, p.offset(len as isize)) as i32 } else { utf_iscomposing(*pcc.offset(i as isize)) as i32 }) == 0
+                || (if i == 0 {
+                    utf_composinglike(p, p.offset(len as isize)) as i32
+                } else {
+                    utf_iscomposing(*pcc.offset(i as isize)) as i32
+                }) == 0
             {
                 break;
             }
@@ -1614,7 +1709,9 @@ pub unsafe extern "C" fn utfc_ptr2len(p: *const u8) -> i32 {
     // skip all of them (otherwise the cursor would get stuck).
     let mut prevlen = 0;
     loop {
-        if (*p.offset(len as isize) as i32) < 0x80 as i32 || !utf_composinglike(p.offset(prevlen as isize), p.offset(len as isize)) {
+        if (*p.offset(len as isize) as i32) < 0x80 as i32
+            || !utf_composinglike(p.offset(prevlen as isize), p.offset(len as isize))
+        {
             return len;
         }
         // Skip over composing char.
@@ -1708,30 +1805,40 @@ pub unsafe extern "C" fn utf_char2bytes(c: i32, buf: *mut u8) -> i32 {
     } else if c < 0x10000 as i32 {
         // 16 bits
         *buf.offset(0) = (0xe0 as i32 as u32).wrapping_add(c as u32 >> 12) as u8;
-        *buf.offset(1) = (0x80 as i32 as u32).wrapping_add(c as u32 >> 6 & 0x3f as i32 as u32) as u8;
+        *buf.offset(1) =
+            (0x80 as i32 as u32).wrapping_add(c as u32 >> 6 & 0x3f as i32 as u32) as u8;
         *buf.offset(2) = (0x80 as i32 + (c & 0x3f as i32)) as u8;
         return 3;
     } else if c < 0x200000 as i32 {
         // 21 bits
         *buf.offset(0) = (0xf0 as i32 as u32).wrapping_add(c as u32 >> 18) as u8; // 31 bits
-        *buf.offset(1) = (0x80 as i32 as u32).wrapping_add(c as u32 >> 12 & 0x3f as i32 as u32) as u8;
-        *buf.offset(2) = (0x80 as i32 as u32).wrapping_add(c as u32 >> 6 & 0x3f as i32 as u32) as u8;
+        *buf.offset(1) =
+            (0x80 as i32 as u32).wrapping_add(c as u32 >> 12 & 0x3f as i32 as u32) as u8;
+        *buf.offset(2) =
+            (0x80 as i32 as u32).wrapping_add(c as u32 >> 6 & 0x3f as i32 as u32) as u8;
         *buf.offset(3) = (0x80 as i32 + (c & 0x3f as i32)) as u8;
         return 4;
     } else if c < 0x4000000 as i32 {
         // 26 bits
         *buf.offset(0) = (0xf8 as i32 as u32).wrapping_add(c as u32 >> 24) as u8;
-        *buf.offset(1) = (0x80 as i32 as u32).wrapping_add(c as u32 >> 18 & 0x3f as i32 as u32) as u8;
-        *buf.offset(2) = (0x80 as i32 as u32).wrapping_add(c as u32 >> 12 & 0x3f as i32 as u32) as u8;
-        *buf.offset(3) = (0x80 as i32 as u32).wrapping_add(c as u32 >> 6 & 0x3f as i32 as u32) as u8;
+        *buf.offset(1) =
+            (0x80 as i32 as u32).wrapping_add(c as u32 >> 18 & 0x3f as i32 as u32) as u8;
+        *buf.offset(2) =
+            (0x80 as i32 as u32).wrapping_add(c as u32 >> 12 & 0x3f as i32 as u32) as u8;
+        *buf.offset(3) =
+            (0x80 as i32 as u32).wrapping_add(c as u32 >> 6 & 0x3f as i32 as u32) as u8;
         *buf.offset(4) = (0x80 as i32 + (c & 0x3f as i32)) as u8;
         return 5;
     } else {
         *buf.offset(0) = (0xfc as i32 as u32).wrapping_add(c as u32 >> 30) as u8;
-        *buf.offset(1) = (0x80 as i32 as u32).wrapping_add(c as u32 >> 24 & 0x3f as i32 as u32) as u8;
-        *buf.offset(2) = (0x80 as i32 as u32).wrapping_add(c as u32 >> 18 & 0x3f as i32 as u32) as u8;
-        *buf.offset(3) = (0x80 as i32 as u32).wrapping_add(c as u32 >> 12 & 0x3f as i32 as u32) as u8;
-        *buf.offset(4) = (0x80 as i32 as u32).wrapping_add(c as u32 >> 6 & 0x3f as i32 as u32) as u8;
+        *buf.offset(1) =
+            (0x80 as i32 as u32).wrapping_add(c as u32 >> 24 & 0x3f as i32 as u32) as u8;
+        *buf.offset(2) =
+            (0x80 as i32 as u32).wrapping_add(c as u32 >> 18 & 0x3f as i32 as u32) as u8;
+        *buf.offset(3) =
+            (0x80 as i32 as u32).wrapping_add(c as u32 >> 12 & 0x3f as i32 as u32) as u8;
+        *buf.offset(4) =
+            (0x80 as i32 as u32).wrapping_add(c as u32 >> 6 & 0x3f as i32 as u32) as u8;
         *buf.offset(5) = (0x80 as i32 + (c & 0x3f as i32)) as u8;
         return 6;
     };
@@ -1747,7 +1854,11 @@ pub unsafe extern "C" fn utf_iscomposing(mut c: i32) -> bool {
         combining.as_ptr(),
         (::std::mem::size_of::<[interval; 280]>() as u64)
             .wrapping_div(::std::mem::size_of::<interval>() as u64)
-            .wrapping_div(((::std::mem::size_of::<[interval; 280]>() as u64).wrapping_rem(::std::mem::size_of::<interval>() as u64) == 0) as u64) as usize,
+            .wrapping_div(
+                ((::std::mem::size_of::<[interval; 280]>() as u64)
+                    .wrapping_rem(::std::mem::size_of::<interval>() as u64)
+                    == 0) as u64,
+            ) as usize,
         c,
     );
 }
@@ -1761,7 +1872,10 @@ pub unsafe extern "C" fn utf_printable(mut c: i32) -> bool {
      * 0xd800-0xdfff is reserved for UTF-16, actually illegal. */
     static mut nonprint: [interval; 9] = [
         {
-            let mut init = interval { first: 0x70f as i32 as i64, last: 0x70f as i32 as i64 };
+            let mut init = interval {
+                first: 0x70f as i32 as i64,
+                last: 0x70f as i32 as i64,
+            };
             init
         },
         {
@@ -1825,7 +1939,11 @@ pub unsafe extern "C" fn utf_printable(mut c: i32) -> bool {
         nonprint.as_mut_ptr(),
         (::std::mem::size_of::<[interval; 9]>() as u64)
             .wrapping_div(::std::mem::size_of::<interval>() as u64)
-            .wrapping_div(((::std::mem::size_of::<[interval; 9]>() as u64).wrapping_rem(::std::mem::size_of::<interval>() as u64) == 0) as u64) as usize,
+            .wrapping_div(
+                ((::std::mem::size_of::<[interval; 9]>() as u64)
+                    .wrapping_rem(::std::mem::size_of::<interval>() as u64)
+                    == 0) as u64,
+            ) as usize,
         c,
     );
 }
@@ -2415,7 +2533,11 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
     let mut bot = 0;
     let mut top = (::std::mem::size_of::<[clinterval; 71]>() as u64)
         .wrapping_div(::std::mem::size_of::<clinterval>() as u64)
-        .wrapping_div(((::std::mem::size_of::<[clinterval; 71]>() as u64).wrapping_rem(::std::mem::size_of::<clinterval>() as u64) == 0) as u64)
+        .wrapping_div(
+            ((::std::mem::size_of::<[clinterval; 71]>() as u64)
+                .wrapping_rem(::std::mem::size_of::<clinterval>() as u64)
+                == 0) as u64,
+        )
         .wrapping_sub(1) as i32;
     let mut mid: i32 = 0;
     /* First quick check for Latin1 characters, use 'iskeyword'. */
@@ -2447,7 +2569,11 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
         emoji_all.as_ptr(),
         (::std::mem::size_of::<[interval; 151]>() as u64)
             .wrapping_div(::std::mem::size_of::<interval>() as u64)
-            .wrapping_div(((::std::mem::size_of::<[interval; 151]>() as u64).wrapping_rem(::std::mem::size_of::<interval>() as u64) == 0) as u64) as usize,
+            .wrapping_div(
+                ((::std::mem::size_of::<[interval; 151]>() as u64)
+                    .wrapping_rem(::std::mem::size_of::<interval>() as u64)
+                    == 0) as u64,
+            ) as usize,
         c,
     ) {
         return 3;
@@ -2462,7 +2588,11 @@ pub unsafe extern "C" fn utf_ambiguous_width(mut c: i32) -> bool {
             ambiguous.as_ptr(),
             (::std::mem::size_of::<[interval; 179]>() as u64)
                 .wrapping_div(::std::mem::size_of::<interval>() as u64)
-                .wrapping_div(((::std::mem::size_of::<[interval; 179]>() as u64).wrapping_rem(::std::mem::size_of::<interval>() as u64) == 0) as u64) as usize,
+                .wrapping_div(
+                    ((::std::mem::size_of::<[interval; 179]>() as u64)
+                        .wrapping_rem(::std::mem::size_of::<interval>() as u64)
+                        == 0) as u64,
+                ) as usize,
             c,
         ) as i32
             != 0
@@ -2470,7 +2600,11 @@ pub unsafe extern "C" fn utf_ambiguous_width(mut c: i32) -> bool {
                 emoji_all.as_ptr(),
                 (::std::mem::size_of::<[interval; 151]>() as u64)
                     .wrapping_div(::std::mem::size_of::<interval>() as u64)
-                    .wrapping_div(((::std::mem::size_of::<[interval; 151]>() as u64).wrapping_rem(::std::mem::size_of::<interval>() as u64) == 0) as u64) as usize,
+                    .wrapping_div(
+                        ((::std::mem::size_of::<[interval; 151]>() as u64)
+                            .wrapping_rem(::std::mem::size_of::<interval>() as u64)
+                            == 0) as u64,
+                    ) as usize,
                 c,
             ) as i32
                 != 0);
@@ -2480,7 +2614,11 @@ pub unsafe extern "C" fn utf_ambiguous_width(mut c: i32) -> bool {
  * Return the converted equivalent of "a", which is a UCS-4 character.  Use
  * the given conversion "table".  Uses binary search on "table".
  */
-unsafe extern "C" fn utf_convert(mut a: i32, table: *const convertStruct, mut n_items: size_t) -> i32 {
+unsafe extern "C" fn utf_convert(
+    mut a: i32,
+    table: *const convertStruct,
+    mut n_items: size_t,
+) -> i32 {
     let mut start: size_t = 0; /* indices into table */
     let mut mid: size_t = 0;
     let mut end: size_t = 0;
@@ -2495,7 +2633,12 @@ unsafe extern "C" fn utf_convert(mut a: i32, table: *const convertStruct, mut n_
             end = mid
         }
     }
-    if start < n_items && (*table.offset(start as isize)).rangeStart <= a && a <= (*table.offset(start as isize)).rangeEnd && (a - (*table.offset(start as isize)).rangeStart) % (*table.offset(start as isize)).step == 0 {
+    if start < n_items
+        && (*table.offset(start as isize)).rangeStart <= a
+        && a <= (*table.offset(start as isize)).rangeEnd
+        && (a - (*table.offset(start as isize)).rangeStart) % (*table.offset(start as isize)).step
+            == 0
+    {
         return a + (*table.offset(start as isize)).offset;
     } else {
         return a;
@@ -2509,14 +2652,22 @@ unsafe extern "C" fn utf_convert(mut a: i32, table: *const convertStruct, mut n_
 pub unsafe extern "C" fn utf_fold(mut a: i32) -> i32 {
     if a < 0x80 as i32 {
         // be fast for ASCII
-        return if a >= 0x41 as i32 && a <= 0x5a as i32 { (a) + 32 } else { a };
+        return if a >= 0x41 as i32 && a <= 0x5a as i32 {
+            (a) + 32
+        } else {
+            a
+        };
     }
     return utf_convert(
         a,
         foldCase.as_ptr(),
         (::std::mem::size_of::<[convertStruct; 192]>() as u64)
             .wrapping_div(::std::mem::size_of::<convertStruct>() as u64)
-            .wrapping_div(((::std::mem::size_of::<[convertStruct; 192]>() as u64).wrapping_rem(::std::mem::size_of::<convertStruct>() as u64) == 0) as u64) as usize,
+            .wrapping_div(
+                ((::std::mem::size_of::<[convertStruct; 192]>() as u64)
+                    .wrapping_rem(::std::mem::size_of::<convertStruct>() as u64)
+                    == 0) as u64,
+            ) as usize,
     );
 }
 // Vim's own character class functions.  These exist because many library
@@ -2529,7 +2680,11 @@ pub unsafe extern "C" fn utf_fold(mut a: i32) -> i32 {
 pub unsafe extern "C" fn mb_toupper(mut a: i32) -> i32 {
     /* If 'casemap' contains "keepascii" use ASCII style toupper(). */
     if a < 128 && cmp_flags & CMP_KEEPASCII as u32 != 0 {
-        return if a < 'a' as i32 || a > 'z' as i32 { a } else { (a) - ('a' as i32 - 'A' as i32) };
+        return if a < 'a' as i32 || a > 'z' as i32 {
+            a
+        } else {
+            (a) - ('a' as i32 - 'A' as i32)
+        };
     }
     /* If towupper() is available and handles Unicode, use it. */
     if cmp_flags & CMP_INTERNAL as u32 == 0 {
@@ -2545,7 +2700,11 @@ pub unsafe extern "C" fn mb_toupper(mut a: i32) -> i32 {
         toUpper.as_ptr(),
         (::std::mem::size_of::<[convertStruct; 187]>() as u64)
             .wrapping_div(::std::mem::size_of::<convertStruct>() as u64)
-            .wrapping_div(((::std::mem::size_of::<[convertStruct; 187]>() as u64).wrapping_rem(::std::mem::size_of::<convertStruct>() as u64) == 0) as u64) as usize,
+            .wrapping_div(
+                ((::std::mem::size_of::<[convertStruct; 187]>() as u64)
+                    .wrapping_rem(::std::mem::size_of::<convertStruct>() as u64)
+                    == 0) as u64,
+            ) as usize,
     );
 }
 #[no_mangle]
@@ -2559,7 +2718,11 @@ pub unsafe extern "C" fn mb_islower(mut a: i32) -> bool {
 pub unsafe extern "C" fn mb_tolower(mut a: i32) -> i32 {
     /* If 'casemap' contains "keepascii" use ASCII style tolower(). */
     if a < 128 && cmp_flags & CMP_KEEPASCII as u32 != 0 {
-        return if a < 'A' as i32 || a > 'Z' as i32 { a } else { (a) + ('a' as i32 - 'A' as i32) };
+        return if a < 'A' as i32 || a > 'Z' as i32 {
+            a
+        } else {
+            (a) + ('a' as i32 - 'A' as i32)
+        };
     }
     /* If towlower() is available and handles Unicode, use it. */
     if cmp_flags & CMP_INTERNAL as u32 == 0 {
@@ -2575,14 +2738,23 @@ pub unsafe extern "C" fn mb_tolower(mut a: i32) -> i32 {
         toLower.as_ptr(),
         (::std::mem::size_of::<[convertStruct; 172]>() as u64)
             .wrapping_div(::std::mem::size_of::<convertStruct>() as u64)
-            .wrapping_div(((::std::mem::size_of::<[convertStruct; 172]>() as u64).wrapping_rem(::std::mem::size_of::<convertStruct>() as u64) == 0) as u64) as usize,
+            .wrapping_div(
+                ((::std::mem::size_of::<[convertStruct; 172]>() as u64)
+                    .wrapping_rem(::std::mem::size_of::<convertStruct>() as u64)
+                    == 0) as u64,
+            ) as usize,
     );
 }
 #[no_mangle]
 pub unsafe extern "C" fn mb_isupper(mut a: i32) -> bool {
     return mb_tolower(a) != a;
 }
-unsafe extern "C" fn utf_strnicmp(mut s1: *const u8, mut s2: *const u8, mut n1: size_t, mut n2: size_t) -> i32 {
+unsafe extern "C" fn utf_strnicmp(
+    mut s1: *const u8,
+    mut s2: *const u8,
+    mut n1: size_t,
+    mut n2: size_t,
+) -> i32 {
     let mut c1: i32 = 0;
     let mut c2: i32 = 0;
     let mut cdiff: i32 = 0;
@@ -2656,7 +2828,12 @@ unsafe extern "C" fn utf_strnicmp(mut s1: *const u8, mut s2: *const u8, mut n1: 
 // / @param[out] codepoints incremented with UTF-32 code point size
 // / @param[out] codeunits incremented with UTF-16 code unit size
 #[no_mangle]
-pub unsafe extern "C" fn mb_utflen(mut s: *const u8, mut len: size_t, mut codepoints: *mut size_t, mut codeunits: *mut size_t) {
+pub unsafe extern "C" fn mb_utflen(
+    mut s: *const u8,
+    mut len: size_t,
+    mut codepoints: *mut size_t,
+    mut codeunits: *mut size_t,
+) {
     let mut count = 0u64;
     let mut extra = 0u64;
     let mut clen: size_t = 0;
@@ -2665,7 +2842,11 @@ pub unsafe extern "C" fn mb_utflen(mut s: *const u8, mut len: size_t, mut codepo
         clen = utf_ptr2len_len(s.offset(i as isize), len.wrapping_sub(i) as i32) as size_t;
         // NB: gets the byte value of invalid sequence bytes.
         // we only care whether the char fits in the BMP or not
-        let mut c = if clen > 1 { utf_ptr2char(s.offset(i as isize)) } else { *s.offset(i as isize) as i32 };
+        let mut c = if clen > 1 {
+            utf_ptr2char(s.offset(i as isize))
+        } else {
+            *s.offset(i as isize) as i32
+        };
         count = count.wrapping_add(1);
         if c > 0xffff as i32 {
             extra = extra.wrapping_add(1)
@@ -2676,7 +2857,12 @@ pub unsafe extern "C" fn mb_utflen(mut s: *const u8, mut len: size_t, mut codepo
     *codeunits = (*codeunits as u64).wrapping_add(count.wrapping_add(extra)) as size_t as size_t;
 }
 #[no_mangle]
-pub unsafe extern "C" fn mb_utf_index_to_bytes(mut s: *const u8, mut len: size_t, mut index: size_t, mut use_utf16_units: bool) -> ssize_t {
+pub unsafe extern "C" fn mb_utf_index_to_bytes(
+    mut s: *const u8,
+    mut len: size_t,
+    mut index: size_t,
+    mut use_utf16_units: bool,
+) -> ssize_t {
     let mut count = 0u64;
     let mut clen: size_t = 0;
     let mut i: size_t = 0;
@@ -2688,7 +2874,11 @@ pub unsafe extern "C" fn mb_utf_index_to_bytes(mut s: *const u8, mut len: size_t
         clen = utf_ptr2len_len(s.offset(i as isize), len.wrapping_sub(i) as i32) as size_t;
         // NB: gets the byte value of invalid sequence bytes.
         // we only care whether the char fits in the BMP or not
-        let mut c = if clen > 1 { utf_ptr2char(s.offset(i as isize)) } else { *s.offset(i as isize) as i32 };
+        let mut c = if clen > 1 {
+            utf_ptr2char(s.offset(i as isize))
+        } else {
+            *s.offset(i as isize) as i32
+        };
         count = count.wrapping_add(1);
         if use_utf16_units as i32 != 0 && c > 0xffff as i32 {
             count = count.wrapping_add(1)
@@ -2753,7 +2943,10 @@ pub unsafe extern "C" fn show_utf8() {
         if clen == 0 {
             /* start of (composing) character, get its length */
             if i > 0 {
-                strcpy(IObuff.as_mut_ptr().offset(rlen as isize) as *mut i8, b"+ \x00" as *const u8 as *const i8 as *mut i8); /* NUL is stored as NL */
+                strcpy(
+                    IObuff.as_mut_ptr().offset(rlen as isize) as *mut i8,
+                    b"+ \x00" as *const u8 as *const i8 as *mut i8,
+                ); /* NUL is stored as NL */
                 rlen += 2
             }
             clen = utf_ptr2len(line.offset(i as isize))
@@ -2761,7 +2954,11 @@ pub unsafe extern "C" fn show_utf8() {
         sprintf(
             (IObuff.as_mut_ptr() as *mut i8).offset(rlen as isize),
             b"%02x \x00" as *const u8 as *const i8,
-            if *line.offset(i as isize) as i32 == NL as i32 { NUL } else { *line.offset(i as isize) as i32 },
+            if *line.offset(i as isize) as i32 == NL as i32 {
+                NUL
+            } else {
+                *line.offset(i as isize) as i32
+            },
         );
         clen -= 1;
         rlen += strlen(IObuff.as_mut_ptr().offset(rlen as isize) as *mut i8) as i32;
@@ -2802,7 +2999,9 @@ pub unsafe extern "C" fn utf_head_off(mut base: *const u8, mut p: *const u8) -> 
         /* Check for illegal sequence. Do allow an illegal byte after where we
          * started. */
         len = utf8len_tab[*q as usize] as i32;
-        if len != (s.offset_from(q) as i64 + 1) as i32 && len != (p.offset_from(q) as i64 + 1) as i32 {
+        if len != (s.offset_from(q) as i64 + 1) as i32
+            && len != (p.offset_from(q) as i64 + 1) as i32
+        {
             return 0;
         }
         if q <= base {
@@ -3014,7 +3213,11 @@ pub unsafe extern "C" fn mb_check_adjust_col(mut win_: *mut libc::c_void) {
         }
         // Reset `coladd` when the cursor would be on the right half of a
         // double-wide character.
-        if (*win).w_cursor.coladd == 1 && *p.offset((*win).w_cursor.col as isize) as i32 != TAB as i32 && vim_isprintc(utf_ptr2char(p.offset((*win).w_cursor.col as isize))) as i32 != 0 && ptr2cells(p.offset((*win).w_cursor.col as isize)) > 1 {
+        if (*win).w_cursor.coladd == 1
+            && *p.offset((*win).w_cursor.col as isize) as i32 != TAB as i32
+            && vim_isprintc(utf_ptr2char(p.offset((*win).w_cursor.col as isize))) as i32 != 0
+            && ptr2cells(p.offset((*win).w_cursor.col as isize)) > 1
+        {
             (*win).w_cursor.coladd = 0
         }
     };
@@ -3042,7 +3245,8 @@ pub unsafe extern "C" fn mb_charlen(mut str: *mut u8) -> i32 {
     }
     count = 0;
     while *p as i32 != NUL {
-        p = p.offset(Some(Some(mb_ptr2len).expect("non-null function pointer")).expect("non-null function pointer")(p) as isize);
+        p = p.offset(Some(Some(mb_ptr2len).expect("non-null function pointer"))
+            .expect("non-null function pointer")(p) as isize);
         count += 1
     }
     return count;
@@ -3056,7 +3260,8 @@ pub unsafe extern "C" fn mb_charlen_len(mut str: *mut u8, mut len: i32) -> i32 {
     let mut count: i32 = 0;
     count = 0;
     while *p as i32 != NUL && p < str.offset(len as isize) {
-        p = p.offset(Some(Some(mb_ptr2len).expect("non-null function pointer")).expect("non-null function pointer")(p) as isize);
+        p = p.offset(Some(Some(mb_ptr2len).expect("non-null function pointer"))
+            .expect("non-null function pointer")(p) as isize);
         count += 1
     }
     return count;
@@ -3081,12 +3286,18 @@ pub unsafe extern "C" fn mb_unescape(pp: *mut *const i8) -> *const i8 {
     // Maximum length of a utf-8 character is 4 bytes.
     let mut str_idx: usize = 0;
     while *str.offset(str_idx as isize) as i32 != NUL && buf_idx < 4 {
-        if *str.offset(str_idx as isize) as i32 == K_SPECIAL && *str.offset(str_idx.wrapping_add(1) as isize) as i32 == KS_SPECIAL && *str.offset(str_idx.wrapping_add(2) as isize) as i32 == KE_FILLER {
+        if *str.offset(str_idx as isize) as i32 == K_SPECIAL
+            && *str.offset(str_idx.wrapping_add(1) as isize) as i32 == KS_SPECIAL
+            && *str.offset(str_idx.wrapping_add(2) as isize) as i32 == KE_FILLER
+        {
             let fresh7 = buf_idx;
             buf_idx = buf_idx.wrapping_add(1);
             buf[fresh7 as usize] = K_SPECIAL as i8;
             str_idx = (str_idx as u64).wrapping_add(2) as size_t as size_t
-        } else if *str.offset(str_idx as isize) as i32 == K_SPECIAL && *str.offset(str_idx.wrapping_add(1) as isize) as i32 == KS_EXTRA && *str.offset(str_idx.wrapping_add(2) as isize) as i32 == KE_CSI as i32 {
+        } else if *str.offset(str_idx as isize) as i32 == K_SPECIAL
+            && *str.offset(str_idx.wrapping_add(1) as isize) as i32 == KS_EXTRA
+            && *str.offset(str_idx.wrapping_add(2) as isize) as i32 == KE_CSI as i32
+        {
             let fresh8 = buf_idx;
             buf_idx = buf_idx.wrapping_add(1);
             buf[fresh8 as usize] = CSI as i8;
@@ -3119,10 +3330,20 @@ pub unsafe extern "C" fn mb_unescape(pp: *mut *const i8) -> *const i8 {
  */
 #[no_mangle]
 pub unsafe extern "C" fn enc_skip(mut p: *mut u8) -> *mut u8 {
-    if strncmp(p as *mut i8, b"2byte-\x00" as *const u8 as *const i8 as *mut i8, 6) == 0 {
+    if strncmp(
+        p as *mut i8,
+        b"2byte-\x00" as *const u8 as *const i8 as *mut i8,
+        6,
+    ) == 0
+    {
         return p.offset(6);
     }
-    if strncmp(p as *mut i8, b"8bit-\x00" as *const u8 as *const i8 as *mut i8, 5) == 0 {
+    if strncmp(
+        p as *mut i8,
+        b"8bit-\x00" as *const u8 as *const i8 as *mut i8,
+        5,
+    ) == 0
+    {
         return p.offset(5);
     }
     return p;
@@ -3138,7 +3359,11 @@ pub unsafe extern "C" fn enc_canonize(mut enc: *mut u8) -> *mut u8 {
     let mut p = 0 as *mut u8;
     let mut s = 0 as *mut u8;
     let mut i: i32 = 0;
-    if strcmp(enc as *mut i8, b"default\x00" as *const u8 as *const i8 as *mut i8) == 0 {
+    if strcmp(
+        enc as *mut i8,
+        b"default\x00" as *const u8 as *const i8 as *mut i8,
+    ) == 0
+    {
         // Use the default encoding as found by set_init_1().
         return vim_strsave(fenc_default);
     }
@@ -3155,7 +3380,11 @@ pub unsafe extern "C" fn enc_canonize(mut enc: *mut u8) -> *mut u8 {
         } else {
             let fresh11 = p;
             p = p.offset(1);
-            *fresh11 = if (*s as i32) < 'A' as i32 || *s as i32 > 'Z' as i32 { *s as i32 } else { (*s as i32) + ('a' as i32 - 'A' as i32) } as u8
+            *fresh11 = if (*s as i32) < 'A' as i32 || *s as i32 > 'Z' as i32 {
+                *s as i32
+            } else {
+                (*s as i32) + ('a' as i32 - 'A' as i32)
+            } as u8
         }
         s = s.offset(1)
     }
@@ -3163,27 +3392,68 @@ pub unsafe extern "C" fn enc_canonize(mut enc: *mut u8) -> *mut u8 {
     /* Skip "2byte-" and "8bit-". */
     p = enc_skip(r);
     /* Change "microsoft-cp" to "cp".  Used in some spell files. */
-    if strncmp(p as *mut i8, b"microsoft-cp\x00" as *const u8 as *const i8 as *mut i8, 12) == 0 {
-        memmove(p as *mut libc::c_void, p.offset(10) as *const libc::c_void, strlen(p.offset(10) as *mut i8).wrapping_add(1));
+    if strncmp(
+        p as *mut i8,
+        b"microsoft-cp\x00" as *const u8 as *const i8 as *mut i8,
+        12,
+    ) == 0
+    {
+        memmove(
+            p as *mut libc::c_void,
+            p.offset(10) as *const libc::c_void,
+            strlen(p.offset(10) as *mut i8).wrapping_add(1),
+        );
     }
     /* "iso8859" -> "iso-8859" */
-    if strncmp(p as *mut i8, b"iso8859\x00" as *const u8 as *const i8 as *mut i8, 7) == 0 {
-        memmove(p.offset(4) as *mut libc::c_void, p.offset(3) as *const libc::c_void, strlen(p.offset(3) as *mut i8).wrapping_add(1));
+    if strncmp(
+        p as *mut i8,
+        b"iso8859\x00" as *const u8 as *const i8 as *mut i8,
+        7,
+    ) == 0
+    {
+        memmove(
+            p.offset(4) as *mut libc::c_void,
+            p.offset(3) as *const libc::c_void,
+            strlen(p.offset(3) as *mut i8).wrapping_add(1),
+        );
         *p.offset(3) = '-' as i32 as u8
     }
     /* "iso-8859n" -> "iso-8859-n" */
-    if strncmp(p as *mut i8, b"iso-8859\x00" as *const u8 as *const i8 as *mut i8, 8) == 0 && *p.offset(8) as i32 != '-' as i32 {
-        memmove(p.offset(9) as *mut libc::c_void, p.offset(8) as *const libc::c_void, strlen(p.offset(8) as *mut i8).wrapping_add(1));
+    if strncmp(
+        p as *mut i8,
+        b"iso-8859\x00" as *const u8 as *const i8 as *mut i8,
+        8,
+    ) == 0
+        && *p.offset(8) as i32 != '-' as i32
+    {
+        memmove(
+            p.offset(9) as *mut libc::c_void,
+            p.offset(8) as *const libc::c_void,
+            strlen(p.offset(8) as *mut i8).wrapping_add(1),
+        );
         *p.offset(8) = '-' as i32 as u8
     }
     /* "latin-N" -> "latinN" */
-    if strncmp(p as *mut i8, b"latin-\x00" as *const u8 as *const i8 as *mut i8, 6) == 0 {
-        memmove(p.offset(5) as *mut libc::c_void, p.offset(6) as *const libc::c_void, strlen(p.offset(6) as *mut i8).wrapping_add(1));
+    if strncmp(
+        p as *mut i8,
+        b"latin-\x00" as *const u8 as *const i8 as *mut i8,
+        6,
+    ) == 0
+    {
+        memmove(
+            p.offset(5) as *mut libc::c_void,
+            p.offset(6) as *const libc::c_void,
+            strlen(p.offset(6) as *mut i8).wrapping_add(1),
+        );
     }
     if enc_canon_search(p) >= 0 {
         /* canonical name can be used unmodified */
         if p != r {
-            memmove(r as *mut libc::c_void, p as *const libc::c_void, strlen(p as *mut i8).wrapping_add(1));
+            memmove(
+                r as *mut libc::c_void,
+                p as *const libc::c_void,
+                strlen(p as *mut i8).wrapping_add(1),
+            );
         }
     } else {
         i = enc_alias_search(p);
@@ -3246,18 +3516,32 @@ pub unsafe extern "C" fn enc_locale() -> *mut u8 {
     let mut current_block_24: u64;
     if !p.is_null() {
         if p > s.offset(2)
-            && strncasecmp(p.offset(1) as *mut i8, b"EUC\x00" as *const u8 as *const i8 as *mut i8, 3) == 0
-            && *(*__ctype_b_loc()).offset(*p.offset(4) as i32 as isize) as i32 & _ISalnum as i32 as u16 as i32 == 0
+            && strncasecmp(
+                p.offset(1) as *mut i8,
+                b"EUC\x00" as *const u8 as *const i8 as *mut i8,
+                3,
+            ) == 0
+            && *(*__ctype_b_loc()).offset(*p.offset(4) as i32 as isize) as i32
+                & _ISalnum as i32 as u16 as i32
+                == 0
             && *p.offset(4) as i32 != '-' as i32
             && *p.offset(-(3) as isize) as i32 == '_' as i32
         {
             // Copy "XY.EUC" to "euc-XY" to buf[10].
-            memmove(buf.as_mut_ptr() as *mut libc::c_void, b"euc-\x00" as *const u8 as *const i8 as *const libc::c_void, 4);
-            buf[4 as i32 as usize] = if *p.offset(-(2) as isize) as u32 >= 'A' as i32 as u32 && *p.offset(-(2) as isize) as u32 <= 'Z' as i32 as u32
-                || *p.offset(-(2) as isize) as u32 >= 'a' as i32 as u32 && *p.offset(-(2) as isize) as u32 <= 'z' as i32 as u32
-                || ascii_isdigit(*p.offset(-(2) ) as u8 as char) as i32 != 0
+            memmove(
+                buf.as_mut_ptr() as *mut libc::c_void,
+                b"euc-\x00" as *const u8 as *const i8 as *const libc::c_void,
+                4,
+            );
+            buf[4 as i32 as usize] = if *p.offset(-(2) as isize) as u32 >= 'A' as i32 as u32
+                && *p.offset(-(2) as isize) as u32 <= 'Z' as i32 as u32
+                || *p.offset(-(2) as isize) as u32 >= 'a' as i32 as u32
+                    && *p.offset(-(2) as isize) as u32 <= 'z' as i32 as u32
+                || ascii_isdigit(*p.offset(-(2)) as u8 as char) as i32 != 0
             {
-                if (*p.offset(-(2) as isize) as i32) < 'A' as i32 || *p.offset(-(2) as isize) as i32 > 'Z' as i32 {
+                if (*p.offset(-(2) as isize) as i32) < 'A' as i32
+                    || *p.offset(-(2) as isize) as i32 > 'Z' as i32
+                {
                     *p.offset(-(2) as isize) as i32
                 } else {
                     (*p.offset(-(2) as isize) as i32) + ('a' as i32 - 'A' as i32)
@@ -3265,11 +3549,15 @@ pub unsafe extern "C" fn enc_locale() -> *mut u8 {
             } else {
                 0
             } as i8;
-            buf[5 as i32 as usize] = if *p.offset(-(1) as isize) as u32 >= 'A' as i32 as u32 && *p.offset(-(1) as isize) as u32 <= 'Z' as i32 as u32
-                || *p.offset(-(1) as isize) as u32 >= 'a' as i32 as u32 && *p.offset(-(1) as isize) as u32 <= 'z' as i32 as u32
+            buf[5 as i32 as usize] = if *p.offset(-(1) as isize) as u32 >= 'A' as i32 as u32
+                && *p.offset(-(1) as isize) as u32 <= 'Z' as i32 as u32
+                || *p.offset(-(1) as isize) as u32 >= 'a' as i32 as u32
+                    && *p.offset(-(1) as isize) as u32 <= 'z' as i32 as u32
                 || ascii_isdigit(*p.offset(-(1)) as u8 as char) as i32 != 0
             {
-                if (*p.offset(-(1) as isize) as i32) < 'A' as i32 || *p.offset(-(1) as isize) as i32 > 'Z' as i32 {
+                if (*p.offset(-(1) as isize) as i32) < 'A' as i32
+                    || *p.offset(-(1) as isize) as i32 > 'Z' as i32
+                {
                     *p.offset(-(1) as isize) as i32
                 } else {
                     (*p.offset(-(1) as isize) as i32) + ('a' as i32 - 'A' as i32)
@@ -3289,17 +3577,25 @@ pub unsafe extern "C" fn enc_locale() -> *mut u8 {
     match current_block_24 {
         16296608149235199289 => {
             i = 0;
-            while i < ::std::mem::size_of::<[i8; 50]>() as u64 as i32 - 1 && *s.offset(i as isize) as i32 != NUL {
-                if *s.offset(i as isize) as i32 == '_' as i32 || *s.offset(i as isize) as i32 == '-' as i32 {
+            while i < ::std::mem::size_of::<[i8; 50]>() as u64 as i32 - 1
+                && *s.offset(i as isize) as i32 != NUL
+            {
+                if *s.offset(i as isize) as i32 == '_' as i32
+                    || *s.offset(i as isize) as i32 == '-' as i32
+                {
                     buf[i as usize] = '-' as i32 as i8
                 } else {
-                    if !(*s.offset(i as isize) as u8 as u32 >= 'A' as i32 as u32 && *s.offset(i as isize) as u8 as u32 <= 'Z' as i32 as u32
-                        || *s.offset(i as isize) as u8 as u32 >= 'a' as i32 as u32 && *s.offset(i as isize) as u8 as u32 <= 'z' as i32 as u32
+                    if !(*s.offset(i as isize) as u8 as u32 >= 'A' as i32 as u32
+                        && *s.offset(i as isize) as u8 as u32 <= 'Z' as i32 as u32
+                        || *s.offset(i as isize) as u8 as u32 >= 'a' as i32 as u32
+                            && *s.offset(i as isize) as u8 as u32 <= 'z' as i32 as u32
                         || ascii_isdigit(*s.offset(i as isize) as u8 as char) as i32 != 0)
                     {
                         break;
                     }
-                    buf[i as usize] = if (*s.offset(i as isize) as i32) < 'A' as i32 || *s.offset(i as isize) as i32 > 'Z' as i32 {
+                    buf[i as usize] = if (*s.offset(i as isize) as i32) < 'A' as i32
+                        || *s.offset(i as isize) as i32 > 'Z' as i32
+                    {
                         *s.offset(i as isize) as i32
                     } else {
                         (*s.offset(i as isize) as i32) + ('a' as i32 - 'A' as i32)
@@ -3340,7 +3636,13 @@ pub unsafe extern "C" fn my_iconv_open(mut to: *mut u8, mut from: *mut u8) -> *m
          */
         p = tobuf.as_mut_ptr() as *mut i8;
         tolen = ICONV_TESTLEN as size_t;
-        iconv(fd, NULL_0 as *mut *mut i8, NULL_0 as *mut size_t, &mut p, &mut tolen);
+        iconv(
+            fd,
+            NULL_0 as *mut *mut i8,
+            NULL_0 as *mut size_t,
+            &mut p,
+            &mut tolen,
+        );
         if p.is_null() {
             iconv_working = kBroken;
             iconv_close(fd);
@@ -3359,7 +3661,13 @@ pub const ICONV_TESTLEN: i32 = 400;
  * Returns the converted string in allocated memory.  NULL for an error.
  * If resultlenp is not NULL, sets it to the result length in bytes.
  */
-unsafe extern "C" fn iconv_string(vcp: *const vimconv_T, mut str: *mut u8, mut slen: size_t, mut unconvlenp: *mut size_t, mut resultlenp: *mut size_t) -> *mut u8 {
+unsafe extern "C" fn iconv_string(
+    vcp: *const vimconv_T,
+    mut str: *mut u8,
+    mut slen: size_t,
+    mut unconvlenp: *mut size_t,
+    mut resultlenp: *mut size_t,
+) -> *mut u8 {
     let mut from = 0 as *const i8;
     let mut fromlen: size_t = 0;
     let mut to = 0 as *mut i8;
@@ -3387,11 +3695,21 @@ unsafe extern "C" fn iconv_string(vcp: *const vimconv_T, mut str: *mut u8, mut s
         tolen = len.wrapping_sub(done).wrapping_sub(2);
         // Avoid a warning for systems with a wrong iconv() prototype by
         // casting the second argument to void *.
-        if iconv((*vcp).vc_fd, &mut from as *mut *const i8 as *mut libc::c_void as *mut *mut i8, &mut fromlen, &mut to, &mut tolen) != SIZE_MAX as usize {
+        if iconv(
+            (*vcp).vc_fd,
+            &mut from as *mut *const i8 as *mut libc::c_void as *mut *mut i8,
+            &mut fromlen,
+            &mut to,
+            &mut tolen,
+        ) != SIZE_MAX as usize
+        {
             // Finished, append a NUL.
             *to = NUL as i8;
             break;
-        } else if !(*vcp).vc_fail && !unconvlenp.is_null() && (*ICONV_ERRNO == ICONV_EINVAL || *ICONV_ERRNO == EINVAL) {
+        } else if !(*vcp).vc_fail
+            && !unconvlenp.is_null()
+            && (*ICONV_ERRNO == ICONV_EINVAL || *ICONV_ERRNO == EINVAL)
+        {
             // Check both ICONV_EINVAL and EINVAL, because the dynamically loaded
             // iconv library may use one of them.
             // Handle an incomplete sequence at the end.
@@ -3399,7 +3717,12 @@ unsafe extern "C" fn iconv_string(vcp: *const vimconv_T, mut str: *mut u8, mut s
             *unconvlenp = fromlen;
             break;
         } else {
-            if !(*vcp).vc_fail && (*ICONV_ERRNO == ICONV_EILSEQ || *ICONV_ERRNO == EILSEQ || *ICONV_ERRNO == ICONV_EINVAL || *ICONV_ERRNO == EINVAL) {
+            if !(*vcp).vc_fail
+                && (*ICONV_ERRNO == ICONV_EILSEQ
+                    || *ICONV_ERRNO == EILSEQ
+                    || *ICONV_ERRNO == ICONV_EINVAL
+                    || *ICONV_ERRNO == EINVAL)
+            {
                 // Check both ICONV_EILSEQ and EILSEQ, because the dynamically loaded
                 // iconv library may use one of them.
                 // Can't convert: insert a '?' and skip a character.  This assumes
@@ -3443,7 +3766,11 @@ unsafe extern "C" fn iconv_string(vcp: *const vimconv_T, mut str: *mut u8, mut s
  * Return FAIL when conversion is not supported, OK otherwise.
  */
 #[no_mangle]
-pub unsafe extern "C" fn convert_setup(mut vcp: *mut vimconv_T, mut from: *mut u8, mut to: *mut u8) -> i32 {
+pub unsafe extern "C" fn convert_setup(
+    mut vcp: *mut vimconv_T,
+    mut from: *mut u8,
+    mut to: *mut u8,
+) -> i32 {
     return convert_setup_ext(vcp, from, true, to, true);
 }
 /*
@@ -3451,7 +3778,13 @@ pub unsafe extern "C" fn convert_setup(mut vcp: *mut vimconv_T, mut from: *mut u
  * "from" unicode charsets be considered utf-8.  Same for "to".
  */
 #[no_mangle]
-pub unsafe extern "C" fn convert_setup_ext(mut vcp: *mut vimconv_T, mut from: *mut u8, mut from_unicode_is_utf8: bool, mut to: *mut u8, mut to_unicode_is_utf8: bool) -> i32 {
+pub unsafe extern "C" fn convert_setup_ext(
+    mut vcp: *mut vimconv_T,
+    mut from: *mut u8,
+    mut from_unicode_is_utf8: bool,
+    mut to: *mut u8,
+    mut to_unicode_is_utf8: bool,
+) -> i32 {
     let mut from_prop: i32 = 0;
     let mut to_prop: i32 = 0;
     let mut from_is_utf8: i32 = 0;
@@ -3470,7 +3803,12 @@ pub unsafe extern "C" fn convert_setup_ext(mut vcp: *mut vimconv_T, mut from: *m
         init
     };
     /* No conversion when one of the names is empty or they are equal. */
-    if from.is_null() || *from as i32 == NUL || to.is_null() || *to as i32 == NUL || strcmp(from as *mut i8, to as *mut i8) == 0 {
+    if from.is_null()
+        || *from as i32 == NUL
+        || to.is_null()
+        || *to as i32 == NUL
+        || strcmp(from as *mut i8, to as *mut i8) == 0
+    {
         return OK;
     }
     from_prop = enc_canon_props(from);
@@ -3504,7 +3842,18 @@ pub unsafe extern "C" fn convert_setup_ext(mut vcp: *mut vimconv_T, mut from: *m
     } else {
         // NOLINT(readability/braces)
         // Use iconv() for conversion.
-        (*vcp).vc_fd = my_iconv_open(if to_is_utf8 != 0 { b"utf-8\x00" as *const u8 as *const i8 as *mut u8 } else { to }, if from_is_utf8 != 0 { b"utf-8\x00" as *const u8 as *const i8 as *mut u8 } else { from });
+        (*vcp).vc_fd = my_iconv_open(
+            if to_is_utf8 != 0 {
+                b"utf-8\x00" as *const u8 as *const i8 as *mut u8
+            } else {
+                to
+            },
+            if from_is_utf8 != 0 {
+                b"utf-8\x00" as *const u8 as *const i8 as *mut u8
+            } else {
+                from
+            },
+        );
         if (*vcp).vc_fd != (-1i32) as iconv_t {
             (*vcp).vc_type = CONV_ICONV as i32;
             (*vcp).vc_factor = 4
@@ -3524,7 +3873,11 @@ pub unsafe extern "C" fn convert_setup_ext(mut vcp: *mut vimconv_T, mut from: *m
  * When something goes wrong, NULL is returned and "*lenp" is unchanged.
  */
 #[no_mangle]
-pub unsafe extern "C" fn string_convert(vcp: *const vimconv_T, mut ptr: *mut u8, mut lenp: *mut size_t) -> *mut u8 {
+pub unsafe extern "C" fn string_convert(
+    vcp: *const vimconv_T,
+    mut ptr: *mut u8,
+    mut lenp: *mut size_t,
+) -> *mut u8 {
     return string_convert_ext(vcp, ptr, lenp, NULL_0 as *mut size_t);
 }
 /*
@@ -3533,7 +3886,12 @@ pub unsafe extern "C" fn string_convert(vcp: *const vimconv_T, mut ptr: *mut u8,
  * set to the number of remaining bytes.
  */
 #[no_mangle]
-pub unsafe extern "C" fn string_convert_ext(vcp: *const vimconv_T, mut ptr: *mut u8, mut lenp: *mut size_t, mut unconvlenp: *mut size_t) -> *mut u8 {
+pub unsafe extern "C" fn string_convert_ext(
+    vcp: *const vimconv_T,
+    mut ptr: *mut u8,
+    mut lenp: *mut size_t,
+    mut unconvlenp: *mut size_t,
+) -> *mut u8 {
     let mut retval = NULL_0 as *mut u8;
     let mut d = 0 as *mut u8;
     let mut l: i32 = 0;

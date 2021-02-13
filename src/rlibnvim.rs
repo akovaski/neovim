@@ -209,8 +209,10 @@ pub use locale::*;
 mod iconv;
 pub use iconv::*;
 
-pub use libc::{backtrace, fclose, fopen, iovec, ptrdiff_t, size_t, ssize_t, time_t, timeval, tm, FILE};
-pub use libc::{E2BIG, EINVAL, EILSEQ};
+pub use libc::{
+    backtrace, fclose, fopen, iovec, ptrdiff_t, size_t, ssize_t, time_t, timeval, tm, FILE,
+};
+pub use libc::{E2BIG, EILSEQ, EINVAL};
 
 extern "C" {
     // main.h

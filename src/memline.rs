@@ -91,19 +91,39 @@ extern "C" {
     pub fn ml_get_buf(buf: *mut buf_T, lnum: linenr_T, will_change: bool) -> *mut u8;
     pub fn ml_line_alloced() -> i32;
     pub fn ml_append(lnum: linenr_T, line: *mut u8, len: colnr_T, newfile: bool) -> i32;
-    pub fn ml_append_buf(buf: *mut buf_T, lnum: linenr_T, line: *mut u8, len: colnr_T, newfile: bool) -> i32;
+    pub fn ml_append_buf(
+        buf: *mut buf_T,
+        lnum: linenr_T,
+        line: *mut u8,
+        len: colnr_T,
+        newfile: bool,
+    ) -> i32;
     pub fn ml_add_deleted_len(ptr: *mut u8, len: ssize_t);
     pub fn ml_replace(lnum: linenr_T, line: *mut u8, copy: bool) -> i32;
     pub fn ml_delete(lnum: linenr_T, message: bool) -> i32;
     pub fn ml_setmarked(lnum: linenr_T);
     pub fn ml_firstmarked() -> linenr_T;
     pub fn ml_clearmarked();
-    pub fn ml_flush_deleted_bytes(buf: *mut buf_T, codepoints: *mut size_t, codeunits: *mut size_t) -> size_t;
+    pub fn ml_flush_deleted_bytes(
+        buf: *mut buf_T,
+        codepoints: *mut size_t,
+        codeunits: *mut size_t,
+    ) -> size_t;
     pub fn resolve_symlink(fname: *const u8, buf: *mut u8) -> i32;
-    pub fn makeswapname(fname: *mut u8, ffname: *mut u8, buf: *mut buf_T, dir_name: *mut u8) -> *mut u8;
+    pub fn makeswapname(
+        fname: *mut u8,
+        ffname: *mut u8,
+        buf: *mut buf_T,
+        dir_name: *mut u8,
+    ) -> *mut u8;
     pub fn get_file_in_dir(fname: *mut u8, dname: *mut u8) -> *mut u8;
     pub fn ml_setflags(buf: *mut buf_T);
-    pub fn ml_find_line_or_offset(buf: *mut buf_T, lnum: linenr_T, offp: *mut i64, no_ff: bool) -> i64;
+    pub fn ml_find_line_or_offset(
+        buf: *mut buf_T,
+        lnum: linenr_T,
+        offp: *mut i64,
+        no_ff: bool,
+    ) -> i64;
     pub fn goto_byte(cnt: i64);
     pub fn inc(lp: *mut pos_T) -> i32;
     pub fn incl(lp: *mut pos_T) -> i32;

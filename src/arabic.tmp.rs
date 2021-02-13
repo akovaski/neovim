@@ -1,3 +1,5 @@
+use crate::*;
+
 pub const a_HAMZA: i32 = 0x621 as i32;
 pub const a_ALEF_MADDA: i32 = 0x622 as i32;
 pub const a_ALEF_HAMZA_ABOVE: i32 = 0x623 as i32;
@@ -169,13 +171,8 @@ pub const a_f_LAM_ALEF_HAMZA_BELOW: i32 = 0xfefa as i32;
 pub const a_s_LAM_ALEF: i32 = 0xfefb as i32;
 pub const a_f_LAM_ALEF: i32 = 0xfefc as i32;
 pub const a_BYTE_ORDER_MARK: i32 = 0xfeff as i32;
-unsafe extern "C" fn arabic_shape(
-    mut c: i32,
-    mut ccp: *mut i32,
-    mut c1p: *mut i32,
-    mut prev_c: i32,
-    mut prev_c1: i32,
-    mut next_c: i32,
-) -> i32;
-unsafe extern "C" fn arabic_combine(mut one: i32, mut two: i32) -> bool;
-unsafe extern "C" fn arabic_maycombine(mut two: i32) -> bool;
+extern "C" {
+    pub fn arabic_shape(mut c: i32, mut ccp: *mut i32, mut c1p: *mut i32, mut prev_c: i32, mut prev_c1: i32, mut next_c: i32) -> i32;
+    pub fn arabic_combine(mut one: i32, mut two: i32) -> bool;
+    pub fn arabic_maycombine(mut two: i32) -> bool;
+}

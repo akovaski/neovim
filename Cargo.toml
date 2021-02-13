@@ -10,6 +10,7 @@ libc = "0.2.0"
 bitflags = "1.2"
 byte-strings = "0.1.3"
 itertools = "0.10.0"
+once_cell = "1.5.2"
 
 [dependencies.xdiff]
 path = "rust-deps/xdiff"

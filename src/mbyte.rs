@@ -3372,7 +3372,7 @@ unsafe extern "C" fn iconv_string(vcp: *const vimconv_T, mut str: *mut u8, mut s
     from = str as *mut i8;
     fromlen = slen;
     loop {
-        if len == 0 || ICONV_ERRNO == ICONV_E2BIG {
+        if len == 0 || *ICONV_ERRNO == ICONV_E2BIG {
             /* Allocate enough room for most conversions.  When re-allocating
              * increase the buffer size. */
             len = len.wrapping_add(fromlen.wrapping_mul(2)).wrapping_add(40);
@@ -3391,7 +3391,7 @@ unsafe extern "C" fn iconv_string(vcp: *const vimconv_T, mut str: *mut u8, mut s
             // Finished, append a NUL.
             *to = NUL as i8;
             break;
-        } else if !(*vcp).vc_fail && !unconvlenp.is_null() && (ICONV_ERRNO == ICONV_EINVAL || ICONV_ERRNO == EINVAL) {
+        } else if !(*vcp).vc_fail && !unconvlenp.is_null() && (*ICONV_ERRNO == ICONV_EINVAL || *ICONV_ERRNO == EINVAL) {
             // Check both ICONV_EINVAL and EINVAL, because the dynamically loaded
             // iconv library may use one of them.
             // Handle an incomplete sequence at the end.
@@ -3399,7 +3399,7 @@ unsafe extern "C" fn iconv_string(vcp: *const vimconv_T, mut str: *mut u8, mut s
             *unconvlenp = fromlen;
             break;
         } else {
-            if !(*vcp).vc_fail && (ICONV_ERRNO == ICONV_EILSEQ || ICONV_ERRNO == EILSEQ || ICONV_ERRNO == ICONV_EINVAL || ICONV_ERRNO == EINVAL) {
+            if !(*vcp).vc_fail && (*ICONV_ERRNO == ICONV_EILSEQ || *ICONV_ERRNO == EILSEQ || *ICONV_ERRNO == ICONV_EINVAL || *ICONV_ERRNO == EINVAL) {
                 // Check both ICONV_EILSEQ and EILSEQ, because the dynamically loaded
                 // iconv library may use one of them.
                 // Can't convert: insert a '?' and skip a character.  This assumes
@@ -3416,7 +3416,7 @@ unsafe extern "C" fn iconv_string(vcp: *const vimconv_T, mut str: *mut u8, mut s
                 l = utfc_ptr2len_len(from as *const u8, fromlen as i32);
                 from = from.offset(l as isize);
                 fromlen = (fromlen as u64).wrapping_sub(l as u64) as size_t as size_t
-            } else if ICONV_ERRNO != ICONV_E2BIG {
+            } else if *ICONV_ERRNO != ICONV_E2BIG {
                 // conversion failed
                 let mut ptr_ = &mut result as *mut *mut u8 as *mut *mut libc::c_void;
                 xfree(*ptr_);

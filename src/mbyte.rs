@@ -3014,7 +3014,7 @@ pub unsafe extern "C" fn mb_check_adjust_col(mut win_: *mut libc::c_void) {
         }
         // Reset `coladd` when the cursor would be on the right half of a
         // double-wide character.
-        if (*win).w_cursor.coladd == 1 && *p.offset((*win).w_cursor.col as isize) as i32 != TAB && vim_isprintc(utf_ptr2char(p.offset((*win).w_cursor.col as isize))) as i32 != 0 && ptr2cells(p.offset((*win).w_cursor.col as isize)) > 1 {
+        if (*win).w_cursor.coladd == 1 && *p.offset((*win).w_cursor.col as isize) as i32 != TAB as i32 && vim_isprintc(utf_ptr2char(p.offset((*win).w_cursor.col as isize))) as i32 != 0 && ptr2cells(p.offset((*win).w_cursor.col as isize)) > 1 {
             (*win).w_cursor.coladd = 0
         }
     };
@@ -3074,12 +3074,12 @@ pub unsafe extern "C" fn mb_charlen_len(mut str: *mut u8, mut len: i32) -> i32 {
 #[no_mangle]
 pub unsafe extern "C" fn mb_unescape(pp: *mut *const i8) -> *const i8 {
     static mut buf: [i8; 6] = [0; 6];
-    let mut buf_idx = 0;
+    let mut buf_idx: i32 = 0;
     let mut str = *pp as *mut u8;
     // Must translate K_SPECIAL KS_SPECIAL KE_FILLER to K_SPECIAL and CSI
     // KS_EXTRA KE_CSI to CSI.
     // Maximum length of a utf-8 character is 4 bytes.
-    let mut str_idx = 0;
+    let mut str_idx: i32 = 0;
     while *str.offset(str_idx as isize) as i32 != NUL && buf_idx < 4 {
         if *str.offset(str_idx as isize) as i32 == K_SPECIAL && *str.offset(str_idx.wrapping_add(1) as isize) as i32 == KS_SPECIAL && *str.offset(str_idx.wrapping_add(2) as isize) as i32 == KE_FILLER {
             let fresh7 = buf_idx;

@@ -58,7 +58,7 @@ pub const mb_ptr2len: unsafe extern "C" fn(_: *const u8) -> i32 = utfc_ptr2len;
 // /
 // / @return 0 if s1 == s2, <0 if s1 < s2, >0 if s1 > s2.
 #[inline]
-pub unsafe extern "C" fn mb_strcmp_ic(mut ic: bool, mut s1: *const i8, mut s2: *const i8) -> i32 {
+pub unsafe extern "C" fn mb_strcmp_ic(ic: bool, s1: *const i8, s2: *const i8) -> i32 {
     return if ic as i32 != 0 {
         mb_stricmp(s1, s2)
     } else {
@@ -114,7 +114,7 @@ extern "C" {
 }
 static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"latin1\x00" as *const u8 as *const i8,
             prop: ENC_8BIT + ENC_LATIN1,
             codepage: 1252,
@@ -122,7 +122,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"iso-8859-2\x00" as *const u8 as *const i8,
             prop: ENC_8BIT,
             codepage: 0,
@@ -130,7 +130,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"iso-8859-3\x00" as *const u8 as *const i8,
             prop: ENC_8BIT,
             codepage: 0,
@@ -138,7 +138,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"iso-8859-4\x00" as *const u8 as *const i8,
             prop: ENC_8BIT,
             codepage: 0,
@@ -146,7 +146,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"iso-8859-5\x00" as *const u8 as *const i8,
             prop: ENC_8BIT,
             codepage: 0,
@@ -154,7 +154,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"iso-8859-6\x00" as *const u8 as *const i8,
             prop: ENC_8BIT,
             codepage: 0,
@@ -162,7 +162,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"iso-8859-7\x00" as *const u8 as *const i8,
             prop: ENC_8BIT,
             codepage: 0,
@@ -170,7 +170,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"iso-8859-8\x00" as *const u8 as *const i8,
             prop: ENC_8BIT,
             codepage: 0,
@@ -178,7 +178,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"iso-8859-9\x00" as *const u8 as *const i8,
             prop: ENC_8BIT,
             codepage: 0,
@@ -186,7 +186,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"iso-8859-10\x00" as *const u8 as *const i8,
             prop: ENC_8BIT,
             codepage: 0,
@@ -194,7 +194,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"iso-8859-11\x00" as *const u8 as *const i8,
             prop: ENC_8BIT,
             codepage: 0,
@@ -202,7 +202,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"iso-8859-13\x00" as *const u8 as *const i8,
             prop: ENC_8BIT,
             codepage: 0,
@@ -210,7 +210,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"iso-8859-14\x00" as *const u8 as *const i8,
             prop: ENC_8BIT,
             codepage: 0,
@@ -218,7 +218,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"iso-8859-15\x00" as *const u8 as *const i8,
             prop: ENC_8BIT + ENC_LATIN9,
             codepage: 0,
@@ -226,7 +226,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"koi8-r\x00" as *const u8 as *const i8,
             prop: ENC_8BIT,
             codepage: 0,
@@ -234,7 +234,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"koi8-u\x00" as *const u8 as *const i8,
             prop: ENC_8BIT,
             codepage: 0,
@@ -242,7 +242,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"utf-8\x00" as *const u8 as *const i8,
             prop: ENC_UNICODE,
             codepage: 0,
@@ -250,7 +250,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"ucs-2\x00" as *const u8 as *const i8,
             prop: ENC_UNICODE + ENC_ENDIAN_B + ENC_2BYTE,
             codepage: 0,
@@ -258,7 +258,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"ucs-2le\x00" as *const u8 as *const i8,
             prop: ENC_UNICODE + ENC_ENDIAN_L + ENC_2BYTE,
             codepage: 0,
@@ -266,7 +266,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"utf-16\x00" as *const u8 as *const i8,
             prop: ENC_UNICODE + ENC_ENDIAN_B + ENC_2WORD,
             codepage: 0,
@@ -274,7 +274,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"utf-16le\x00" as *const u8 as *const i8,
             prop: ENC_UNICODE + ENC_ENDIAN_L + ENC_2WORD,
             codepage: 0,
@@ -282,7 +282,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"ucs-4\x00" as *const u8 as *const i8,
             prop: ENC_UNICODE + ENC_ENDIAN_B + ENC_4BYTE,
             codepage: 0,
@@ -290,7 +290,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"ucs-4le\x00" as *const u8 as *const i8,
             prop: ENC_UNICODE + ENC_ENDIAN_L + ENC_4BYTE,
             codepage: 0,
@@ -298,7 +298,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"debug\x00" as *const u8 as *const i8,
             prop: ENC_DBCS,
             codepage: DBCS_DEBUG,
@@ -306,7 +306,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"euc-jp\x00" as *const u8 as *const i8,
             prop: ENC_DBCS,
             codepage: DBCS_JPNU,
@@ -314,7 +314,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"sjis\x00" as *const u8 as *const i8,
             prop: ENC_DBCS,
             codepage: DBCS_JPN,
@@ -322,7 +322,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"euc-kr\x00" as *const u8 as *const i8,
             prop: ENC_DBCS,
             codepage: DBCS_KORU,
@@ -330,7 +330,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"euc-cn\x00" as *const u8 as *const i8,
             prop: ENC_DBCS,
             codepage: DBCS_CHSU,
@@ -338,7 +338,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"euc-tw\x00" as *const u8 as *const i8,
             prop: ENC_DBCS,
             codepage: DBCS_CHTU,
@@ -346,7 +346,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"big5\x00" as *const u8 as *const i8,
             prop: ENC_DBCS,
             codepage: DBCS_CHT,
@@ -354,7 +354,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"cp437\x00" as *const u8 as *const i8,
             prop: ENC_8BIT,
             codepage: 437,
@@ -362,7 +362,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"cp737\x00" as *const u8 as *const i8,
             prop: ENC_8BIT,
             codepage: 737,
@@ -370,7 +370,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"cp775\x00" as *const u8 as *const i8,
             prop: ENC_8BIT,
             codepage: 775,
@@ -378,7 +378,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"cp850\x00" as *const u8 as *const i8,
             prop: ENC_8BIT,
             codepage: 850,
@@ -386,7 +386,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"cp852\x00" as *const u8 as *const i8,
             prop: ENC_8BIT,
             codepage: 852,
@@ -394,7 +394,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"cp855\x00" as *const u8 as *const i8,
             prop: ENC_8BIT,
             codepage: 855,
@@ -402,7 +402,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"cp857\x00" as *const u8 as *const i8,
             prop: ENC_8BIT,
             codepage: 857,
@@ -410,7 +410,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"cp860\x00" as *const u8 as *const i8,
             prop: ENC_8BIT,
             codepage: 860,
@@ -418,7 +418,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"cp861\x00" as *const u8 as *const i8,
             prop: ENC_8BIT,
             codepage: 861,
@@ -426,7 +426,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"cp862\x00" as *const u8 as *const i8,
             prop: ENC_8BIT,
             codepage: 862,
@@ -434,7 +434,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"cp863\x00" as *const u8 as *const i8,
             prop: ENC_8BIT,
             codepage: 863,
@@ -442,7 +442,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"cp865\x00" as *const u8 as *const i8,
             prop: ENC_8BIT,
             codepage: 865,
@@ -450,7 +450,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"cp866\x00" as *const u8 as *const i8,
             prop: ENC_8BIT,
             codepage: 866,
@@ -458,7 +458,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"cp869\x00" as *const u8 as *const i8,
             prop: ENC_8BIT,
             codepage: 869,
@@ -466,7 +466,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"cp874\x00" as *const u8 as *const i8,
             prop: ENC_8BIT,
             codepage: 874,
@@ -474,7 +474,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"cp932\x00" as *const u8 as *const i8,
             prop: ENC_DBCS,
             codepage: DBCS_JPN,
@@ -482,7 +482,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"cp936\x00" as *const u8 as *const i8,
             prop: ENC_DBCS,
             codepage: DBCS_CHS,
@@ -490,7 +490,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"cp949\x00" as *const u8 as *const i8,
             prop: ENC_DBCS,
             codepage: DBCS_KOR,
@@ -498,7 +498,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"cp950\x00" as *const u8 as *const i8,
             prop: ENC_DBCS,
             codepage: DBCS_CHT,
@@ -506,7 +506,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"cp1250\x00" as *const u8 as *const i8,
             prop: ENC_8BIT,
             codepage: 1250,
@@ -514,7 +514,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"cp1251\x00" as *const u8 as *const i8,
             prop: ENC_8BIT,
             codepage: 1251,
@@ -522,7 +522,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"cp1253\x00" as *const u8 as *const i8,
             prop: ENC_8BIT,
             codepage: 1253,
@@ -530,7 +530,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"cp1254\x00" as *const u8 as *const i8,
             prop: ENC_8BIT,
             codepage: 1254,
@@ -538,7 +538,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"cp1255\x00" as *const u8 as *const i8,
             prop: ENC_8BIT,
             codepage: 1255,
@@ -546,7 +546,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"cp1256\x00" as *const u8 as *const i8,
             prop: ENC_8BIT,
             codepage: 1256,
@@ -554,7 +554,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"cp1257\x00" as *const u8 as *const i8,
             prop: ENC_8BIT,
             codepage: 1257,
@@ -562,7 +562,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"cp1258\x00" as *const u8 as *const i8,
             prop: ENC_8BIT,
             codepage: 1258,
@@ -570,7 +570,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"macroman\x00" as *const u8 as *const i8,
             prop: ENC_8BIT + ENC_MACROMAN,
             codepage: 0,
@@ -578,7 +578,7 @@ static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
         init
     },
     {
-        let mut init = C2RustUnnamed_2 {
+        let init = C2RustUnnamed_2 {
             name: b"hp-roman8\x00" as *const u8 as *const i8,
             prop: ENC_8BIT,
             codepage: 0,
@@ -621,448 +621,448 @@ pub const IDX_MACROMAN: i32 = 57;
 pub const IDX_COUNT: i32 = 59;
 static mut enc_alias_table: [C2RustUnnamed_13; 64] = [
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"ansi\x00" as *const u8 as *const i8,
             canon: IDX_LATIN_1,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"iso-8859-1\x00" as *const u8 as *const i8,
             canon: IDX_LATIN_1,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"latin2\x00" as *const u8 as *const i8,
             canon: IDX_ISO_2,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"latin3\x00" as *const u8 as *const i8,
             canon: IDX_ISO_3,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"latin4\x00" as *const u8 as *const i8,
             canon: IDX_ISO_4,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"cyrillic\x00" as *const u8 as *const i8,
             canon: IDX_ISO_5,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"arabic\x00" as *const u8 as *const i8,
             canon: IDX_ISO_6,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"greek\x00" as *const u8 as *const i8,
             canon: IDX_ISO_7,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"hebrew\x00" as *const u8 as *const i8,
             canon: IDX_ISO_8,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"latin5\x00" as *const u8 as *const i8,
             canon: IDX_ISO_9,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"turkish\x00" as *const u8 as *const i8,
             canon: IDX_ISO_9,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"latin6\x00" as *const u8 as *const i8,
             canon: IDX_ISO_10,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"nordic\x00" as *const u8 as *const i8,
             canon: IDX_ISO_10,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"thai\x00" as *const u8 as *const i8,
             canon: IDX_ISO_11,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"latin7\x00" as *const u8 as *const i8,
             canon: IDX_ISO_13,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"latin8\x00" as *const u8 as *const i8,
             canon: IDX_ISO_14,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"latin9\x00" as *const u8 as *const i8,
             canon: IDX_ISO_15,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"utf8\x00" as *const u8 as *const i8,
             canon: IDX_UTF8,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"unicode\x00" as *const u8 as *const i8,
             canon: IDX_UCS2,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"ucs2\x00" as *const u8 as *const i8,
             canon: IDX_UCS2,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"ucs2be\x00" as *const u8 as *const i8,
             canon: IDX_UCS2,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"ucs-2be\x00" as *const u8 as *const i8,
             canon: IDX_UCS2,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"ucs2le\x00" as *const u8 as *const i8,
             canon: IDX_UCS2LE,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"utf16\x00" as *const u8 as *const i8,
             canon: IDX_UTF16,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"utf16be\x00" as *const u8 as *const i8,
             canon: IDX_UTF16,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"utf-16be\x00" as *const u8 as *const i8,
             canon: IDX_UTF16,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"utf16le\x00" as *const u8 as *const i8,
             canon: IDX_UTF16LE,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"ucs4\x00" as *const u8 as *const i8,
             canon: IDX_UCS4,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"ucs4be\x00" as *const u8 as *const i8,
             canon: IDX_UCS4,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"ucs-4be\x00" as *const u8 as *const i8,
             canon: IDX_UCS4,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"ucs4le\x00" as *const u8 as *const i8,
             canon: IDX_UCS4LE,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"utf32\x00" as *const u8 as *const i8,
             canon: IDX_UCS4,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"utf-32\x00" as *const u8 as *const i8,
             canon: IDX_UCS4,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"utf32be\x00" as *const u8 as *const i8,
             canon: IDX_UCS4,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"utf-32be\x00" as *const u8 as *const i8,
             canon: IDX_UCS4,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"utf32le\x00" as *const u8 as *const i8,
             canon: IDX_UCS4LE,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"utf-32le\x00" as *const u8 as *const i8,
             canon: IDX_UCS4LE,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"932\x00" as *const u8 as *const i8,
             canon: IDX_CP932,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"949\x00" as *const u8 as *const i8,
             canon: IDX_CP949,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"936\x00" as *const u8 as *const i8,
             canon: IDX_CP936,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"gbk\x00" as *const u8 as *const i8,
             canon: IDX_CP936,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"950\x00" as *const u8 as *const i8,
             canon: IDX_CP950,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"eucjp\x00" as *const u8 as *const i8,
             canon: IDX_EUC_JP,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"unix-jis\x00" as *const u8 as *const i8,
             canon: IDX_EUC_JP,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"ujis\x00" as *const u8 as *const i8,
             canon: IDX_EUC_JP,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"shift-jis\x00" as *const u8 as *const i8,
             canon: IDX_SJIS,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"pck\x00" as *const u8 as *const i8,
             canon: IDX_SJIS,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"euckr\x00" as *const u8 as *const i8,
             canon: IDX_EUC_KR,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"5601\x00" as *const u8 as *const i8,
             canon: IDX_EUC_KR,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"euccn\x00" as *const u8 as *const i8,
             canon: IDX_EUC_CN,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"gb2312\x00" as *const u8 as *const i8,
             canon: IDX_EUC_CN,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"euctw\x00" as *const u8 as *const i8,
             canon: IDX_EUC_TW,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"japan\x00" as *const u8 as *const i8,
             canon: IDX_EUC_JP,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"korea\x00" as *const u8 as *const i8,
             canon: IDX_EUC_KR,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"prc\x00" as *const u8 as *const i8,
             canon: IDX_EUC_CN,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"zh-cn\x00" as *const u8 as *const i8,
             canon: IDX_EUC_CN,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"chinese\x00" as *const u8 as *const i8,
             canon: IDX_EUC_CN,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"zh-tw\x00" as *const u8 as *const i8,
             canon: IDX_EUC_TW,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"taiwan\x00" as *const u8 as *const i8,
             canon: IDX_EUC_TW,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"cp950\x00" as *const u8 as *const i8,
             canon: IDX_BIG5,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"950\x00" as *const u8 as *const i8,
             canon: IDX_BIG5,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"mac\x00" as *const u8 as *const i8,
             canon: IDX_MACROMAN,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: b"mac-roman\x00" as *const u8 as *const i8,
             canon: IDX_MACROMAN,
         };
         init
     },
     {
-        let mut init = C2RustUnnamed_13 {
+        let init = C2RustUnnamed_13 {
             name: NULL_0 as *const i8,
             canon: 0,
         };
@@ -1073,7 +1073,7 @@ static mut enc_alias_table: [C2RustUnnamed_13; 64] = [
  * Find encoding "name" in the list of canonical encoding names.
  * Returns -1 if not found.
  */
-unsafe extern "C" fn enc_canon_search(mut name: *const u8) -> i32 {
+unsafe extern "C" fn enc_canon_search(name: *const u8) -> i32 {
     let mut i: i32 = 0;
     i = 0;
     while i < IDX_COUNT {
@@ -1089,7 +1089,7 @@ unsafe extern "C" fn enc_canon_search(mut name: *const u8) -> i32 {
  * Returns 0 if not found.
  */
 #[no_mangle]
-pub unsafe extern "C" fn enc_canon_props(mut name: *const u8) -> i32 {
+pub unsafe extern "C" fn enc_canon_props(name: *const u8) -> i32 {
     let mut i: i32 = 0;
     i = enc_canon_search(name);
     if i >= 0 {
@@ -1163,7 +1163,7 @@ pub unsafe extern "C" fn bomb_size() -> i32 {
  * Remove all BOM from "s" by moving remaining text.
  */
 #[no_mangle]
-pub unsafe extern "C" fn remove_bom(mut s: *mut u8) {
+pub unsafe extern "C" fn remove_bom(s: *mut u8) {
     let mut p = s as *mut i8;
     loop {
         p = strchr(p, 0xef as i32);
@@ -1189,11 +1189,11 @@ pub unsafe extern "C" fn remove_bom(mut s: *mut u8) {
  * >2 for other word characters
  */
 #[no_mangle]
-pub unsafe extern "C" fn mb_get_class(mut p: *const u8) -> i32 {
+pub unsafe extern "C" fn mb_get_class(p: *const u8) -> i32 {
     return mb_get_class_tab(p, (*curbuf).b_chartab.as_mut_ptr());
 }
 #[no_mangle]
-pub unsafe extern "C" fn mb_get_class_tab(mut p: *const u8, chartab: *const u64) -> i32 {
+pub unsafe extern "C" fn mb_get_class_tab(p: *const u8, chartab: *const u64) -> i32 {
     if utf8len_tab[*p.offset(0) as usize] as i32 == 1 {
         if *p.offset(0) as i32 == NUL || ascii_iswhite(*p.offset(0) as char) as i32 != 0 {
             return 0;
@@ -1208,7 +1208,7 @@ pub unsafe extern "C" fn mb_get_class_tab(mut p: *const u8, chartab: *const u64)
 /*
  * Return true if "c" is in "table".
  */
-unsafe extern "C" fn intable(mut table: *const interval, mut n_items: size_t, mut c: i32) -> bool {
+unsafe extern "C" fn intable(table: *const interval, n_items: size_t, c: i32) -> bool {
     let mut mid: i32 = 0;
     let mut bot: i32 = 0;
     let mut top: i32 = 0;
@@ -1240,7 +1240,7 @@ unsafe extern "C" fn intable(mut table: *const interval, mut n_items: size_t, mu
 // / @note Tables `doublewidth` and `ambiguous` are generated by
 // /       gen_unicode_tables.lua, which must be manually invoked as needed.
 #[no_mangle]
-pub unsafe extern "C" fn utf_char2cells(mut c: i32) -> i32 {
+pub unsafe extern "C" fn utf_char2cells(c: i32) -> i32 {
     if c >= 0x100 as i32 {
         if !utf_printable(c) {
             return 6;
@@ -1302,7 +1302,7 @@ pub unsafe extern "C" fn utf_char2cells(mut c: i32) -> i32 {
 // / Return the number of display cells character at "*p" occupies.
 // / This doesn't take care of unprintable characters, use ptr2cells() for that.
 #[no_mangle]
-pub unsafe extern "C" fn utf_ptr2cells(mut p: *const u8) -> i32 {
+pub unsafe extern "C" fn utf_ptr2cells(p: *const u8) -> i32 {
     let mut c: i32 = 0;
     /* Need to convert to a wide character. */
     if *p as i32 >= 0x80 as i32 {
@@ -1322,7 +1322,7 @@ pub unsafe extern "C" fn utf_ptr2cells(mut p: *const u8) -> i32 {
 // / Like utf_ptr2cells(), but limit string length to "size".
 // / For an empty string or truncated character returns 1.
 #[no_mangle]
-pub unsafe extern "C" fn utf_ptr2cells_len(mut p: *const u8, mut size: i32) -> i32 {
+pub unsafe extern "C" fn utf_ptr2cells_len(p: *const u8, size: i32) -> i32 {
     let mut c: i32 = 0;
     /* Need to convert to a wide character. */
     if size > 0 && *p as i32 >= 0x80 as i32 {
@@ -1348,7 +1348,7 @@ pub unsafe extern "C" fn utf_ptr2cells_len(mut p: *const u8, mut size: i32) -> i
 // /            string.
 // / @return The number of cells occupied by string `str`
 #[no_mangle]
-pub unsafe extern "C" fn mb_string2cells(mut str: *const u8) -> size_t {
+pub unsafe extern "C" fn mb_string2cells(str: *const u8) -> size_t {
     let mut clen = 0;
     let mut p = str;
     while *p as i32 != NUL {
@@ -1365,7 +1365,7 @@ pub unsafe extern "C" fn mb_string2cells(mut str: *const u8) -> size_t {
 // / @param size maximum length of string. It will terminate on earlier NUL.
 // / @return The number of cells occupied by string `str`
 #[no_mangle]
-pub unsafe extern "C" fn mb_string2cells_len(mut str: *const u8, mut size: size_t) -> size_t {
+pub unsafe extern "C" fn mb_string2cells_len(str: *const u8, size: size_t) -> size_t {
     let mut clen = 0;
     let mut p = str;
     while *p as i32 != NUL && p < str.offset(size as isize) {
@@ -1450,13 +1450,13 @@ pub unsafe extern "C" fn utf_ptr2char(p: *const u8) -> i32 {
  * If byte sequence is illegal or incomplete, returns -1 and does not advance
  * "s".
  */
-unsafe extern "C" fn utf_safe_read_char_adv(mut s: *mut *const u8, mut n: *mut size_t) -> i32 {
+unsafe extern "C" fn utf_safe_read_char_adv(s: *mut *const u8, n: *mut size_t) -> i32 {
     let mut c: i32 = 0;
     if *n == 0 {
         /* end of buffer */
         return 0;
     }
-    let mut k = utf8len_tab_zero[**s as usize];
+    let k = utf8len_tab_zero[**s as usize];
     if k as i32 == 1 {
         /* ASCII character or NUL */
         *n = (*n).wrapping_sub(1);
@@ -1501,7 +1501,7 @@ pub unsafe extern "C" fn mb_ptr2char_adv(pp: *mut *const u8) -> i32 {
  * Note: composing characters are returned as separate characters.
  */
 #[no_mangle]
-pub unsafe extern "C" fn mb_cptr2char_adv(mut pp: *mut *const u8) -> i32 {
+pub unsafe extern "C" fn mb_cptr2char_adv(pp: *mut *const u8) -> i32 {
     let mut c: i32 = 0;
     c = utf_ptr2char(*pp);
     *pp = (*pp).offset(utf_ptr2len(*pp) as isize);
@@ -1513,7 +1513,7 @@ pub unsafe extern "C" fn mb_cptr2char_adv(mut pp: *mut *const u8) -> i32 {
  * behaves like a composing character.
  */
 #[no_mangle]
-pub unsafe extern "C" fn utf_composinglike(mut p1: *const u8, mut p2: *const u8) -> bool {
+pub unsafe extern "C" fn utf_composinglike(p1: *const u8, p2: *const u8) -> bool {
     let mut c2: i32 = 0;
     c2 = utf_ptr2char(p2);
     if utf_iscomposing(c2) {
@@ -1533,7 +1533,7 @@ pub unsafe extern "C" fn utf_composinglike(mut p1: *const u8, mut p2: *const u8)
 // /
 // / @return leading character.
 #[no_mangle]
-pub unsafe extern "C" fn utfc_ptr2char(mut p: *const u8, mut pcc: *mut i32) -> i32 {
+pub unsafe extern "C" fn utfc_ptr2char(p: *const u8, pcc: *mut i32) -> i32 {
     let mut len: i32 = 0;
     let mut c: i32 = 0;
     let mut cc: i32 = 0;
@@ -1576,9 +1576,9 @@ pub unsafe extern "C" fn utfc_ptr2char(mut p: *const u8, mut pcc: *mut i32) -> i
  */
 #[no_mangle]
 pub unsafe extern "C" fn utfc_ptr2char_len(
-    mut p: *const u8,
-    mut pcc: *mut i32,
-    mut maxlen: i32,
+    p: *const u8,
+    pcc: *mut i32,
+    maxlen: i32,
 ) -> i32 {
     if maxlen > 0 {
     } else {
@@ -1588,7 +1588,7 @@ pub unsafe extern "C" fn utfc_ptr2char_len(
     let mut len = utf_ptr2len_len(p, maxlen);
     // Is it safe to use utf_ptr2char()?
     let mut safe = len > 1 && len <= maxlen;
-    let mut c = if safe as i32 != 0 {
+    let c = if safe as i32 != 0 {
         utf_ptr2char(p)
     } else {
         *p as i32
@@ -1599,7 +1599,7 @@ pub unsafe extern "C" fn utfc_ptr2char_len(
         && *p.offset(len as isize) as i32 >= 0x80 as i32
     {
         while i < MAX_MCO {
-            let mut len_cc = utf_ptr2len_len(p.offset(len as isize), maxlen - len);
+            let len_cc = utf_ptr2len_len(p.offset(len as isize), maxlen - len);
             safe = len_cc > 1 && len_cc <= maxlen - len;
             if !safe
                 || {
@@ -1652,7 +1652,7 @@ pub unsafe extern "C" fn utf_ptr2len(p: *const u8) -> i32 {
  * Returns 1 for an invalid first byte value.
  */
 #[no_mangle]
-pub unsafe extern "C" fn utf_byte2len(mut b: i32) -> i32 {
+pub unsafe extern "C" fn utf_byte2len(b: i32) -> i32 {
     return utf8len_tab[b as usize] as i32;
 }
 /*
@@ -1664,7 +1664,7 @@ pub unsafe extern "C" fn utf_byte2len(mut b: i32) -> i32 {
  * Never returns zero.
  */
 #[no_mangle]
-pub unsafe extern "C" fn utf_ptr2len_len(mut p: *const u8, mut size: i32) -> i32 {
+pub unsafe extern "C" fn utf_ptr2len_len(p: *const u8, size: i32) -> i32 {
     let mut len: i32 = 0; /* NUL, ascii or illegal lead byte */
     let mut i: i32 = 0; /* incomplete byte sequence. */
     let mut m: i32 = 0;
@@ -1691,7 +1691,7 @@ pub unsafe extern "C" fn utf_ptr2len_len(mut p: *const u8, mut size: i32) -> i32
 // / This includes following composing characters.
 #[no_mangle]
 pub unsafe extern "C" fn utfc_ptr2len(p: *const u8) -> i32 {
-    let mut b0 = *p;
+    let b0 = *p;
     if b0 as i32 == NUL {
         return 0;
     }
@@ -1726,7 +1726,7 @@ pub unsafe extern "C" fn utfc_ptr2len(p: *const u8) -> i32 {
  * Returns 1 for an illegal char or an incomplete byte sequence.
  */
 #[no_mangle]
-pub unsafe extern "C" fn utfc_ptr2len_len(mut p: *const u8, mut size: i32) -> i32 {
+pub unsafe extern "C" fn utfc_ptr2len_len(p: *const u8, size: i32) -> i32 {
     let mut len: i32 = 0;
     let mut prevlen: i32 = 0;
     if size < 1 || *p as i32 == NUL {
@@ -1849,7 +1849,7 @@ pub unsafe extern "C" fn utf_char2bytes(c: i32, buf: *mut u8) -> i32 {
  * Based on code from Markus Kuhn.
  */
 #[no_mangle]
-pub unsafe extern "C" fn utf_iscomposing(mut c: i32) -> bool {
+pub unsafe extern "C" fn utf_iscomposing(c: i32) -> bool {
     return intable(
         combining.as_ptr(),
         (::std::mem::size_of::<[interval; 280]>() as u64)
@@ -1867,68 +1867,68 @@ pub unsafe extern "C" fn utf_iscomposing(mut c: i32) -> bool {
  * Only for characters of 0x100 and above!
  */
 #[no_mangle]
-pub unsafe extern "C" fn utf_printable(mut c: i32) -> bool {
+pub unsafe extern "C" fn utf_printable(c: i32) -> bool {
     /* Sorted list of non-overlapping intervals.
      * 0xd800-0xdfff is reserved for UTF-16, actually illegal. */
     static mut nonprint: [interval; 9] = [
         {
-            let mut init = interval {
+            let init = interval {
                 first: 0x70f as i32 as i64,
                 last: 0x70f as i32 as i64,
             };
             init
         },
         {
-            let mut init = interval {
+            let init = interval {
                 first: 0x180b as i32 as i64,
                 last: 0x180e as i32 as i64,
             };
             init
         },
         {
-            let mut init = interval {
+            let init = interval {
                 first: 0x200b as i32 as i64,
                 last: 0x200f as i32 as i64,
             };
             init
         },
         {
-            let mut init = interval {
+            let init = interval {
                 first: 0x202a as i32 as i64,
                 last: 0x202e as i32 as i64,
             };
             init
         },
         {
-            let mut init = interval {
+            let init = interval {
                 first: 0x206a as i32 as i64,
                 last: 0x206f as i32 as i64,
             };
             init
         },
         {
-            let mut init = interval {
+            let init = interval {
                 first: 0xd800 as i32 as i64,
                 last: 0xdfff as i32 as i64,
             };
             init
         },
         {
-            let mut init = interval {
+            let init = interval {
                 first: 0xfeff as i32 as i64,
                 last: 0xfeff as i32 as i64,
             };
             init
         },
         {
-            let mut init = interval {
+            let init = interval {
                 first: 0xfff9 as i32 as i64,
                 last: 0xfffb as i32 as i64,
             };
             init
         },
         {
-            let mut init = interval {
+            let init = interval {
                 first: 0xfffe as i32 as i64,
                 last: 0xffff as i32 as i64,
             };
@@ -1962,7 +1962,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
     /* sorted list of non-overlapping intervals */
     static mut classes: [clinterval; 71] = [
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x37e as i32 as u32,
                 last: 0x37e as i32 as u32,
                 class: 1,
@@ -1970,7 +1970,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x387 as i32 as u32,
                 last: 0x387 as i32 as u32,
                 class: 1,
@@ -1978,7 +1978,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x55a as i32 as u32,
                 last: 0x55f as i32 as u32,
                 class: 1,
@@ -1986,7 +1986,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x589 as i32 as u32,
                 last: 0x589 as i32 as u32,
                 class: 1,
@@ -1994,7 +1994,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x5be as i32 as u32,
                 last: 0x5be as i32 as u32,
                 class: 1,
@@ -2002,7 +2002,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x5c0 as i32 as u32,
                 last: 0x5c0 as i32 as u32,
                 class: 1,
@@ -2010,7 +2010,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x5c3 as i32 as u32,
                 last: 0x5c3 as i32 as u32,
                 class: 1,
@@ -2018,7 +2018,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x5f3 as i32 as u32,
                 last: 0x5f4 as i32 as u32,
                 class: 1,
@@ -2026,7 +2026,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x60c as i32 as u32,
                 last: 0x60c as i32 as u32,
                 class: 1,
@@ -2034,7 +2034,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x61b as i32 as u32,
                 last: 0x61b as i32 as u32,
                 class: 1,
@@ -2042,7 +2042,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x61f as i32 as u32,
                 last: 0x61f as i32 as u32,
                 class: 1,
@@ -2050,7 +2050,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x66a as i32 as u32,
                 last: 0x66d as i32 as u32,
                 class: 1,
@@ -2058,7 +2058,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x6d4 as i32 as u32,
                 last: 0x6d4 as i32 as u32,
                 class: 1,
@@ -2066,7 +2066,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x700 as i32 as u32,
                 last: 0x70d as i32 as u32,
                 class: 1,
@@ -2074,7 +2074,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x964 as i32 as u32,
                 last: 0x965 as i32 as u32,
                 class: 1,
@@ -2082,7 +2082,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x970 as i32 as u32,
                 last: 0x970 as i32 as u32,
                 class: 1,
@@ -2090,7 +2090,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0xdf4 as i32 as u32,
                 last: 0xdf4 as i32 as u32,
                 class: 1,
@@ -2098,7 +2098,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0xe4f as i32 as u32,
                 last: 0xe4f as i32 as u32,
                 class: 1,
@@ -2106,7 +2106,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0xe5a as i32 as u32,
                 last: 0xe5b as i32 as u32,
                 class: 1,
@@ -2114,7 +2114,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0xf04 as i32 as u32,
                 last: 0xf12 as i32 as u32,
                 class: 1,
@@ -2122,7 +2122,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0xf3a as i32 as u32,
                 last: 0xf3d as i32 as u32,
                 class: 1,
@@ -2130,7 +2130,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0xf85 as i32 as u32,
                 last: 0xf85 as i32 as u32,
                 class: 1,
@@ -2138,7 +2138,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x104a as i32 as u32,
                 last: 0x104f as i32 as u32,
                 class: 1,
@@ -2146,7 +2146,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x10fb as i32 as u32,
                 last: 0x10fb as i32 as u32,
                 class: 1,
@@ -2154,7 +2154,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x1361 as i32 as u32,
                 last: 0x1368 as i32 as u32,
                 class: 1,
@@ -2162,7 +2162,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x166d as i32 as u32,
                 last: 0x166e as i32 as u32,
                 class: 1,
@@ -2170,7 +2170,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x1680 as i32 as u32,
                 last: 0x1680 as i32 as u32,
                 class: 0,
@@ -2178,7 +2178,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x169b as i32 as u32,
                 last: 0x169c as i32 as u32,
                 class: 1,
@@ -2186,7 +2186,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x16eb as i32 as u32,
                 last: 0x16ed as i32 as u32,
                 class: 1,
@@ -2194,7 +2194,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x1735 as i32 as u32,
                 last: 0x1736 as i32 as u32,
                 class: 1,
@@ -2202,7 +2202,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x17d4 as i32 as u32,
                 last: 0x17dc as i32 as u32,
                 class: 1,
@@ -2210,7 +2210,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x1800 as i32 as u32,
                 last: 0x180a as i32 as u32,
                 class: 1,
@@ -2218,7 +2218,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x2000 as i32 as u32,
                 last: 0x200b as i32 as u32,
                 class: 0,
@@ -2226,7 +2226,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x200c as i32 as u32,
                 last: 0x2027 as i32 as u32,
                 class: 1,
@@ -2234,7 +2234,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x2028 as i32 as u32,
                 last: 0x2029 as i32 as u32,
                 class: 0,
@@ -2242,7 +2242,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x202a as i32 as u32,
                 last: 0x202e as i32 as u32,
                 class: 1,
@@ -2250,7 +2250,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x202f as i32 as u32,
                 last: 0x202f as i32 as u32,
                 class: 0,
@@ -2258,7 +2258,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x2030 as i32 as u32,
                 last: 0x205e as i32 as u32,
                 class: 1,
@@ -2266,7 +2266,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x205f as i32 as u32,
                 last: 0x205f as i32 as u32,
                 class: 0,
@@ -2274,7 +2274,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x2060 as i32 as u32,
                 last: 0x27ff as i32 as u32,
                 class: 1,
@@ -2282,7 +2282,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x2070 as i32 as u32,
                 last: 0x207f as i32 as u32,
                 class: 0x2070 as i32 as u32,
@@ -2290,7 +2290,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x2080 as i32 as u32,
                 last: 0x2094 as i32 as u32,
                 class: 0x2080 as i32 as u32,
@@ -2298,7 +2298,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x20a0 as i32 as u32,
                 last: 0x27ff as i32 as u32,
                 class: 1,
@@ -2306,7 +2306,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x2800 as i32 as u32,
                 last: 0x28ff as i32 as u32,
                 class: 0x2800 as i32 as u32,
@@ -2314,7 +2314,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x2900 as i32 as u32,
                 last: 0x2998 as i32 as u32,
                 class: 1,
@@ -2322,7 +2322,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x29d8 as i32 as u32,
                 last: 0x29db as i32 as u32,
                 class: 1,
@@ -2330,7 +2330,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x29fc as i32 as u32,
                 last: 0x29fd as i32 as u32,
                 class: 1,
@@ -2338,7 +2338,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x2e00 as i32 as u32,
                 last: 0x2e7f as i32 as u32,
                 class: 1,
@@ -2346,7 +2346,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x3000 as i32 as u32,
                 last: 0x3000 as i32 as u32,
                 class: 0,
@@ -2354,7 +2354,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x3001 as i32 as u32,
                 last: 0x3020 as i32 as u32,
                 class: 1,
@@ -2362,7 +2362,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x3030 as i32 as u32,
                 last: 0x3030 as i32 as u32,
                 class: 1,
@@ -2370,7 +2370,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x303d as i32 as u32,
                 last: 0x303d as i32 as u32,
                 class: 1,
@@ -2378,7 +2378,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x3040 as i32 as u32,
                 last: 0x309f as i32 as u32,
                 class: 0x3040 as i32 as u32,
@@ -2386,7 +2386,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x30a0 as i32 as u32,
                 last: 0x30ff as i32 as u32,
                 class: 0x30a0 as i32 as u32,
@@ -2394,7 +2394,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x3300 as i32 as u32,
                 last: 0x9fff as i32 as u32,
                 class: 0x4e00 as i32 as u32,
@@ -2402,7 +2402,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0xac00 as i32 as u32,
                 last: 0xd7a3 as i32 as u32,
                 class: 0xac00 as i32 as u32,
@@ -2410,7 +2410,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0xf900 as i32 as u32,
                 last: 0xfaff as i32 as u32,
                 class: 0x4e00 as i32 as u32,
@@ -2418,7 +2418,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0xfd3e as i32 as u32,
                 last: 0xfd3f as i32 as u32,
                 class: 1,
@@ -2426,7 +2426,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0xfe30 as i32 as u32,
                 last: 0xfe6b as i32 as u32,
                 class: 1,
@@ -2434,7 +2434,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0xff00 as i32 as u32,
                 last: 0xff0f as i32 as u32,
                 class: 1,
@@ -2442,7 +2442,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0xff1a as i32 as u32,
                 last: 0xff20 as i32 as u32,
                 class: 1,
@@ -2450,7 +2450,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0xff3b as i32 as u32,
                 last: 0xff40 as i32 as u32,
                 class: 1,
@@ -2458,7 +2458,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0xff5b as i32 as u32,
                 last: 0xff65 as i32 as u32,
                 class: 1,
@@ -2466,7 +2466,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x1d000 as i32 as u32,
                 last: 0x1d24f as i32 as u32,
                 class: 1,
@@ -2474,7 +2474,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x1d400 as i32 as u32,
                 last: 0x1d7ff as i32 as u32,
                 class: 1,
@@ -2482,7 +2482,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x1f000 as i32 as u32,
                 last: 0x1f2ff as i32 as u32,
                 class: 1,
@@ -2490,7 +2490,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x1f300 as i32 as u32,
                 last: 0x1f9ff as i32 as u32,
                 class: 1,
@@ -2498,7 +2498,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x20000 as i32 as u32,
                 last: 0x2a6df as i32 as u32,
                 class: 0x4e00 as i32 as u32,
@@ -2506,7 +2506,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x2a700 as i32 as u32,
                 last: 0x2b73f as i32 as u32,
                 class: 0x4e00 as i32 as u32,
@@ -2514,7 +2514,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x2b740 as i32 as u32,
                 last: 0x2b81f as i32 as u32,
                 class: 0x4e00 as i32 as u32,
@@ -2522,7 +2522,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
             init
         },
         {
-            let mut init = clinterval {
+            let init = clinterval {
                 first: 0x2f800 as i32 as u32,
                 last: 0x2fa1f as i32 as u32,
                 class: 0x4e00 as i32 as u32,
@@ -2582,7 +2582,7 @@ pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
     return 2;
 }
 #[no_mangle]
-pub unsafe extern "C" fn utf_ambiguous_width(mut c: i32) -> bool {
+pub unsafe extern "C" fn utf_ambiguous_width(c: i32) -> bool {
     return c >= 0x80 as i32
         && (intable(
             ambiguous.as_ptr(),
@@ -2615,9 +2615,9 @@ pub unsafe extern "C" fn utf_ambiguous_width(mut c: i32) -> bool {
  * the given conversion "table".  Uses binary search on "table".
  */
 unsafe extern "C" fn utf_convert(
-    mut a: i32,
+    a: i32,
     table: *const convertStruct,
-    mut n_items: size_t,
+    n_items: size_t,
 ) -> i32 {
     let mut start: size_t = 0; /* indices into table */
     let mut mid: size_t = 0;
@@ -2649,7 +2649,7 @@ unsafe extern "C" fn utf_convert(
  * simple case folding.
  */
 #[no_mangle]
-pub unsafe extern "C" fn utf_fold(mut a: i32) -> i32 {
+pub unsafe extern "C" fn utf_fold(a: i32) -> i32 {
     if a < 0x80 as i32 {
         // be fast for ASCII
         return if a >= 0x41 as i32 && a <= 0x5a as i32 {
@@ -2677,7 +2677,7 @@ pub unsafe extern "C" fn utf_fold(mut a: i32) -> i32 {
 // / Return the upper-case equivalent of "a", which is a UCS-4 character.  Use
 // / simple case folding.
 #[no_mangle]
-pub unsafe extern "C" fn mb_toupper(mut a: i32) -> i32 {
+pub unsafe extern "C" fn mb_toupper(a: i32) -> i32 {
     /* If 'casemap' contains "keepascii" use ASCII style toupper(). */
     if a < 128 && cmp_flags & CMP_KEEPASCII as u32 != 0 {
         return if a < 'a' as i32 || a > 'z' as i32 {
@@ -2708,14 +2708,14 @@ pub unsafe extern "C" fn mb_toupper(mut a: i32) -> i32 {
     );
 }
 #[no_mangle]
-pub unsafe extern "C" fn mb_islower(mut a: i32) -> bool {
+pub unsafe extern "C" fn mb_islower(a: i32) -> bool {
     // German sharp s is lower case but has no upper case equivalent.
     return mb_toupper(a) != a || a == 0xdf as i32;
 }
 // / Return the lower-case equivalent of "a", which is a UCS-4 character.  Use
 // / simple case folding.
 #[no_mangle]
-pub unsafe extern "C" fn mb_tolower(mut a: i32) -> i32 {
+pub unsafe extern "C" fn mb_tolower(a: i32) -> i32 {
     /* If 'casemap' contains "keepascii" use ASCII style tolower(). */
     if a < 128 && cmp_flags & CMP_KEEPASCII as u32 != 0 {
         return if a < 'A' as i32 || a > 'Z' as i32 {
@@ -2746,7 +2746,7 @@ pub unsafe extern "C" fn mb_tolower(mut a: i32) -> i32 {
     );
 }
 #[no_mangle]
-pub unsafe extern "C" fn mb_isupper(mut a: i32) -> bool {
+pub unsafe extern "C" fn mb_isupper(a: i32) -> bool {
     return mb_tolower(a) != a;
 }
 unsafe extern "C" fn utf_strnicmp(
@@ -2829,10 +2829,10 @@ unsafe extern "C" fn utf_strnicmp(
 // / @param[out] codeunits incremented with UTF-16 code unit size
 #[no_mangle]
 pub unsafe extern "C" fn mb_utflen(
-    mut s: *const u8,
-    mut len: size_t,
-    mut codepoints: *mut size_t,
-    mut codeunits: *mut size_t,
+    s: *const u8,
+    len: size_t,
+    codepoints: *mut size_t,
+    codeunits: *mut size_t,
 ) {
     let mut count = 0u64;
     let mut extra = 0u64;
@@ -2842,7 +2842,7 @@ pub unsafe extern "C" fn mb_utflen(
         clen = utf_ptr2len_len(s.offset(i as isize), len.wrapping_sub(i) as i32) as size_t;
         // NB: gets the byte value of invalid sequence bytes.
         // we only care whether the char fits in the BMP or not
-        let mut c = if clen > 1 {
+        let c = if clen > 1 {
             utf_ptr2char(s.offset(i as isize))
         } else {
             *s.offset(i as isize) as i32
@@ -2858,10 +2858,10 @@ pub unsafe extern "C" fn mb_utflen(
 }
 #[no_mangle]
 pub unsafe extern "C" fn mb_utf_index_to_bytes(
-    mut s: *const u8,
-    mut len: size_t,
-    mut index: size_t,
-    mut use_utf16_units: bool,
+    s: *const u8,
+    len: size_t,
+    index: size_t,
+    use_utf16_units: bool,
 ) -> ssize_t {
     let mut count = 0u64;
     let mut clen: size_t = 0;
@@ -2874,7 +2874,7 @@ pub unsafe extern "C" fn mb_utf_index_to_bytes(
         clen = utf_ptr2len_len(s.offset(i as isize), len.wrapping_sub(i) as i32) as size_t;
         // NB: gets the byte value of invalid sequence bytes.
         // we only care whether the char fits in the BMP or not
-        let mut c = if clen > 1 {
+        let c = if clen > 1 {
             utf_ptr2char(s.offset(i as isize))
         } else {
             *s.offset(i as isize) as i32
@@ -2899,7 +2899,7 @@ pub unsafe extern "C" fn mb_utf_index_to_bytes(
  * two characters otherwise.
  */
 #[no_mangle]
-pub unsafe extern "C" fn mb_strnicmp(mut s1: *const u8, mut s2: *const u8, nn: size_t) -> i32 {
+pub unsafe extern "C" fn mb_strnicmp(s1: *const u8, s2: *const u8, nn: size_t) -> i32 {
     return utf_strnicmp(s1, s2, nn, nn);
 }
 // / Compare strings case-insensitively
@@ -2915,7 +2915,7 @@ pub unsafe extern "C" fn mb_strnicmp(mut s1: *const u8, mut s2: *const u8, nn: s
 // /
 // / @return 0 if strings are equal, <0 if s1 < s2, >0 if s1 > s2.
 #[no_mangle]
-pub unsafe extern "C" fn mb_stricmp(mut s1: *const i8, mut s2: *const i8) -> i32 {
+pub unsafe extern "C" fn mb_stricmp(s1: *const i8, s2: *const i8) -> i32 {
     return mb_strnicmp(s1 as *const u8, s2 as *const u8, MAXCOL as i32 as size_t);
 }
 /*
@@ -2973,7 +2973,7 @@ pub unsafe extern "C" fn show_utf8() {
 // / If "p" points to the NUL at the end of the string return 0.
 // / Returns 0 when already at the first byte of a character.
 #[no_mangle]
-pub unsafe extern "C" fn utf_head_off(mut base: *const u8, mut p: *const u8) -> i32 {
+pub unsafe extern "C" fn utf_head_off(base: *const u8, p: *const u8) -> i32 {
     let mut c: i32 = 0;
     let mut len: i32 = 0;
     if (*p as i32) < 0x80 as i32 {
@@ -3044,7 +3044,7 @@ pub unsafe extern "C" fn mb_copy_char(fp: *mut *const u8, tp: *mut *mut u8) {
  * character.  Can start anywhere in a stream of bytes.
  */
 #[no_mangle]
-pub unsafe extern "C" fn mb_off_next(mut base: *mut u8, mut p: *mut u8) -> i32 {
+pub unsafe extern "C" fn mb_off_next(base: *mut u8, p: *mut u8) -> i32 {
     let mut i: i32 = 0;
     let mut j: i32 = 0;
     if (*p as i32) < 0x80 as i32 {
@@ -3076,7 +3076,7 @@ pub unsafe extern "C" fn mb_off_next(mut base: *mut u8, mut p: *mut u8) -> i32 {
  * into.  Can start anywhere in a stream of bytes.
  */
 #[no_mangle]
-pub unsafe extern "C" fn mb_tail_off(mut base: *const u8, mut p: *const u8) -> i32 {
+pub unsafe extern "C" fn mb_tail_off(base: *const u8, p: *const u8) -> i32 {
     let mut i: i32 = 0;
     let mut j: i32 = 0;
     if *p as i32 == NUL {
@@ -3105,8 +3105,8 @@ pub unsafe extern "C" fn mb_tail_off(mut base: *const u8, mut p: *const u8) -> i
  */
 #[no_mangle]
 pub unsafe extern "C" fn utf_find_illegal() {
-    let mut current_block: u64;
-    let mut pos = (*curwin).w_cursor;
+    let current_block: u64;
+    let pos = (*curwin).w_cursor;
     let mut p = 0 as *mut u8;
     let mut len: i32 = 0;
     let mut vimconv = vimconv_T {
@@ -3193,13 +3193,13 @@ pub unsafe extern "C" fn mb_adjust_cursor() {
 // /
 // / @param  win_  Places cursor on a valid column for this window.
 #[no_mangle]
-pub unsafe extern "C" fn mb_check_adjust_col(mut win_: *mut libc::c_void) {
+pub unsafe extern "C" fn mb_check_adjust_col(win_: *mut libc::c_void) {
     let mut win = win_ as *mut win_T;
-    let mut oldcol = (*win).w_cursor.col;
+    let oldcol = (*win).w_cursor.col;
     // Column 0 is always valid.
     if oldcol != 0 {
-        let mut p = ml_get_buf((*win).w_buffer, (*win).w_cursor.lnum, false);
-        let mut len = strlen(p as *mut i8) as colnr_T;
+        let p = ml_get_buf((*win).w_buffer, (*win).w_cursor.lnum, false);
+        let len = strlen(p as *mut i8) as colnr_T;
         // Empty line or invalid column?
         if len == 0 || oldcol < 0 {
             (*win).w_cursor.col = 0
@@ -3226,7 +3226,7 @@ pub unsafe extern "C" fn mb_check_adjust_col(mut win_: *mut libc::c_void) {
  * Return a pointer to the character before "*p", if there is one.
  */
 #[no_mangle]
-pub unsafe extern "C" fn mb_prevptr(mut line: *mut u8, mut p: *mut u8) -> *mut u8 {
+pub unsafe extern "C" fn mb_prevptr(line: *mut u8, mut p: *mut u8) -> *mut u8 {
     if p > line {
         p = p.offset(-((utf_head_off(line, p.offset(-(1))) + 1) as isize))
     }
@@ -3237,7 +3237,7 @@ pub unsafe extern "C" fn mb_prevptr(mut line: *mut u8, mut p: *mut u8) -> *mut u
  * following composing characters) counts as one.
  */
 #[no_mangle]
-pub unsafe extern "C" fn mb_charlen(mut str: *mut u8) -> i32 {
+pub unsafe extern "C" fn mb_charlen(str: *mut u8) -> i32 {
     let mut p = str;
     let mut count: i32 = 0;
     if p.is_null() {
@@ -3255,7 +3255,7 @@ pub unsafe extern "C" fn mb_charlen(mut str: *mut u8) -> i32 {
  * Like mb_charlen() but for a string with specified length.
  */
 #[no_mangle]
-pub unsafe extern "C" fn mb_charlen_len(mut str: *mut u8, mut len: i32) -> i32 {
+pub unsafe extern "C" fn mb_charlen_len(str: *mut u8, len: i32) -> i32 {
     let mut p = str;
     let mut count: i32 = 0;
     count = 0;
@@ -3280,7 +3280,7 @@ pub unsafe extern "C" fn mb_charlen_len(mut str: *mut u8, mut len: i32) -> i32 {
 pub unsafe extern "C" fn mb_unescape(pp: *mut *const i8) -> *const i8 {
     static mut buf: [i8; 6] = [0; 6];
     let mut buf_idx: usize = 0;
-    let mut str = *pp as *mut u8;
+    let str = *pp as *mut u8;
     // Must translate K_SPECIAL KS_SPECIAL KE_FILLER to K_SPECIAL and CSI
     // KS_EXTRA KE_CSI to CSI.
     // Maximum length of a utf-8 character is 4 bytes.
@@ -3329,7 +3329,7 @@ pub unsafe extern "C" fn mb_unescape(pp: *mut *const i8) -> *const i8 {
  * Skip the Vim specific head of a 'encoding' name.
  */
 #[no_mangle]
-pub unsafe extern "C" fn enc_skip(mut p: *mut u8) -> *mut u8 {
+pub unsafe extern "C" fn enc_skip(p: *mut u8) -> *mut u8 {
     if strncmp(
         p as *mut i8,
         b"2byte-\x00" as *const u8 as *const i8 as *mut i8,
@@ -3355,7 +3355,7 @@ pub unsafe extern "C" fn enc_skip(mut p: *mut u8) -> *mut u8 {
  * Returns an allocated string.
  */
 #[no_mangle]
-pub unsafe extern "C" fn enc_canonize(mut enc: *mut u8) -> *mut u8 {
+pub unsafe extern "C" fn enc_canonize(enc: *mut u8) -> *mut u8 {
     let mut p = 0 as *mut u8;
     let mut s = 0 as *mut u8;
     let mut i: i32 = 0;
@@ -3469,7 +3469,7 @@ pub unsafe extern "C" fn enc_canonize(mut enc: *mut u8) -> *mut u8 {
  * Search for an encoding alias of "name".
  * Returns -1 when not found.
  */
-unsafe extern "C" fn enc_alias_search(mut name: *mut u8) -> i32 {
+unsafe extern "C" fn enc_alias_search(name: *mut u8) -> i32 {
     let mut i: i32 = 0;
     i = 0;
     while !enc_alias_table[i as usize].name.is_null() {
@@ -3512,8 +3512,8 @@ pub unsafe extern "C" fn enc_locale() -> *mut u8 {
     // Make the name lowercase and replace '_' with '-'.
     // Exception: "ja_JP.EUC" == "euc-jp", "zh_CN.EUC" = "euc-cn",
     // "ko_KR.EUC" == "euc-kr"
-    let mut p: *const i8 = vim_strchr(s as *mut u8, '.' as i32) as *mut i8;
-    let mut current_block_24: u64;
+    let p: *const i8 = vim_strchr(s as *mut u8, '.' as i32) as *mut i8;
+    let current_block_24: u64;
     if !p.is_null() {
         if p > s.offset(2)
             && strncasecmp(
@@ -3616,7 +3616,7 @@ pub unsafe extern "C" fn enc_locale() -> *mut u8 {
  * (should return iconv_t, but that causes problems with prototypes).
  */
 #[no_mangle]
-pub unsafe extern "C" fn my_iconv_open(mut to: *mut u8, mut from: *mut u8) -> *mut libc::c_void {
+pub unsafe extern "C" fn my_iconv_open(to: *mut u8, from: *mut u8) -> *mut libc::c_void {
     let mut fd = 0 as *mut libc::c_void; /* detected a broken iconv() previously */
     let mut tobuf: [u8; 400] = [0; 400];
     let mut p = 0 as *mut i8;
@@ -3663,10 +3663,10 @@ pub const ICONV_TESTLEN: i32 = 400;
  */
 unsafe extern "C" fn iconv_string(
     vcp: *const vimconv_T,
-    mut str: *mut u8,
-    mut slen: size_t,
-    mut unconvlenp: *mut size_t,
-    mut resultlenp: *mut size_t,
+    str: *mut u8,
+    slen: size_t,
+    unconvlenp: *mut size_t,
+    resultlenp: *mut size_t,
 ) -> *mut u8 {
     let mut from = 0 as *const i8;
     let mut fromlen: size_t = 0;
@@ -3741,7 +3741,7 @@ unsafe extern "C" fn iconv_string(
                 fromlen = (fromlen as u64).wrapping_sub(l as u64) as size_t as size_t
             } else if *ICONV_ERRNO != ICONV_E2BIG {
                 // conversion failed
-                let mut ptr_ = &mut result as *mut *mut u8 as *mut *mut libc::c_void;
+                let ptr_ = &mut result as *mut *mut u8 as *mut *mut libc::c_void;
                 xfree(*ptr_);
                 *ptr_ = NULL_0 as *mut libc::c_void;
                 break;
@@ -3767,9 +3767,9 @@ unsafe extern "C" fn iconv_string(
  */
 #[no_mangle]
 pub unsafe extern "C" fn convert_setup(
-    mut vcp: *mut vimconv_T,
-    mut from: *mut u8,
-    mut to: *mut u8,
+    vcp: *mut vimconv_T,
+    from: *mut u8,
+    to: *mut u8,
 ) -> i32 {
     return convert_setup_ext(vcp, from, true, to, true);
 }
@@ -3780,10 +3780,10 @@ pub unsafe extern "C" fn convert_setup(
 #[no_mangle]
 pub unsafe extern "C" fn convert_setup_ext(
     mut vcp: *mut vimconv_T,
-    mut from: *mut u8,
-    mut from_unicode_is_utf8: bool,
-    mut to: *mut u8,
-    mut to_unicode_is_utf8: bool,
+    from: *mut u8,
+    from_unicode_is_utf8: bool,
+    to: *mut u8,
+    to_unicode_is_utf8: bool,
 ) -> i32 {
     let mut from_prop: i32 = 0;
     let mut to_prop: i32 = 0;
@@ -3794,7 +3794,7 @@ pub unsafe extern "C" fn convert_setup_ext(
         iconv_close((*vcp).vc_fd);
     }
     *vcp = {
-        let mut init = vimconv_T {
+        let init = vimconv_T {
             vc_type: CONV_NONE as i32,
             vc_factor: 1,
             vc_fd: 0 as *mut libc::c_void,
@@ -3875,8 +3875,8 @@ pub unsafe extern "C" fn convert_setup_ext(
 #[no_mangle]
 pub unsafe extern "C" fn string_convert(
     vcp: *const vimconv_T,
-    mut ptr: *mut u8,
-    mut lenp: *mut size_t,
+    ptr: *mut u8,
+    lenp: *mut size_t,
 ) -> *mut u8 {
     return string_convert_ext(vcp, ptr, lenp, NULL_0 as *mut size_t);
 }
@@ -3888,9 +3888,9 @@ pub unsafe extern "C" fn string_convert(
 #[no_mangle]
 pub unsafe extern "C" fn string_convert_ext(
     vcp: *const vimconv_T,
-    mut ptr: *mut u8,
-    mut lenp: *mut size_t,
-    mut unconvlenp: *mut size_t,
+    ptr: *mut u8,
+    lenp: *mut size_t,
+    unconvlenp: *mut size_t,
 ) -> *mut u8 {
     let mut retval = NULL_0 as *mut u8;
     let mut d = 0 as *mut u8;
@@ -3974,7 +3974,7 @@ pub unsafe extern "C" fn string_convert_ext(
                     d = d.offset(1);
                     *fresh17 = NUL as u8
                 } else if l == 1 {
-                    let mut l_w = utf8len_tab_zero[*ptr.offset(i_1 as isize) as usize];
+                    let l_w = utf8len_tab_zero[*ptr.offset(i_1 as isize) as usize];
                     if l_w as i32 == 0 {
                         /* Illegal utf-8 byte cannot be converted */
                         xfree(retval as *mut libc::c_void);

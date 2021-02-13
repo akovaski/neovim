@@ -1,5 +1,3 @@
-use crate::*;
-
 pub const a_HAMZA: i32 = 0x621 as i32;
 pub const a_ALEF_MADDA: i32 = 0x622 as i32;
 pub const a_ALEF_HAMZA_ABOVE: i32 = 0x623 as i32;

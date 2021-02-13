@@ -4323,7 +4323,7 @@ pub unsafe extern "C" fn build_stl_str_hl(
 
                     // Store the current buffer number as a string variable
                     vim_snprintf(
-                        tmp.as_ptr() as *const i8,
+                        tmp.as_mut_ptr() as *mut i8,
                         var_size(tmp),
                         S!("%d"),
                         (*curbuf).handle,

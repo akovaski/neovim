@@ -841,28 +841,27 @@ pub unsafe extern "C" fn bomb_size() -> i32 {
     }
     return n;
 }
+
 /*
  * Remove all BOM from "s" by moving remaining text.
  */
 #[no_mangle]
 pub unsafe extern "C" fn remove_bom(s: *mut u8) {
-    let mut p = s as *mut i8;
+    let mut p = s;
+
     loop {
-        p = strchr(p, 0xef as i32);
+        p = strchr(p as *mut i8, 0xef) as *mut u8;
         if p.is_null() {
             break;
         }
-        if *p.offset(1) as u8 as i32 == 0xbb as i32 && *p.offset(2) as u8 as i32 == 0xbf as i32 {
-            memmove(
-                p as *mut libc::c_void,
-                p.offset(3) as *const libc::c_void,
-                strlen(p.offset(3)).wrapping_add(1),
-            );
+        if p.idx(1) == 0xbb && p.idx(2) == 0xbf {
+            STRMOVE(p, p.offset(3));
         } else {
-            p = p.offset(1)
+            p = p.offset(1);
         }
     }
 }
+
 /*
  * Get class of pointer:
  * 0 for blank or NUL

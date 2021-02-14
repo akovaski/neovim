@@ -115,23 +115,6 @@ pub struct interval {
     pub last: i64,
 }
 
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct clinterval {
-    pub first: u32,
-    pub last: u32,
-    pub class: u32,
-}
-/*
- * Aliases for encoding names.
- */
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct C2RustUnnamed_13 {
-    pub name: *const i8,
-    pub canon: i32,
-}
-
 /*
  * Canonical encoding names and their properties.
  * "iso-8859-n" is handled by enc_canonize() directly.
@@ -473,454 +456,271 @@ pub const IDX_CP949: i32 = 47;
 pub const IDX_CP950: i32 = 48;
 pub const IDX_MACROMAN: i32 = 57;
 pub const IDX_COUNT: i32 = 59;
-static mut enc_alias_table: [C2RustUnnamed_13; 64] = [
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"ansi\x00" as *const u8 as *const i8,
-            canon: IDX_LATIN_1,
-        };
-        init
+/*
+ * Aliases for encoding names.
+ */
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct EncAlias {
+    pub name: *const i8,
+    pub canon: i32,
+}
+static mut enc_alias_table: [EncAlias; 64] = [
+    EncAlias {
+        name: S!("ansi"),
+        canon: IDX_LATIN_1,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"iso-8859-1\x00" as *const u8 as *const i8,
-            canon: IDX_LATIN_1,
-        };
-        init
+    EncAlias {
+        name: S!("iso-8859-1"),
+        canon: IDX_LATIN_1,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"latin2\x00" as *const u8 as *const i8,
-            canon: IDX_ISO_2,
-        };
-        init
+    EncAlias {
+        name: S!("latin2"),
+        canon: IDX_ISO_2,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"latin3\x00" as *const u8 as *const i8,
-            canon: IDX_ISO_3,
-        };
-        init
+    EncAlias {
+        name: S!("latin3"),
+        canon: IDX_ISO_3,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"latin4\x00" as *const u8 as *const i8,
-            canon: IDX_ISO_4,
-        };
-        init
+    EncAlias {
+        name: S!("latin4"),
+        canon: IDX_ISO_4,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"cyrillic\x00" as *const u8 as *const i8,
-            canon: IDX_ISO_5,
-        };
-        init
+    EncAlias {
+        name: S!("cyrillic"),
+        canon: IDX_ISO_5,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"arabic\x00" as *const u8 as *const i8,
-            canon: IDX_ISO_6,
-        };
-        init
+    EncAlias {
+        name: S!("arabic"),
+        canon: IDX_ISO_6,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"greek\x00" as *const u8 as *const i8,
-            canon: IDX_ISO_7,
-        };
-        init
+    EncAlias {
+        name: S!("greek"),
+        canon: IDX_ISO_7,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"hebrew\x00" as *const u8 as *const i8,
-            canon: IDX_ISO_8,
-        };
-        init
+    EncAlias {
+        name: S!("hebrew"),
+        canon: IDX_ISO_8,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"latin5\x00" as *const u8 as *const i8,
-            canon: IDX_ISO_9,
-        };
-        init
+    EncAlias {
+        name: S!("latin5"),
+        canon: IDX_ISO_9,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"turkish\x00" as *const u8 as *const i8,
-            canon: IDX_ISO_9,
-        };
-        init
+    EncAlias {
+        name: S!("turkish"),
+        canon: IDX_ISO_9,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"latin6\x00" as *const u8 as *const i8,
-            canon: IDX_ISO_10,
-        };
-        init
+    EncAlias {
+        name: S!("latin6"),
+        canon: IDX_ISO_10,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"nordic\x00" as *const u8 as *const i8,
-            canon: IDX_ISO_10,
-        };
-        init
+    EncAlias {
+        name: S!("nordic"),
+        canon: IDX_ISO_10,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"thai\x00" as *const u8 as *const i8,
-            canon: IDX_ISO_11,
-        };
-        init
+    EncAlias {
+        name: S!("thai"),
+        canon: IDX_ISO_11,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"latin7\x00" as *const u8 as *const i8,
-            canon: IDX_ISO_13,
-        };
-        init
+    EncAlias {
+        name: S!("latin7"),
+        canon: IDX_ISO_13,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"latin8\x00" as *const u8 as *const i8,
-            canon: IDX_ISO_14,
-        };
-        init
+    EncAlias {
+        name: S!("latin8"),
+        canon: IDX_ISO_14,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"latin9\x00" as *const u8 as *const i8,
-            canon: IDX_ISO_15,
-        };
-        init
+    EncAlias {
+        name: S!("latin9"),
+        canon: IDX_ISO_15,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"utf8\x00" as *const u8 as *const i8,
-            canon: IDX_UTF8,
-        };
-        init
+    EncAlias {
+        name: S!("utf8"),
+        canon: IDX_UTF8,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"unicode\x00" as *const u8 as *const i8,
-            canon: IDX_UCS2,
-        };
-        init
+    EncAlias {
+        name: S!("unicode"),
+        canon: IDX_UCS2,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"ucs2\x00" as *const u8 as *const i8,
-            canon: IDX_UCS2,
-        };
-        init
+    EncAlias {
+        name: S!("ucs2"),
+        canon: IDX_UCS2,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"ucs2be\x00" as *const u8 as *const i8,
-            canon: IDX_UCS2,
-        };
-        init
+    EncAlias {
+        name: S!("ucs2be"),
+        canon: IDX_UCS2,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"ucs-2be\x00" as *const u8 as *const i8,
-            canon: IDX_UCS2,
-        };
-        init
+    EncAlias {
+        name: S!("ucs-2be"),
+        canon: IDX_UCS2,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"ucs2le\x00" as *const u8 as *const i8,
-            canon: IDX_UCS2LE,
-        };
-        init
+    EncAlias {
+        name: S!("ucs2le"),
+        canon: IDX_UCS2LE,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"utf16\x00" as *const u8 as *const i8,
-            canon: IDX_UTF16,
-        };
-        init
+    EncAlias {
+        name: S!("utf16"),
+        canon: IDX_UTF16,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"utf16be\x00" as *const u8 as *const i8,
-            canon: IDX_UTF16,
-        };
-        init
+    EncAlias {
+        name: S!("utf16be"),
+        canon: IDX_UTF16,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"utf-16be\x00" as *const u8 as *const i8,
-            canon: IDX_UTF16,
-        };
-        init
+    EncAlias {
+        name: S!("utf-16be"),
+        canon: IDX_UTF16,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"utf16le\x00" as *const u8 as *const i8,
-            canon: IDX_UTF16LE,
-        };
-        init
+    EncAlias {
+        name: S!("utf16le"),
+        canon: IDX_UTF16LE,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"ucs4\x00" as *const u8 as *const i8,
-            canon: IDX_UCS4,
-        };
-        init
+    EncAlias {
+        name: S!("ucs4"),
+        canon: IDX_UCS4,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"ucs4be\x00" as *const u8 as *const i8,
-            canon: IDX_UCS4,
-        };
-        init
+    EncAlias {
+        name: S!("ucs4be"),
+        canon: IDX_UCS4,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"ucs-4be\x00" as *const u8 as *const i8,
-            canon: IDX_UCS4,
-        };
-        init
+    EncAlias {
+        name: S!("ucs-4be"),
+        canon: IDX_UCS4,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"ucs4le\x00" as *const u8 as *const i8,
-            canon: IDX_UCS4LE,
-        };
-        init
+    EncAlias {
+        name: S!("ucs4le"),
+        canon: IDX_UCS4LE,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"utf32\x00" as *const u8 as *const i8,
-            canon: IDX_UCS4,
-        };
-        init
+    EncAlias {
+        name: S!("utf32"),
+        canon: IDX_UCS4,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"utf-32\x00" as *const u8 as *const i8,
-            canon: IDX_UCS4,
-        };
-        init
+    EncAlias {
+        name: S!("utf-32"),
+        canon: IDX_UCS4,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"utf32be\x00" as *const u8 as *const i8,
-            canon: IDX_UCS4,
-        };
-        init
+    EncAlias {
+        name: S!("utf32be"),
+        canon: IDX_UCS4,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"utf-32be\x00" as *const u8 as *const i8,
-            canon: IDX_UCS4,
-        };
-        init
+    EncAlias {
+        name: S!("utf-32be"),
+        canon: IDX_UCS4,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"utf32le\x00" as *const u8 as *const i8,
-            canon: IDX_UCS4LE,
-        };
-        init
+    EncAlias {
+        name: S!("utf32le"),
+        canon: IDX_UCS4LE,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"utf-32le\x00" as *const u8 as *const i8,
-            canon: IDX_UCS4LE,
-        };
-        init
+    EncAlias {
+        name: S!("utf-32le"),
+        canon: IDX_UCS4LE,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"932\x00" as *const u8 as *const i8,
-            canon: IDX_CP932,
-        };
-        init
+    EncAlias {
+        name: S!("932"),
+        canon: IDX_CP932,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"949\x00" as *const u8 as *const i8,
-            canon: IDX_CP949,
-        };
-        init
+    EncAlias {
+        name: S!("949"),
+        canon: IDX_CP949,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"936\x00" as *const u8 as *const i8,
-            canon: IDX_CP936,
-        };
-        init
+    EncAlias {
+        name: S!("936"),
+        canon: IDX_CP936,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"gbk\x00" as *const u8 as *const i8,
-            canon: IDX_CP936,
-        };
-        init
+    EncAlias {
+        name: S!("gbk"),
+        canon: IDX_CP936,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"950\x00" as *const u8 as *const i8,
-            canon: IDX_CP950,
-        };
-        init
+    EncAlias {
+        name: S!("950"),
+        canon: IDX_CP950,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"eucjp\x00" as *const u8 as *const i8,
-            canon: IDX_EUC_JP,
-        };
-        init
+    EncAlias {
+        name: S!("eucjp"),
+        canon: IDX_EUC_JP,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"unix-jis\x00" as *const u8 as *const i8,
-            canon: IDX_EUC_JP,
-        };
-        init
+    EncAlias {
+        name: S!("unix-jis"),
+        canon: IDX_EUC_JP,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"ujis\x00" as *const u8 as *const i8,
-            canon: IDX_EUC_JP,
-        };
-        init
+    EncAlias {
+        name: S!("ujis"),
+        canon: IDX_EUC_JP,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"shift-jis\x00" as *const u8 as *const i8,
-            canon: IDX_SJIS,
-        };
-        init
+    EncAlias {
+        name: S!("shift-jis"),
+        canon: IDX_SJIS,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"pck\x00" as *const u8 as *const i8,
-            canon: IDX_SJIS,
-        };
-        init
+    EncAlias {
+        name: S!("pck"),
+        canon: IDX_SJIS,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"euckr\x00" as *const u8 as *const i8,
-            canon: IDX_EUC_KR,
-        };
-        init
+    EncAlias {
+        name: S!("euckr"),
+        canon: IDX_EUC_KR,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"5601\x00" as *const u8 as *const i8,
-            canon: IDX_EUC_KR,
-        };
-        init
+    EncAlias {
+        name: S!("5601"),
+        canon: IDX_EUC_KR,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"euccn\x00" as *const u8 as *const i8,
-            canon: IDX_EUC_CN,
-        };
-        init
+    EncAlias {
+        name: S!("euccn"),
+        canon: IDX_EUC_CN,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"gb2312\x00" as *const u8 as *const i8,
-            canon: IDX_EUC_CN,
-        };
-        init
+    EncAlias {
+        name: S!("gb2312"),
+        canon: IDX_EUC_CN,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"euctw\x00" as *const u8 as *const i8,
-            canon: IDX_EUC_TW,
-        };
-        init
+    EncAlias {
+        name: S!("euctw"),
+        canon: IDX_EUC_TW,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"japan\x00" as *const u8 as *const i8,
-            canon: IDX_EUC_JP,
-        };
-        init
+    EncAlias {
+        name: S!("japan"),
+        canon: IDX_EUC_JP,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"korea\x00" as *const u8 as *const i8,
-            canon: IDX_EUC_KR,
-        };
-        init
+    EncAlias {
+        name: S!("korea"),
+        canon: IDX_EUC_KR,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"prc\x00" as *const u8 as *const i8,
-            canon: IDX_EUC_CN,
-        };
-        init
+    EncAlias {
+        name: S!("prc"),
+        canon: IDX_EUC_CN,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"zh-cn\x00" as *const u8 as *const i8,
-            canon: IDX_EUC_CN,
-        };
-        init
+    EncAlias {
+        name: S!("zh-cn"),
+        canon: IDX_EUC_CN,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"chinese\x00" as *const u8 as *const i8,
-            canon: IDX_EUC_CN,
-        };
-        init
+    EncAlias {
+        name: S!("chinese"),
+        canon: IDX_EUC_CN,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"zh-tw\x00" as *const u8 as *const i8,
-            canon: IDX_EUC_TW,
-        };
-        init
+    EncAlias {
+        name: S!("zh-tw"),
+        canon: IDX_EUC_TW,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"taiwan\x00" as *const u8 as *const i8,
-            canon: IDX_EUC_TW,
-        };
-        init
+    EncAlias {
+        name: S!("taiwan"),
+        canon: IDX_EUC_TW,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"cp950\x00" as *const u8 as *const i8,
-            canon: IDX_BIG5,
-        };
-        init
+    EncAlias {
+        name: S!("cp950"),
+        canon: IDX_BIG5,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"950\x00" as *const u8 as *const i8,
-            canon: IDX_BIG5,
-        };
-        init
+    EncAlias {
+        name: S!("950"),
+        canon: IDX_BIG5,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"mac\x00" as *const u8 as *const i8,
-            canon: IDX_MACROMAN,
-        };
-        init
+    EncAlias {
+        name: S!("mac"),
+        canon: IDX_MACROMAN,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: b"mac-roman\x00" as *const u8 as *const i8,
-            canon: IDX_MACROMAN,
-        };
-        init
+    EncAlias {
+        name: S!("mac-roman"),
+        canon: IDX_MACROMAN,
     },
-    {
-        let init = C2RustUnnamed_13 {
-            name: NULL_0 as *const i8,
-            canon: 0,
-        };
-        init
+    EncAlias {
+        name: ptr::null(),
+        canon: 0,
     },
 ];
 /*
@@ -1809,6 +1609,13 @@ pub unsafe extern "C" fn utf_class(c: i32) -> i32 {
 #[no_mangle]
 pub unsafe extern "C" fn utf_class_tab(c: i32, chartab: *const u64) -> i32 {
     /* sorted list of non-overlapping intervals */
+    #[derive(Copy, Clone)]
+    #[repr(C)]
+    pub struct clinterval {
+        pub first: u32,
+        pub last: u32,
+        pub class: u32,
+    }
     static mut classes: [clinterval; 71] = [
         {
             let init = clinterval {

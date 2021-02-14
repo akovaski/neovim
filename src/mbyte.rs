@@ -798,6 +798,7 @@ unsafe fn enc_canon_search(name: *const u8) -> Option<usize> {
     }
     return None;
 }
+
 /*
  * Find canonical encoding "name" in the list and return its properties.
  * Returns 0 if not found.
@@ -805,30 +806,16 @@ unsafe fn enc_canon_search(name: *const u8) -> Option<usize> {
 #[no_mangle]
 pub unsafe extern "C" fn enc_canon_props(name: *const u8) -> i32 {
     if let Some(i) = enc_canon_search(name) {
-        return enc_canon_table[i].prop;
-    }
-    if strncmp(
-        name as *mut i8,
-        b"2byte-\x00" as *const u8 as *const i8 as *mut i8,
-        6,
-    ) == 0
+        enc_canon_table[i].prop
+    } else if strncmp(name as *const i8, S!("2byte-"), 6) == 0 {
+        ENC_DBCS
+    } else if strncmp(name as *mut i8, S!("8bit-"), 5) == 0
+        || strncmp(name as *mut i8, S!("iso-8859-"), 9) == 0
     {
-        return ENC_DBCS;
+        ENC_8BIT
+    } else {
+        0
     }
-    if strncmp(
-        name as *mut i8,
-        b"8bit-\x00" as *const u8 as *const i8 as *mut i8,
-        5,
-    ) == 0
-        || strncmp(
-            name as *mut i8,
-            b"iso-8859-\x00" as *const u8 as *const i8 as *mut i8,
-            9,
-        ) == 0
-    {
-        return ENC_8BIT;
-    }
-    return 0;
 }
 /*
  * Return the size of the BOM for the current buffer:

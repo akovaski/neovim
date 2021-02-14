@@ -1,30 +1,3 @@
-// This is an open source non-commercial project. Dear PVS-Studio, please check
-// it. PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
-
-/// mbyte.c: Code specifically for handling multi-byte characters.
-/// Multibyte extensions partly by Sung-Hoon Baek
-///
-/// Strings internal to Nvim are always encoded as UTF-8 (thus the legacy
-/// 'encoding' option is always "utf-8").
-///
-/// The cell width on the display needs to be determined from the character
-/// value. Recognizing UTF-8 bytes is easy: 0xxx.xxxx is a single-byte char,
-/// 10xx.xxxx is a trailing byte, 11xx.xxxx is a leading byte of a multi-byte
-/// character. To make things complicated, up to six composing characters
-/// are allowed. These are drawn on top of the first char. For most editing
-/// the sequence of bytes with composing characters included is considered to
-/// be one character.
-///
-/// UTF-8 is used everywhere in the core. This is in registers, text
-/// manipulation, buffers, etc. Nvim core communicates with external plugins
-/// and GUIs in this encoding.
-///
-/// The encoding of a file is specified with 'fileencoding'.  Conversion
-/// is to be done when it's different from "utf-8".
-///
-/// Vim scripts may contain an ":scriptencoding" command. This has an effect
-/// for some commands, like ":menutrans".
-
 #include <inttypes.h>
 
 // To speed up BYTELEN(); keep a lookup table to quickly get the length in

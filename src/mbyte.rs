@@ -788,17 +788,15 @@ static mut enc_alias_table: [EncAlias; 64] = [
 
 /*
  * Find encoding "name" in the list of canonical encoding names.
- * Returns -1 if not found.
+ * Returns None if not found.
  */
-unsafe extern "C" fn enc_canon_search(name: *const u8) -> i32 {
-    let mut i: i32 = 0;
-    while i < IDX_COUNT {
-        if strcmp(name as *mut i8, enc_canon_table[i as usize].name as *mut i8) == 0 {
-            return i;
+unsafe fn enc_canon_search(name: *const u8) -> Option<usize> {
+    for i in 0..IDX_COUNT as usize {
+        if strcmp(name as *const i8, enc_canon_table[i].name as *const i8) == 0 {
+            return Some(i);
         }
-        i += 1
     }
-    return -(1);
+    return None;
 }
 /*
  * Find canonical encoding "name" in the list and return its properties.
@@ -806,10 +804,8 @@ unsafe extern "C" fn enc_canon_search(name: *const u8) -> i32 {
  */
 #[no_mangle]
 pub unsafe extern "C" fn enc_canon_props(name: *const u8) -> i32 {
-    let i: i32;
-    i = enc_canon_search(name);
-    if i >= 0 {
-        return enc_canon_table[i as usize].prop;
+    if let Some(i) = enc_canon_search(name) {
+        return enc_canon_table[i].prop;
     }
     if strncmp(
         name as *mut i8,
@@ -3161,7 +3157,7 @@ pub unsafe extern "C" fn enc_canonize(enc: *mut u8) -> *mut u8 {
             strlen(p.offset(6) as *mut i8).wrapping_add(1),
         );
     }
-    if enc_canon_search(p) >= 0 {
+    if enc_canon_search(p).is_some() {
         /* canonical name can be used unmodified */
         if p != r {
             memmove(

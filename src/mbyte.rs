@@ -1,3 +1,26 @@
+/// mbyte.c: Code specifically for handling multi-byte characters.
+/// Multibyte extensions partly by Sung-Hoon Baek
+///
+/// Strings internal to Nvim are always encoded as UTF-8 (thus the legacy
+/// 'encoding' option is always "utf-8").
+///
+/// The cell width on the display needs to be determined from the character
+/// value. Recognizing UTF-8 bytes is easy: 0xxx.xxxx is a single-byte char,
+/// 10xx.xxxx is a trailing byte, 11xx.xxxx is a leading byte of a multi-byte
+/// character. To make things complicated, up to six composing characters
+/// are allowed. These are drawn on top of the first char. For most editing
+/// the sequence of bytes with composing characters included is considered to
+/// be one character.
+///
+/// UTF-8 is used everywhere in the core. This is in registers, text
+/// manipulation, buffers, etc. Nvim core communicates with external plugins
+/// and GUIs in this encoding.
+///
+/// The encoding of a file is specified with 'fileencoding'.  Conversion
+/// is to be done when it's different from "utf-8".
+///
+/// Vim scripts may contain an ":scriptencoding" command. This has an effect
+/// for some commands, like ":menutrans".
 use crate::*;
 
 /*
@@ -19,17 +42,16 @@ pub const ENC_8BIT: i32 = 0x1;
 pub const ENC_DBCS: i32 = 0x2;
 pub const ENC_UNICODE: i32 = 0x4;
 
-pub const ENC_ENDIAN_B: i32 = 0x10;  /* Unicode: Big endian */
-pub const ENC_ENDIAN_L: i32 = 0x20;  /* Unicode: Little endian */
-                                                                         
-pub const ENC_4BYTE: i32 = 0x80;     /* Unicode: UCS-2 */
-pub const ENC_2WORD: i32 = 0x100;    /* Unicode: UCS-4 */
-pub const ENC_2BYTE: i32 = 0x40;     /* Unicode: UTF-16 */
-                                                                         
-pub const ENC_LATIN1: i32 = 0x200;   /* Latin1 */
-pub const ENC_LATIN9: i32 = 0x400;   /* Latin9 */
-pub const ENC_MACROMAN: i32 = 0x800; /* Mac Roman (not Macro Man! :-) */
+pub const ENC_ENDIAN_B: i32 = 0x10; // Unicode: Big endian
+pub const ENC_ENDIAN_L: i32 = 0x20; // Unicode: Little endian
 
+pub const ENC_4BYTE: i32 = 0x80; // Unicode: UCS-2
+pub const ENC_2WORD: i32 = 0x100; // Unicode: UCS-4
+pub const ENC_2BYTE: i32 = 0x40; // Unicode: UTF-16
+
+pub const ENC_LATIN1: i32 = 0x200; // Latin1
+pub const ENC_LATIN9: i32 = 0x400; // Latin9
+pub const ENC_MACROMAN: i32 = 0x800; // Mac Roman (not Macro Man! :-)
 
 // TODO(bfredl): eventually we should keep only one of the namings
 pub const mb_ptr2len: unsafe extern "C" fn(_: *const u8) -> i32 = utfc_ptr2len;
@@ -51,12 +73,12 @@ pub use ConvFlags::*;
 #[repr(C)]
 /// Structure used for string conversions
 pub struct vimconv_T {
-    pub vc_type: i32, //< Zero or more ConvFlags.
+    pub vc_type: i32,   //< Zero or more ConvFlags.
     pub vc_factor: i32, //< Maximal expansion factor.
     //TODO: if HAVE_ICONV
     pub vc_fd: iconv_t, //< Value for CONV_ICONV.
-    pub vc_fail: bool, //< What to do with invalid characters: if true, fail,
-                       //< otherwise use '?'.
+    pub vc_fail: bool,  //< What to do with invalid characters: if true, fail,
+                        //< otherwise use '?'.
 }
 
 extern "C" {
@@ -78,30 +100,6 @@ pub unsafe fn mb_strcmp_ic(ic: bool, s1: *const i8, s2: *const i8) -> i32 {
     };
 }
 
-/*
- * Canonical encoding names and their properties.
- * "iso-8859-n" is handled by enc_canonize() directly.
- */
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct C2RustUnnamed_2 {
-    pub name: *const i8,
-    pub prop: i32,
-    pub codepage: i32,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct interval {
-    pub first: i64,
-    pub last: i64,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct clinterval {
-    pub first: u32,
-    pub last: u32,
-    pub class: u32,
-}
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct convertStruct {
@@ -109,6 +107,20 @@ pub struct convertStruct {
     pub rangeEnd: i32,
     pub step: i32,
     pub offset: i32,
+}
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct interval {
+    pub first: i64,
+    pub last: i64,
+}
+
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct clinterval {
+    pub first: u32,
+    pub last: u32,
+    pub class: u32,
 }
 /*
  * Aliases for encoding names.
@@ -119,478 +131,313 @@ pub struct C2RustUnnamed_13 {
     pub name: *const i8,
     pub canon: i32,
 }
-static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"latin1\x00" as *const u8 as *const i8,
-            prop: ENC_8BIT + ENC_LATIN1,
-            codepage: 1252,
-        };
-        init
+
+/*
+ * Canonical encoding names and their properties.
+ * "iso-8859-n" is handled by enc_canonize() directly.
+ */
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct EncCannon {
+    pub name: *const i8,
+    pub prop: i32,
+    pub codepage: i32,
+}
+static mut enc_canon_table: [EncCannon; 59] = [
+    EncCannon {
+        name: S!("latin1"),
+        prop: ENC_8BIT + ENC_LATIN1,
+        codepage: 1252,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"iso-8859-2\x00" as *const u8 as *const i8,
-            prop: ENC_8BIT,
-            codepage: 0,
-        };
-        init
+    EncCannon {
+        name: S!("iso-8859-2"),
+        prop: ENC_8BIT,
+        codepage: 0,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"iso-8859-3\x00" as *const u8 as *const i8,
-            prop: ENC_8BIT,
-            codepage: 0,
-        };
-        init
+    EncCannon {
+        name: S!("iso-8859-3"),
+        prop: ENC_8BIT,
+        codepage: 0,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"iso-8859-4\x00" as *const u8 as *const i8,
-            prop: ENC_8BIT,
-            codepage: 0,
-        };
-        init
+    EncCannon {
+        name: S!("iso-8859-4"),
+        prop: ENC_8BIT,
+        codepage: 0,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"iso-8859-5\x00" as *const u8 as *const i8,
-            prop: ENC_8BIT,
-            codepage: 0,
-        };
-        init
+    EncCannon {
+        name: S!("iso-8859-5"),
+        prop: ENC_8BIT,
+        codepage: 0,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"iso-8859-6\x00" as *const u8 as *const i8,
-            prop: ENC_8BIT,
-            codepage: 0,
-        };
-        init
+    EncCannon {
+        name: S!("iso-8859-6"),
+        prop: ENC_8BIT,
+        codepage: 0,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"iso-8859-7\x00" as *const u8 as *const i8,
-            prop: ENC_8BIT,
-            codepage: 0,
-        };
-        init
+    EncCannon {
+        name: S!("iso-8859-7"),
+        prop: ENC_8BIT,
+        codepage: 0,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"iso-8859-8\x00" as *const u8 as *const i8,
-            prop: ENC_8BIT,
-            codepage: 0,
-        };
-        init
+    EncCannon {
+        name: S!("iso-8859-8"),
+        prop: ENC_8BIT,
+        codepage: 0,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"iso-8859-9\x00" as *const u8 as *const i8,
-            prop: ENC_8BIT,
-            codepage: 0,
-        };
-        init
+    EncCannon {
+        name: S!("iso-8859-9"),
+        prop: ENC_8BIT,
+        codepage: 0,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"iso-8859-10\x00" as *const u8 as *const i8,
-            prop: ENC_8BIT,
-            codepage: 0,
-        };
-        init
+    EncCannon {
+        name: S!("iso-8859-10"),
+        prop: ENC_8BIT,
+        codepage: 0,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"iso-8859-11\x00" as *const u8 as *const i8,
-            prop: ENC_8BIT,
-            codepage: 0,
-        };
-        init
+    EncCannon {
+        name: S!("iso-8859-11"),
+        prop: ENC_8BIT,
+        codepage: 0,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"iso-8859-13\x00" as *const u8 as *const i8,
-            prop: ENC_8BIT,
-            codepage: 0,
-        };
-        init
+    EncCannon {
+        name: S!("iso-8859-13"),
+        prop: ENC_8BIT,
+        codepage: 0,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"iso-8859-14\x00" as *const u8 as *const i8,
-            prop: ENC_8BIT,
-            codepage: 0,
-        };
-        init
+    EncCannon {
+        name: S!("iso-8859-14"),
+        prop: ENC_8BIT,
+        codepage: 0,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"iso-8859-15\x00" as *const u8 as *const i8,
-            prop: ENC_8BIT + ENC_LATIN9,
-            codepage: 0,
-        };
-        init
+    EncCannon {
+        name: S!("iso-8859-15"),
+        prop: ENC_8BIT + ENC_LATIN9,
+        codepage: 0,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"koi8-r\x00" as *const u8 as *const i8,
-            prop: ENC_8BIT,
-            codepage: 0,
-        };
-        init
+    EncCannon {
+        name: S!("koi8-r"),
+        prop: ENC_8BIT,
+        codepage: 0,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"koi8-u\x00" as *const u8 as *const i8,
-            prop: ENC_8BIT,
-            codepage: 0,
-        };
-        init
+    EncCannon {
+        name: S!("koi8-u"),
+        prop: ENC_8BIT,
+        codepage: 0,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"utf-8\x00" as *const u8 as *const i8,
-            prop: ENC_UNICODE,
-            codepage: 0,
-        };
-        init
+    EncCannon {
+        name: S!("utf-8"),
+        prop: ENC_UNICODE,
+        codepage: 0,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"ucs-2\x00" as *const u8 as *const i8,
-            prop: ENC_UNICODE + ENC_ENDIAN_B + ENC_2BYTE,
-            codepage: 0,
-        };
-        init
+    EncCannon {
+        name: S!("ucs-2"),
+        prop: ENC_UNICODE + ENC_ENDIAN_B + ENC_2BYTE,
+        codepage: 0,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"ucs-2le\x00" as *const u8 as *const i8,
-            prop: ENC_UNICODE + ENC_ENDIAN_L + ENC_2BYTE,
-            codepage: 0,
-        };
-        init
+    EncCannon {
+        name: S!("ucs-2le"),
+        prop: ENC_UNICODE + ENC_ENDIAN_L + ENC_2BYTE,
+        codepage: 0,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"utf-16\x00" as *const u8 as *const i8,
-            prop: ENC_UNICODE + ENC_ENDIAN_B + ENC_2WORD,
-            codepage: 0,
-        };
-        init
+    EncCannon {
+        name: S!("utf-16"),
+        prop: ENC_UNICODE + ENC_ENDIAN_B + ENC_2WORD,
+        codepage: 0,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"utf-16le\x00" as *const u8 as *const i8,
-            prop: ENC_UNICODE + ENC_ENDIAN_L + ENC_2WORD,
-            codepage: 0,
-        };
-        init
+    EncCannon {
+        name: S!("utf-16le"),
+        prop: ENC_UNICODE + ENC_ENDIAN_L + ENC_2WORD,
+        codepage: 0,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"ucs-4\x00" as *const u8 as *const i8,
-            prop: ENC_UNICODE + ENC_ENDIAN_B + ENC_4BYTE,
-            codepage: 0,
-        };
-        init
+    EncCannon {
+        name: S!("ucs-4"),
+        prop: ENC_UNICODE + ENC_ENDIAN_B + ENC_4BYTE,
+        codepage: 0,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"ucs-4le\x00" as *const u8 as *const i8,
-            prop: ENC_UNICODE + ENC_ENDIAN_L + ENC_4BYTE,
-            codepage: 0,
-        };
-        init
+    EncCannon {
+        name: S!("ucs-4le"),
+        prop: ENC_UNICODE + ENC_ENDIAN_L + ENC_4BYTE,
+        codepage: 0,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"debug\x00" as *const u8 as *const i8,
-            prop: ENC_DBCS,
-            codepage: DBCS_DEBUG,
-        };
-        init
+    EncCannon {
+        name: S!("debug"),
+        prop: ENC_DBCS,
+        codepage: DBCS_DEBUG,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"euc-jp\x00" as *const u8 as *const i8,
-            prop: ENC_DBCS,
-            codepage: DBCS_JPNU,
-        };
-        init
+    EncCannon {
+        name: S!("euc-jp"),
+        prop: ENC_DBCS,
+        codepage: DBCS_JPNU,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"sjis\x00" as *const u8 as *const i8,
-            prop: ENC_DBCS,
-            codepage: DBCS_JPN,
-        };
-        init
+    EncCannon {
+        name: S!("sjis"),
+        prop: ENC_DBCS,
+        codepage: DBCS_JPN,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"euc-kr\x00" as *const u8 as *const i8,
-            prop: ENC_DBCS,
-            codepage: DBCS_KORU,
-        };
-        init
+    EncCannon {
+        name: S!("euc-kr"),
+        prop: ENC_DBCS,
+        codepage: DBCS_KORU,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"euc-cn\x00" as *const u8 as *const i8,
-            prop: ENC_DBCS,
-            codepage: DBCS_CHSU,
-        };
-        init
+    EncCannon {
+        name: S!("euc-cn"),
+        prop: ENC_DBCS,
+        codepage: DBCS_CHSU,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"euc-tw\x00" as *const u8 as *const i8,
-            prop: ENC_DBCS,
-            codepage: DBCS_CHTU,
-        };
-        init
+    EncCannon {
+        name: S!("euc-tw"),
+        prop: ENC_DBCS,
+        codepage: DBCS_CHTU,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"big5\x00" as *const u8 as *const i8,
-            prop: ENC_DBCS,
-            codepage: DBCS_CHT,
-        };
-        init
+    EncCannon {
+        name: S!("big5"),
+        prop: ENC_DBCS,
+        codepage: DBCS_CHT,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"cp437\x00" as *const u8 as *const i8,
-            prop: ENC_8BIT,
-            codepage: 437,
-        };
-        init
+    EncCannon {
+        name: S!("cp437"),
+        prop: ENC_8BIT,
+        codepage: 437,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"cp737\x00" as *const u8 as *const i8,
-            prop: ENC_8BIT,
-            codepage: 737,
-        };
-        init
+    EncCannon {
+        name: S!("cp737"),
+        prop: ENC_8BIT,
+        codepage: 737,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"cp775\x00" as *const u8 as *const i8,
-            prop: ENC_8BIT,
-            codepage: 775,
-        };
-        init
+    EncCannon {
+        name: S!("cp775"),
+        prop: ENC_8BIT,
+        codepage: 775,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"cp850\x00" as *const u8 as *const i8,
-            prop: ENC_8BIT,
-            codepage: 850,
-        };
-        init
+    EncCannon {
+        name: S!("cp850"),
+        prop: ENC_8BIT,
+        codepage: 850,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"cp852\x00" as *const u8 as *const i8,
-            prop: ENC_8BIT,
-            codepage: 852,
-        };
-        init
+    EncCannon {
+        name: S!("cp852"),
+        prop: ENC_8BIT,
+        codepage: 852,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"cp855\x00" as *const u8 as *const i8,
-            prop: ENC_8BIT,
-            codepage: 855,
-        };
-        init
+    EncCannon {
+        name: S!("cp855"),
+        prop: ENC_8BIT,
+        codepage: 855,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"cp857\x00" as *const u8 as *const i8,
-            prop: ENC_8BIT,
-            codepage: 857,
-        };
-        init
+    EncCannon {
+        name: S!("cp857"),
+        prop: ENC_8BIT,
+        codepage: 857,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"cp860\x00" as *const u8 as *const i8,
-            prop: ENC_8BIT,
-            codepage: 860,
-        };
-        init
+    EncCannon {
+        name: S!("cp860"),
+        prop: ENC_8BIT,
+        codepage: 860,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"cp861\x00" as *const u8 as *const i8,
-            prop: ENC_8BIT,
-            codepage: 861,
-        };
-        init
+    EncCannon {
+        name: S!("cp861"),
+        prop: ENC_8BIT,
+        codepage: 861,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"cp862\x00" as *const u8 as *const i8,
-            prop: ENC_8BIT,
-            codepage: 862,
-        };
-        init
+    EncCannon {
+        name: S!("cp862"),
+        prop: ENC_8BIT,
+        codepage: 862,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"cp863\x00" as *const u8 as *const i8,
-            prop: ENC_8BIT,
-            codepage: 863,
-        };
-        init
+    EncCannon {
+        name: S!("cp863"),
+        prop: ENC_8BIT,
+        codepage: 863,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"cp865\x00" as *const u8 as *const i8,
-            prop: ENC_8BIT,
-            codepage: 865,
-        };
-        init
+    EncCannon {
+        name: S!("cp865"),
+        prop: ENC_8BIT,
+        codepage: 865,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"cp866\x00" as *const u8 as *const i8,
-            prop: ENC_8BIT,
-            codepage: 866,
-        };
-        init
+    EncCannon {
+        name: S!("cp866"),
+        prop: ENC_8BIT,
+        codepage: 866,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"cp869\x00" as *const u8 as *const i8,
-            prop: ENC_8BIT,
-            codepage: 869,
-        };
-        init
+    EncCannon {
+        name: S!("cp869"),
+        prop: ENC_8BIT,
+        codepage: 869,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"cp874\x00" as *const u8 as *const i8,
-            prop: ENC_8BIT,
-            codepage: 874,
-        };
-        init
+    EncCannon {
+        name: S!("cp874"),
+        prop: ENC_8BIT,
+        codepage: 874,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"cp932\x00" as *const u8 as *const i8,
-            prop: ENC_DBCS,
-            codepage: DBCS_JPN,
-        };
-        init
+    EncCannon {
+        name: S!("cp932"),
+        prop: ENC_DBCS,
+        codepage: DBCS_JPN,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"cp936\x00" as *const u8 as *const i8,
-            prop: ENC_DBCS,
-            codepage: DBCS_CHS,
-        };
-        init
+    EncCannon {
+        name: S!("cp936"),
+        prop: ENC_DBCS,
+        codepage: DBCS_CHS,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"cp949\x00" as *const u8 as *const i8,
-            prop: ENC_DBCS,
-            codepage: DBCS_KOR,
-        };
-        init
+    EncCannon {
+        name: S!("cp949"),
+        prop: ENC_DBCS,
+        codepage: DBCS_KOR,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"cp950\x00" as *const u8 as *const i8,
-            prop: ENC_DBCS,
-            codepage: DBCS_CHT,
-        };
-        init
+    EncCannon {
+        name: S!("cp950"),
+        prop: ENC_DBCS,
+        codepage: DBCS_CHT,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"cp1250\x00" as *const u8 as *const i8,
-            prop: ENC_8BIT,
-            codepage: 1250,
-        };
-        init
+    EncCannon {
+        name: S!("cp1250"),
+        prop: ENC_8BIT,
+        codepage: 1250,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"cp1251\x00" as *const u8 as *const i8,
-            prop: ENC_8BIT,
-            codepage: 1251,
-        };
-        init
+    EncCannon {
+        name: S!("cp1251"),
+        prop: ENC_8BIT,
+        codepage: 1251,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"cp1253\x00" as *const u8 as *const i8,
-            prop: ENC_8BIT,
-            codepage: 1253,
-        };
-        init
+    EncCannon {
+        name: S!("cp1253"),
+        prop: ENC_8BIT,
+        codepage: 1253,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"cp1254\x00" as *const u8 as *const i8,
-            prop: ENC_8BIT,
-            codepage: 1254,
-        };
-        init
+    EncCannon {
+        name: S!("cp1254"),
+        prop: ENC_8BIT,
+        codepage: 1254,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"cp1255\x00" as *const u8 as *const i8,
-            prop: ENC_8BIT,
-            codepage: 1255,
-        };
-        init
+    EncCannon {
+        name: S!("cp1255"),
+        prop: ENC_8BIT,
+        codepage: 1255,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"cp1256\x00" as *const u8 as *const i8,
-            prop: ENC_8BIT,
-            codepage: 1256,
-        };
-        init
+    EncCannon {
+        name: S!("cp1256"),
+        prop: ENC_8BIT,
+        codepage: 1256,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"cp1257\x00" as *const u8 as *const i8,
-            prop: ENC_8BIT,
-            codepage: 1257,
-        };
-        init
+    EncCannon {
+        name: S!("cp1257"),
+        prop: ENC_8BIT,
+        codepage: 1257,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"cp1258\x00" as *const u8 as *const i8,
-            prop: ENC_8BIT,
-            codepage: 1258,
-        };
-        init
+    EncCannon {
+        name: S!("cp1258"),
+        prop: ENC_8BIT,
+        codepage: 1258,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"macroman\x00" as *const u8 as *const i8,
-            prop: ENC_8BIT + ENC_MACROMAN,
-            codepage: 0,
-        };
-        init
+    EncCannon {
+        name: S!("macroman"),
+        prop: ENC_8BIT + ENC_MACROMAN,
+        codepage: 0,
     },
-    {
-        let init = C2RustUnnamed_2 {
-            name: b"hp-roman8\x00" as *const u8 as *const i8,
-            prop: ENC_8BIT,
-            codepage: 0,
-        };
-        init
+    EncCannon {
+        name: S!("hp-roman8"),
+        prop: ENC_8BIT,
+        codepage: 0,
     },
 ];
 pub const IDX_LATIN_1: i32 = 0;

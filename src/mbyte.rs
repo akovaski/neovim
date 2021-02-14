@@ -873,13 +873,14 @@ pub unsafe extern "C" fn remove_bom(s: *mut u8) {
 pub unsafe extern "C" fn mb_get_class(p: *const u8) -> i32 {
     return mb_get_class_tab(p, (*curbuf).b_chartab.as_mut_ptr());
 }
+
 #[no_mangle]
 pub unsafe extern "C" fn mb_get_class_tab(p: *const u8, chartab: *const u64) -> i32 {
-    if utf8len_tab[*p.offset(0) as usize] as i32 == 1 {
-        if *p.offset(0) as i32 == NUL || ascii_iswhite(*p.offset(0) as char) as i32 != 0 {
+    if MB_BYTE2LEN(p.idx(0)) == 1 {
+        if p.idx(0) == 0 || ascii_iswhite(p.idx(0) as char) {
             return 0;
         }
-        if vim_iswordc_tab(*p.offset(0) as i32, chartab) {
+        if vim_iswordc_tab(p.idx(0) as i32, chartab) {
             return 2;
         }
         return 1;

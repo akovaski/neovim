@@ -817,6 +817,7 @@ pub unsafe extern "C" fn enc_canon_props(name: *const u8) -> i32 {
         0
     }
 }
+
 /*
  * Return the size of the BOM for the current buffer:
  * 0 - no BOM
@@ -828,32 +829,14 @@ pub unsafe extern "C" fn enc_canon_props(name: *const u8) -> i32 {
 pub unsafe extern "C" fn bomb_size() -> i32 {
     let mut n = 0;
     if (*curbuf).b_p_bomb != 0 && (*curbuf).b_p_bin == 0 {
-        if *(*curbuf).b_p_fenc as i32 == NUL
-            || strcmp(
-                (*curbuf).b_p_fenc as *mut i8,
-                b"utf-8\x00" as *const u8 as *const i8 as *mut i8,
-            ) == 0
+        let b_p_fenc = (*curbuf).b_p_fenc as *mut i8;
+        if *b_p_fenc == 0 || strcmp(b_p_fenc, S!("utf-8")) == 0 {
+            n = 3;
+        } else if strncmp(b_p_fenc, S!("ucs-2"), 5) == 0 || strncmp(b_p_fenc, S!("utf-16"), 6) == 0
         {
-            n = 3
-        } else if strncmp(
-            (*curbuf).b_p_fenc as *mut i8,
-            b"ucs-2\x00" as *const u8 as *const i8 as *mut i8,
-            5,
-        ) == 0
-            || strncmp(
-                (*curbuf).b_p_fenc as *mut i8,
-                b"utf-16\x00" as *const u8 as *const i8 as *mut i8,
-                6,
-            ) == 0
-        {
-            n = 2
-        } else if strncmp(
-            (*curbuf).b_p_fenc as *mut i8,
-            b"ucs-4\x00" as *const u8 as *const i8 as *mut i8,
-            5,
-        ) == 0
-        {
-            n = 4
+            n = 2;
+        } else if strncmp(b_p_fenc, S!("ucs-4"), 5) == 0 {
+            n = 4;
         }
     }
     return n;

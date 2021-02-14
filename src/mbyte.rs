@@ -949,20 +949,22 @@ pub unsafe extern "C" fn utf_char2cells(c: i32) -> i32 {
 
     return 1;
 }
-// / Return the number of display cells character at "*p" occupies.
-// / This doesn't take care of unprintable characters, use ptr2cells() for that.
+
+/// Return the number of display cells character at "*p" occupies.
+/// This doesn't take care of unprintable characters, use ptr2cells() for that.
 #[no_mangle]
 pub unsafe extern "C" fn utf_ptr2cells(p: *const u8) -> i32 {
     let c: i32;
+
     /* Need to convert to a wide character. */
-    if *p as i32 >= 0x80 as i32 {
+    if *p >= 0x80 {
         c = utf_ptr2char(p);
         /* An illegal byte is displayed as <xx>. */
         if utf_ptr2len(p) == 1 || c == NUL {
             return 4;
         }
         /* If the char is ASCII it must be an overlong sequence. */
-        if c < 0x80 as i32 {
+        if c < 0x80 {
             return char2cells(c);
         }
         return utf_char2cells(c);

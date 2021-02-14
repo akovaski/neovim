@@ -1,70 +1,83 @@
 use crate::*;
 
-pub unsafe fn MB_BYTE2LEN(b: u8) -> u8 {
-    utf8len_tab[b as usize]
-}
-
-// For indirect
-// for u8
 /*
  * Return byte length of character that starts with byte "b".
  * Returns 1 for a single-byte character.
  * MB_BYTE2LEN_CHECK() can be used to count a special key as one byte.
  * Don't call MB_BYTE2LEN(b) with b < 0 or b > 255!
  */
+pub unsafe fn MB_BYTE2LEN(b: u8) -> u8 {
+    utf8len_tab[b as usize]
+}
+//TODO: MB_BYTE2LEN_CHECK
+
 // max length of an unicode char
+//TODO: MB_MAXCHAR
+
 /* properties used in enc_canon_table[] (first three mutually exclusive) */
-/* Unicode: Big endian */
-/* Unicode: Little endian */
-/* Unicode: UCS-2 */
-/* Unicode: UCS-4 */
-/* Unicode: UTF-16 */
-/* Latin1 */
-/* Latin9 */
-/* Mac Roman (not Macro Man! :-) */
+pub const ENC_8BIT: i32 = 0x1;
+pub const ENC_DBCS: i32 = 0x2;
+pub const ENC_UNICODE: i32 = 0x4;
+
+pub const ENC_ENDIAN_B: i32 = 0x10;  /* Unicode: Big endian */
+pub const ENC_ENDIAN_L: i32 = 0x20;  /* Unicode: Little endian */
+                                                                         
+pub const ENC_4BYTE: i32 = 0x80;     /* Unicode: UCS-2 */
+pub const ENC_2WORD: i32 = 0x100;    /* Unicode: UCS-4 */
+pub const ENC_2BYTE: i32 = 0x40;     /* Unicode: UTF-16 */
+                                                                         
+pub const ENC_LATIN1: i32 = 0x200;   /* Latin1 */
+pub const ENC_LATIN9: i32 = 0x400;   /* Latin9 */
+pub const ENC_MACROMAN: i32 = 0x800; /* Mac Roman (not Macro Man! :-) */
+
+
 // TODO(bfredl): eventually we should keep only one of the namings
-// / Flags for vimconv_T
-pub type C2RustUnnamed_1 = u32;
-pub const CONV_ICONV: C2RustUnnamed_1 = 5;
-pub const CONV_TO_LATIN9: C2RustUnnamed_1 = 4;
-pub const CONV_TO_LATIN1: C2RustUnnamed_1 = 3;
-pub const CONV_9_TO_UTF8: C2RustUnnamed_1 = 2;
-pub const CONV_TO_UTF8: C2RustUnnamed_1 = 1;
-pub const CONV_NONE: C2RustUnnamed_1 = 0;
-// / Structure used for string conversions
+pub const mb_ptr2len: unsafe extern "C" fn(_: *const u8) -> i32 = utfc_ptr2len;
+
+/// Flags for vimconv_T
+pub enum ConvFlags {
+    CONV_NONE = 0,
+    CONV_TO_UTF8 = 1,
+    CONV_9_TO_UTF8 = 2,
+    CONV_TO_LATIN1 = 3,
+    CONV_TO_LATIN9 = 4,
+    CONV_ICONV = 5,
+}
+pub use ConvFlags::*;
+
+//TODO: MBYTE_NONE_CONV
+
 #[derive(Copy, Clone)]
 #[repr(C)]
+/// Structure used for string conversions
 pub struct vimconv_T {
-    pub vc_type: i32,
-    pub vc_factor: i32,
-    pub vc_fd: iconv_t,
-    pub vc_fail: bool,
+    pub vc_type: i32, //< Zero or more ConvFlags.
+    pub vc_factor: i32, //< Maximal expansion factor.
+    //TODO: if HAVE_ICONV
+    pub vc_fd: iconv_t, //< Value for CONV_ICONV.
+    pub vc_fail: bool, //< What to do with invalid characters: if true, fail,
+                       //< otherwise use '?'.
 }
-pub const ENC_8BIT: i32 = 0x1 as i32;
-pub const ENC_DBCS: i32 = 0x2 as i32;
-pub const ENC_MACROMAN: i32 = 0x800 as i32;
-pub const ENC_4BYTE: i32 = 0x80 as i32;
-pub const ENC_ENDIAN_L: i32 = 0x20 as i32;
-pub const ENC_UNICODE: i32 = 0x4 as i32;
-pub const ENC_ENDIAN_B: i32 = 0x10 as i32;
-pub const ENC_2WORD: i32 = 0x100 as i32;
-pub const ENC_2BYTE: i32 = 0x40 as i32;
-pub const ENC_LATIN9: i32 = 0x400 as i32;
-pub const ENC_LATIN1: i32 = 0x200 as i32;
-pub const mb_ptr2len: unsafe extern "C" fn(_: *const u8) -> i32 = utfc_ptr2len;
-// / Compare strings
-// /
-// / @param[in]  ic  True if case is to be ignored.
-// /
-// / @return 0 if s1 == s2, <0 if s1 < s2, >0 if s1 > s2.
+
+extern "C" {
+    pub static mut utf8len_tab_zero: [u8; 256];
+    pub static mut utf8len_tab: [u8; 256];
+}
+
+/// Compare strings
+///
+/// @param[in]  ic  True if case is to be ignored.
+///
+/// @return 0 if s1 == s2, <0 if s1 < s2, >0 if s1 > s2.
 #[inline]
-pub unsafe extern "C" fn mb_strcmp_ic(ic: bool, s1: *const i8, s2: *const i8) -> i32 {
-    return if ic as i32 != 0 {
+pub unsafe fn mb_strcmp_ic(ic: bool, s1: *const i8, s2: *const i8) -> i32 {
+    return if ic {
         mb_stricmp(s1, s2)
     } else {
         strcmp(s1, s2)
     };
 }
+
 /*
  * Canonical encoding names and their properties.
  * "iso-8859-n" is handled by enc_canonize() directly.
@@ -105,12 +118,6 @@ pub struct convertStruct {
 pub struct C2RustUnnamed_13 {
     pub name: *const i8,
     pub canon: i32,
-}
-extern "C" {
-    pub static mut e_loadlib: [u8; 32];
-    pub static mut e_loadfunc: [u8; 41];
-    pub static mut utf8len_tab: [u8; 256];
-    pub static mut utf8len_tab_zero: [u8; 256];
 }
 static mut enc_canon_table: [C2RustUnnamed_2; 59] = [
     {

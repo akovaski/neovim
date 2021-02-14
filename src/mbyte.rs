@@ -887,6 +887,7 @@ pub unsafe extern "C" fn mb_get_class_tab(p: *const u8, chartab: *const u64) -> 
     }
     return utf_class_tab(utf_ptr2char(p), chartab);
 }
+
 /*
  * Return true if "c" is in "table".
  */
@@ -894,19 +895,21 @@ unsafe extern "C" fn intable(table: *const interval, n_items: size_t, c: i32) ->
     let mut mid: i32;
     let mut bot: i32;
     let mut top: i32;
+
     /* first quick check for Latin1 etc. characters */
-    if (c as i64) < (*table.offset(0)).first {
+    if (c as i64) < table.idx(0).first {
         return false;
     }
+
     /* binary search in table */
     bot = 0;
-    top = n_items.wrapping_sub(1) as i32;
+    top = (n_items - 1) as i32;
     while top >= bot {
         mid = (bot + top) / 2;
-        if (*table.offset(mid as isize)).last < c as i64 {
-            bot = mid + 1
-        } else if (*table.offset(mid as isize)).first > c as i64 {
-            top = mid - 1
+        if table.idx(mid).last < c as i64 {
+            bot = mid + 1;
+        } else if table.idx(mid).first > c as i64 {
+            top = mid - 1;
         } else {
             return true;
         }

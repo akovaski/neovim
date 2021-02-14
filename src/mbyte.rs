@@ -711,6 +711,7 @@ static mut enc_alias_table: [EncAlias; 64] = [
         canon: IDX_SJIS,
     },
     EncAlias {
+        /* Sun: PCK */
         name: S!("pck"),
         canon: IDX_SJIS,
     },
@@ -719,6 +720,7 @@ static mut enc_alias_table: [EncAlias; 64] = [
         canon: IDX_EUC_KR,
     },
     EncAlias {
+        /* Sun: KS C 5601 */
         name: S!("5601"),
         canon: IDX_EUC_KR,
     },
@@ -783,6 +785,7 @@ static mut enc_alias_table: [EncAlias; 64] = [
         canon: 0,
     },
 ];
+
 /*
  * Find encoding "name" in the list of canonical encoding names.
  * Returns -1 if not found.

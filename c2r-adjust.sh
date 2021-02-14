@@ -15,6 +15,7 @@ sed -i 's/\<char_u\>/u8/g' $1
 sed -i '/^\s*use super::nvim_types_h::u8;$/d' $1
 
 sed -i 's/\<uint8_t\>/u8/g' $1
+sed -i 's/\<uint16_t\>/u16/g' $1
 sed -i 's/\<uint32_t\>/u32/g' $1
 sed -i 's/\<uint64_t\>/u64/g' $1
 sed -i 's/\<libc::size_t\>/size_t/g' $1
@@ -30,6 +31,7 @@ sed -i 's/\<libc::c_long\>/i64/g' $1
 sed -i 's/\<libc::c_ulong\>/u64/g' $1
 
 sed -i 's/\<int8_t\>/i8/g' $1
+sed -i 's/\<int16_t\>/i16/g' $1
 sed -i 's/\<int32_t\>/i32/g' $1
 sed -i 's/\<int64_t\>/i64/g' $1
 sed -i '/^\s*use super::stdint_intn_h::i8;$/d' $1

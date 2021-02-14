@@ -81,11 +81,6 @@ pub struct vimconv_T {
                         //< otherwise use '?'.
 }
 
-extern "C" {
-    pub static mut utf8len_tab_zero: [u8; 256];
-    pub static mut utf8len_tab: [u8; 256];
-}
-
 /// Compare strings
 ///
 /// @param[in]  ic  True if case is to be ignored.
@@ -113,6 +108,12 @@ pub struct convertStruct {
 pub struct interval {
     pub first: i64,
     pub last: i64,
+}
+
+//TODO: port from C
+extern "C" {
+    pub static mut utf8len_tab: [u8; 256];
+    pub static mut utf8len_tab_zero: [u8; 256];
 }
 
 /*
@@ -242,6 +243,7 @@ static mut enc_canon_table: [EncCannon; 59] = [
         prop: ENC_UNICODE + ENC_ENDIAN_L + ENC_4BYTE,
         codepage: 0,
     },
+    /* For debugging DBCS encoding on Unix. */
     EncCannon {
         name: S!("debug"),
         prop: ENC_DBCS,
@@ -277,77 +279,95 @@ static mut enc_canon_table: [EncCannon; 59] = [
         prop: ENC_DBCS,
         codepage: DBCS_CHT,
     },
+    /* MS-DOS and MS-Windows codepages are included here, so that they can be
+     * used on Unix too.  Most of them are similar to ISO-8859 encodings, but
+     * not exactly the same. */
     EncCannon {
+        /* like iso-8859-1 */
         name: S!("cp437"),
         prop: ENC_8BIT,
         codepage: 437,
     },
     EncCannon {
+        /* like iso-8859-7 */
         name: S!("cp737"),
         prop: ENC_8BIT,
         codepage: 737,
     },
     EncCannon {
+        /* Baltic */
         name: S!("cp775"),
         prop: ENC_8BIT,
         codepage: 775,
     },
     EncCannon {
+        /* like iso-8859-4 */
         name: S!("cp850"),
         prop: ENC_8BIT,
         codepage: 850,
     },
     EncCannon {
+        /* like iso-8859-1 */
         name: S!("cp852"),
         prop: ENC_8BIT,
         codepage: 852,
     },
     EncCannon {
+        /* like iso-8859-2 */
         name: S!("cp855"),
         prop: ENC_8BIT,
         codepage: 855,
     },
     EncCannon {
+        /* like iso-8859-5 */
         name: S!("cp857"),
         prop: ENC_8BIT,
         codepage: 857,
     },
     EncCannon {
+        /* like iso-8859-9 */
         name: S!("cp860"),
         prop: ENC_8BIT,
         codepage: 860,
     },
     EncCannon {
+        /* like iso-8859-1 */
         name: S!("cp861"),
         prop: ENC_8BIT,
         codepage: 861,
     },
     EncCannon {
+        /* like iso-8859-1 */
         name: S!("cp862"),
         prop: ENC_8BIT,
         codepage: 862,
     },
     EncCannon {
+        /* like iso-8859-8 */
         name: S!("cp863"),
         prop: ENC_8BIT,
         codepage: 863,
     },
     EncCannon {
+        /* like iso-8859-1 */
         name: S!("cp865"),
         prop: ENC_8BIT,
         codepage: 865,
     },
     EncCannon {
+        /* like iso-8859-5 */
         name: S!("cp866"),
         prop: ENC_8BIT,
         codepage: 866,
     },
     EncCannon {
+        /* like iso-8859-7 */
         name: S!("cp869"),
         prop: ENC_8BIT,
         codepage: 869,
     },
     EncCannon {
+        /* Thai */
         name: S!("cp874"),
         prop: ENC_8BIT,
         codepage: 874,
@@ -373,56 +393,68 @@ static mut enc_canon_table: [EncCannon; 59] = [
         codepage: DBCS_CHT,
     },
     EncCannon {
+        /* Czech, Polish, etc. */
         name: S!("cp1250"),
         prop: ENC_8BIT,
         codepage: 1250,
     },
     EncCannon {
+        /* Cyrillic */
+        /* cp1252 is considered to be equal to latin1 */
         name: S!("cp1251"),
         prop: ENC_8BIT,
         codepage: 1251,
     },
     EncCannon {
+        /* Greek */
         name: S!("cp1253"),
         prop: ENC_8BIT,
         codepage: 1253,
     },
     EncCannon {
+        /* Turkish */
         name: S!("cp1254"),
         prop: ENC_8BIT,
         codepage: 1254,
     },
     EncCannon {
+        /* Hebrew */
         name: S!("cp1255"),
         prop: ENC_8BIT,
         codepage: 1255,
     },
     EncCannon {
+        /* Arabic */
         name: S!("cp1256"),
         prop: ENC_8BIT,
         codepage: 1256,
     },
     EncCannon {
+        /* Baltic */
         name: S!("cp1257"),
         prop: ENC_8BIT,
         codepage: 1257,
     },
     EncCannon {
+        /* Vietnamese */
         name: S!("cp1258"),
         prop: ENC_8BIT,
         codepage: 1258,
     },
     EncCannon {
+        /* Mac OS */
         name: S!("macroman"),
         prop: ENC_8BIT + ENC_MACROMAN,
         codepage: 0,
     },
     EncCannon {
+        /* HP Roman8 */
         name: S!("hp-roman8"),
         prop: ENC_8BIT,
         codepage: 0,
     },
 ];
+
 pub const IDX_LATIN_1: i32 = 0;
 pub const IDX_ISO_2: i32 = 1;
 pub const IDX_ISO_3: i32 = 2;
@@ -437,6 +469,8 @@ pub const IDX_ISO_11: i32 = 10;
 pub const IDX_ISO_13: i32 = 11;
 pub const IDX_ISO_14: i32 = 12;
 pub const IDX_ISO_15: i32 = 13;
+pub const IDX_KOI8_R: i32 = 14;
+pub const IDX_KOI8_U: i32 = 15;
 pub const IDX_UTF8: i32 = 16;
 pub const IDX_UCS2: i32 = 17;
 pub const IDX_UCS2LE: i32 = 18;
@@ -444,18 +478,44 @@ pub const IDX_UTF16: i32 = 19;
 pub const IDX_UTF16LE: i32 = 20;
 pub const IDX_UCS4: i32 = 21;
 pub const IDX_UCS4LE: i32 = 22;
+pub const IDX_DEBUG: i32 = 23;
 pub const IDX_EUC_JP: i32 = 24;
 pub const IDX_SJIS: i32 = 25;
 pub const IDX_EUC_KR: i32 = 26;
 pub const IDX_EUC_CN: i32 = 27;
 pub const IDX_EUC_TW: i32 = 28;
 pub const IDX_BIG5: i32 = 29;
+pub const IDX_CP437: i32 = 30;
+pub const IDX_CP737: i32 = 31;
+pub const IDX_CP775: i32 = 32;
+pub const IDX_CP850: i32 = 33;
+pub const IDX_CP852: i32 = 34;
+pub const IDX_CP855: i32 = 35;
+pub const IDX_CP857: i32 = 36;
+pub const IDX_CP860: i32 = 37;
+pub const IDX_CP861: i32 = 38;
+pub const IDX_CP862: i32 = 39;
+pub const IDX_CP863: i32 = 40;
+pub const IDX_CP865: i32 = 41;
+pub const IDX_CP866: i32 = 42;
+pub const IDX_CP869: i32 = 43;
+pub const IDX_CP874: i32 = 44;
 pub const IDX_CP932: i32 = 45;
 pub const IDX_CP936: i32 = 46;
 pub const IDX_CP949: i32 = 47;
 pub const IDX_CP950: i32 = 48;
+pub const IDX_CP1250: i32 = 49;
+pub const IDX_CP1251: i32 = 50;
+pub const IDX_CP1253: i32 = 51;
+pub const IDX_CP1254: i32 = 52;
+pub const IDX_CP1255: i32 = 53;
+pub const IDX_CP1256: i32 = 54;
+pub const IDX_CP1257: i32 = 55;
+pub const IDX_CP1258: i32 = 56;
 pub const IDX_MACROMAN: i32 = 57;
+pub const IDX_HPROMAN8: i32 = 58;
 pub const IDX_COUNT: i32 = 59;
+
 /*
  * Aliases for encoding names.
  */

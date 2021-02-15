@@ -971,23 +971,25 @@ pub unsafe extern "C" fn utf_ptr2cells(p: *const u8) -> i32 {
     }
     return 1;
 }
-// / Like utf_ptr2cells(), but limit string length to "size".
-// / For an empty string or truncated character returns 1.
+
+/// Like utf_ptr2cells(), but limit string length to "size".
+/// For an empty string or truncated character returns 1.
 #[no_mangle]
 pub unsafe extern "C" fn utf_ptr2cells_len(p: *const u8, size: i32) -> i32 {
     let c: i32;
+
     /* Need to convert to a wide character. */
-    if size > 0 && *p as i32 >= 0x80 as i32 {
+    if size > 0 && *p >= 0x80 as u8 {
         if utf_ptr2len_len(p, size) < utf8len_tab[*p as usize] as i32 {
-            return 1;
-        } /* truncated */
+            return 1; /* truncated */
+        }
         c = utf_ptr2char(p);
         /* An illegal byte is displayed as <xx>. */
         if utf_ptr2len(p) == 1 || c == NUL {
             return 4;
         }
         /* If the char is ASCII it must be an overlong sequence. */
-        if c < 0x80 as i32 {
+        if c < 0x80 {
             return char2cells(c);
         }
         return utf_char2cells(c);

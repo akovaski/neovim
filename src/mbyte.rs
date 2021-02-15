@@ -1031,63 +1031,64 @@ pub unsafe extern "C" fn mb_string2cells_len(str: *const u8, size: size_t) -> si
     }
     return clen;
 }
-// / Convert a UTF-8 byte sequence to a wide character
-// /
-// / If the sequence is illegal or truncated by a NUL then the first byte is
-// / returned.
-// / For an overlong sequence this may return zero.
-// / Does not include composing characters for obvious reasons.
-// /
-// / @param[in]  p  String to convert.
-// /
-// / @return Unicode codepoint or byte value.
+
+/// Convert a UTF-8 byte sequence to a wide character
+///
+/// If the sequence is illegal or truncated by a NUL then the first byte is
+/// returned.
+/// For an overlong sequence this may return zero.
+/// Does not include composing characters for obvious reasons.
+///
+/// @param[in]  p  String to convert.
+///
+/// @return Unicode codepoint or byte value.
 #[no_mangle]
 pub unsafe extern "C" fn utf_ptr2char(p: *const u8) -> i32 {
-    if (*p.offset(0) as i32) < 0x80 as i32 {
+    if p.idx(0) < 0x80 {
         // Be quick for ASCII.
-        return *p.offset(0) as i32;
+        return p.idx(0) as i32;
     }
-    let len = utf8len_tab_zero[*p.offset(0) as usize];
-    if len as i32 > 1 && *p.offset(1) as i32 & 0xc0 as i32 == 0x80 as i32 {
-        if len as i32 == 2 {
-            return ((*p.offset(0) as i32 & 0x1f as i32) << 6)
-                + (*p.offset(1) as i32 & 0x3f as i32);
+
+    let len = utf8len_tab_zero[p.idx(0) as usize];
+    if len > 1 && p.idx(1) & 0xc0 == 0x80 {
+        if len == 2 {
+            return ((p.idx(0) as i32 & 0x1f) << 6) + (p.idx(1) as i32 & 0x3f);
         }
-        if *p.offset(2) as i32 & 0xc0 as i32 == 0x80 as i32 {
-            if len as i32 == 3 {
-                return ((*p.offset(0) as i32 & 0xf as i32) << 12)
-                    + ((*p.offset(1) as i32 & 0x3f as i32) << 6)
-                    + (*p.offset(2) as i32 & 0x3f as i32);
+        if p.idx(2) & 0xc0 == 0x80 {
+            if len == 3 {
+                return ((p.idx(0) as i32 & 0xf) << 12)
+                    + ((p.idx(1) as i32 & 0x3f) << 6)
+                    + (p.idx(2) as i32 & 0x3f);
             }
-            if *p.offset(3) as i32 & 0xc0 as i32 == 0x80 as i32 {
-                if len as i32 == 4 {
-                    return ((*p.offset(0) as i32 & 0x7 as i32) << 18)
-                        + ((*p.offset(1) as i32 & 0x3f as i32) << 12)
-                        + ((*p.offset(2) as i32 & 0x3f as i32) << 6)
-                        + (*p.offset(3) as i32 & 0x3f as i32);
+            if p.idx(3) & 0xc0 == 0x80 {
+                if len == 4 {
+                    return ((p.idx(0) as i32 & 0x7) << 18)
+                        + ((p.idx(1) as i32 & 0x3f) << 12)
+                        + ((p.idx(2) as i32 & 0x3f) << 6)
+                        + (p.idx(3) as i32 & 0x3f);
                 }
-                if *p.offset(4) as i32 & 0xc0 as i32 == 0x80 as i32 {
-                    if len as i32 == 5 {
-                        return ((*p.offset(0) as i32 & 0x3 as i32) << 24)
-                            + ((*p.offset(1) as i32 & 0x3f as i32) << 18)
-                            + ((*p.offset(2) as i32 & 0x3f as i32) << 12)
-                            + ((*p.offset(3) as i32 & 0x3f as i32) << 6)
-                            + (*p.offset(4) as i32 & 0x3f as i32);
+                if p.idx(4) & 0xc0 == 0x80 {
+                    if len == 5 {
+                        return ((p.idx(0) as i32 & 0x3) << 24)
+                            + ((p.idx(1) as i32 & 0x3f) << 18)
+                            + ((p.idx(2) as i32 & 0x3f) << 12)
+                            + ((p.idx(3) as i32 & 0x3f) << 6)
+                            + (p.idx(4) as i32 & 0x3f);
                     }
-                    if *p.offset(5) as i32 & 0xc0 as i32 == 0x80 as i32 && len as i32 == 6 {
-                        return ((*p.offset(0) as i32 & 0x1 as i32) << 30)
-                            + ((*p.offset(1) as i32 & 0x3f as i32) << 24)
-                            + ((*p.offset(2) as i32 & 0x3f as i32) << 18)
-                            + ((*p.offset(3) as i32 & 0x3f as i32) << 12)
-                            + ((*p.offset(4) as i32 & 0x3f as i32) << 6)
-                            + (*p.offset(5) as i32 & 0x3f as i32);
+                    if p.idx(5) & 0xc0 == 0x80 && len == 6 {
+                        return ((p.idx(0) as i32 & 0x1) << 30)
+                            + ((p.idx(1) as i32 & 0x3f) << 24)
+                            + ((p.idx(2) as i32 & 0x3f) << 18)
+                            + ((p.idx(3) as i32 & 0x3f) << 12)
+                            + ((p.idx(4) as i32 & 0x3f) << 6)
+                            + (p.idx(5) as i32 & 0x3f);
                     }
                 }
             }
         }
     }
     // Illegal value: just return the first byte.
-    return *p.offset(0) as i32;
+    return p.idx(0) as i32;
 }
 /*
  * Convert a UTF-8 byte sequence to a wide character.

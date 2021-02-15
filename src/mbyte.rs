@@ -996,20 +996,20 @@ pub unsafe extern "C" fn utf_ptr2cells_len(p: *const u8, size: i32) -> i32 {
     }
     return 1;
 }
-// / Calculate the number of cells occupied by string `str`.
-// /
-// / @param str The source string, may not be NULL, must be a NUL-terminated
-// /            string.
-// / @return The number of cells occupied by string `str`
+
+/// Calculate the number of cells occupied by string `str`.
+///
+/// @param str The source string, may not be NULL, must be a NUL-terminated
+///            string.
+/// @return The number of cells occupied by string `str`
 #[no_mangle]
 pub unsafe extern "C" fn mb_string2cells(str: *const u8) -> size_t {
-    let mut clen = 0;
-    let mut p = str;
-    while *p as i32 != NUL {
-        clen = (clen as u64).wrapping_add(utf_ptr2cells(p) as u64) as size_t as size_t;
-        p = p.offset(Some(Some(mb_ptr2len).expect("non-null function pointer"))
-            .expect("non-null function pointer")(p) as isize)
+    let mut clen: usize = 0;
+
+    for p in it!(p = str; *p != 0; p.offset(mb_ptr2len(p) as isize)) {
+        clen = clen + utf_ptr2cells(p) as usize;
     }
+
     return clen;
 }
 // / Get the number of cells occupied by string `str` with maximum length `size`

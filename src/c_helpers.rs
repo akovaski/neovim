@@ -90,6 +90,9 @@ pub trait PointerHelpers<T> {
     unsafe fn idx<I: TryInto<isize>>(&self, i: I) -> T
     where
         <I as TryInto<isize>>::Error: std::fmt::Debug;
+    unsafe fn mut_offset<I: TryInto<isize>>(&mut self, i: I)
+    where
+        <I as TryInto<isize>>::Error: std::fmt::Debug;
 }
 
 impl<T: Copy> PointerHelpers<T> for *const T {
@@ -99,6 +102,12 @@ impl<T: Copy> PointerHelpers<T> for *const T {
     {
         *self.offset(i.try_into().unwrap())
     }
+    unsafe fn mut_offset<I: TryInto<isize>>(&mut self, i: I)
+    where
+        <I as TryInto<isize>>::Error: std::fmt::Debug,
+    {
+        *self = self.offset(i.try_into().unwrap());
+    }
 }
 
 impl<T: Copy> PointerHelpers<T> for *mut T {
@@ -107,6 +116,12 @@ impl<T: Copy> PointerHelpers<T> for *mut T {
         <I as TryInto<isize>>::Error: std::fmt::Debug,
     {
         *self.offset(i.try_into().unwrap())
+    }
+    unsafe fn mut_offset<I: TryInto<isize>>(&mut self, i: I)
+    where
+        <I as TryInto<isize>>::Error: std::fmt::Debug,
+    {
+        *self = self.offset(i.try_into().unwrap());
     }
 }
 

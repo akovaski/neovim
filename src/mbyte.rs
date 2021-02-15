@@ -1090,6 +1090,7 @@ pub unsafe extern "C" fn utf_ptr2char(p: *const u8) -> i32 {
     // Illegal value: just return the first byte.
     return p.idx(0) as i32;
 }
+
 /*
  * Convert a UTF-8 byte sequence to a wide character.
  * String is assumed to be terminated by NUL or after "n" bytes, whichever
@@ -1106,39 +1107,45 @@ pub unsafe extern "C" fn utf_ptr2char(p: *const u8) -> i32 {
  * If byte sequence is illegal or incomplete, returns -1 and does not advance
  * "s".
  */
-unsafe extern "C" fn utf_safe_read_char_adv(s: *mut *const u8, n: *mut size_t) -> i32 {
-    let c: i32;
+unsafe fn utf_safe_read_char_adv(s: *mut *const u8, n: *mut size_t) -> i32 {
+    let s: &mut *const u8 = s.as_mut().unwrap();
+
     if *n == 0 {
         /* end of buffer */
         return 0;
     }
-    let k = utf8len_tab_zero[**s as usize];
-    if k as i32 == 1 {
+
+    let k: u8 = utf8len_tab_zero[**s as usize];
+
+    if k == 1 {
         /* ASCII character or NUL */
-        *n = (*n).wrapping_sub(1);
-        let fresh3 = *s;
-        *s = (*s).offset(1);
-        return *fresh3 as i32;
+        *n -= 1;
+        let retval = **s as i32;
+        s.mut_offset(1);
+        return retval;
     }
-    if k as u64 <= *n as u64 {
+
+    if k as usize <= *n {
         /* We have a multibyte sequence and it isn't truncated by buffer
          * limits so utf_ptr2char() is safe to use. Or the first byte is
          * illegal (k=0), and it's also safe to use utf_ptr2char(). */
-        c = utf_ptr2char(*s);
+        let c: i32 = utf_ptr2char(*s);
+
         /* On failure, utf_ptr2char() returns the first byte, so here we
          * check equality with the first byte. The only non-ASCII character
          * which equals the first byte of its own UTF-8 representation is
          * U+00C3 (UTF-8: 0xC3 0x83), so need to check that special case too.
          * It's safe even if n=1, else we would have k=2 > n. */
-        if c != **s as i32 || c == 0xc3 as i32 && *(*s).offset(1) as i32 == 0x83 as i32 {
+        if c != **s as i32 || c == 0xc3 as i32 && s.idx(1) == 0x83 {
             /* byte sequence was successfully decoded */
-            *s = (*s).offset(k as i32 as isize);
-            *n = (*n as u64).wrapping_sub(k as u64) as size_t as size_t;
+            s.mut_offset(k);
+            *n -= k as usize;
             return c;
         }
     }
+
     /* byte sequence is incomplete or illegal */
-    return -(1);
+    return -1;
 }
 /*
  * Get character at **pp and advance *pp to the next character.

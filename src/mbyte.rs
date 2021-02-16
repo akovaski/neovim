@@ -1173,6 +1173,7 @@ pub unsafe extern "C" fn mb_cptr2char_adv(pp: *mut *const u8) -> i32 {
     (*pp).mut_offset(utf_ptr2len(*pp));
     return c;
 }
+
 /*
  * Check if the character pointed to by "p2" is a composing character when it
  * comes after "p1".  For Arabic sometimes "ab" is replaced with "c", which
@@ -1180,8 +1181,7 @@ pub unsafe extern "C" fn mb_cptr2char_adv(pp: *mut *const u8) -> i32 {
  */
 #[no_mangle]
 pub unsafe extern "C" fn utf_composinglike(p1: *const u8, p2: *const u8) -> bool {
-    let c2: i32;
-    c2 = utf_ptr2char(p2);
+    let c2: i32 = utf_ptr2char(p2);
     if utf_iscomposing(c2) {
         return true;
     }
@@ -1190,48 +1190,47 @@ pub unsafe extern "C" fn utf_composinglike(p1: *const u8, p2: *const u8) -> bool
     }
     return arabic_combine(utf_ptr2char(p1), c2);
 }
-// / Convert a UTF-8 string to a wide character
-// /
-// / Also gets up to #MAX_MCO composing characters.
-// /
-// / @param[out]  pcc  Location where to store composing characters. Must have
-// /                   space at least for #MAX_MCO + 1 elements.
-// /
-// / @return leading character.
+
+/// Convert a UTF-8 string to a wide character
+///
+/// Also gets up to #MAX_MCO composing characters.
+///
+/// @param[out]  pcc  Location where to store composing characters. Must have
+///                   space at least for #MAX_MCO + 1 elements.
+///
+/// @return leading character.
 #[no_mangle]
 pub unsafe extern "C" fn utfc_ptr2char(p: *const u8, pcc: *mut i32) -> i32 {
-    let mut len: i32;
-    let c: i32;
-    let mut cc: i32;
-    let mut i = 0;
-    c = utf_ptr2char(p);
-    len = utf_ptr2len(p);
+    let mut i: isize = 0;
+
+    let c: i32 = utf_ptr2char(p);
+    let mut len: isize = utf_ptr2len(p) as isize;
+
     /* Only accept a composing char when the first char isn't illegal. */
-    if (len > 1 || (*p as i32) < 0x80 as i32)
-        && *p.offset(len as isize) as i32 >= 0x80 as i32
-        && utf_composinglike(p, p.offset(len as isize)) as i32 != 0
-    {
-        cc = utf_ptr2char(p.offset(len as isize));
+    if (len > 1 || *p < 0x80) && p.idx(len) >= 0x80 && utf_composinglike(p, p.offset(len)) {
+        let mut cc: i32 = utf_ptr2char(p.offset(len));
         loop {
-            let fresh4 = i;
-            i = i + 1;
-            *pcc.offset(fresh4 as isize) = cc;
-            if i == MAX_MCO {
+            *pcc.offset(i) = cc;
+            i += 1;
+            if i == MAX_MCO as isize {
                 break;
             }
-            len += utf_ptr2len(p.offset(len as isize));
-            if (*p.offset(len as isize) as i32) < 0x80 as i32 || {
-                cc = utf_ptr2char(p.offset(len as isize));
-                !utf_iscomposing(cc)
-            } {
+            len += utf_ptr2len(p.offset(len)) as isize;
+            if *p.offset(len) < 0x80 {
+                break;
+            }
+            cc = utf_ptr2char(p.offset(len));
+            if !utf_iscomposing(cc) {
                 break;
             }
         }
     }
-    if i < MAX_MCO {
+
+    if i < MAX_MCO as isize {
         /* last composing char must be 0 */
-        *pcc.offset(i as isize) = 0
+        *pcc.offset(i) = 0;
     }
+
     return c;
 }
 /*

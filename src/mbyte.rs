@@ -1233,6 +1233,7 @@ pub unsafe extern "C" fn utfc_ptr2char(p: *const u8, pcc: *mut i32) -> i32 {
 
     return c;
 }
+
 /*
  * Convert a UTF-8 byte string to a wide character.  Also get up to MAX_MCO
  * composing characters.  Use no more than p[maxlen].
@@ -1241,49 +1242,46 @@ pub unsafe extern "C" fn utfc_ptr2char(p: *const u8, pcc: *mut i32) -> i32 {
  */
 #[no_mangle]
 pub unsafe extern "C" fn utfc_ptr2char_len(p: *const u8, pcc: *mut i32, maxlen: i32) -> i32 {
-    if maxlen > 0 {
-    } else {
-        assert!(false, "maxlen > 0");
-    }
+    assert!(maxlen > 0);
+
     let mut i = 0;
+    macro_rules! IS_COMPOSING {
+        ($s1:expr, $s2:expr, $s3:expr) => {
+            if i == 0 {
+                utf_composinglike($s1, $s2)
+            } else {
+                utf_iscomposing($s3)
+            }
+        };
+    }
+
     let mut len = utf_ptr2len_len(p, maxlen);
     // Is it safe to use utf_ptr2char()?
     let mut safe = len > 1 && len <= maxlen;
-    let c = if safe as i32 != 0 {
-        utf_ptr2char(p)
-    } else {
-        *p as i32
-    };
+    let c: i32 = if safe { utf_ptr2char(p) } else { *p as i32 };
+
     // Only accept a composing char when the first char isn't illegal.
-    if (safe as i32 != 0 || c < 0x80 as i32)
-        && len < maxlen
-        && *p.offset(len as isize) as i32 >= 0x80 as i32
-    {
-        while i < MAX_MCO {
+    if (safe || c < 0x80) && len < maxlen && p.idx(len) >= 0x80 {
+        cfor!(i = 0; i < MAX_MCO; i += 1; {
             let len_cc = utf_ptr2len_len(p.offset(len as isize), maxlen - len);
             safe = len_cc > 1 && len_cc <= maxlen - len;
-            if !safe
-                || {
-                    let ref mut fresh5 = *pcc.offset(i as isize);
-                    *fresh5 = utf_ptr2char(p.offset(len as isize));
-                    (*fresh5) < 0x80 as i32
-                }
-                || (if i == 0 {
-                    utf_composinglike(p, p.offset(len as isize)) as i32
-                } else {
-                    utf_iscomposing(*pcc.offset(i as isize)) as i32
-                }) == 0
-            {
+            if !safe {
+                break;
+            }
+
+            *pcc.offset(i as isize) = utf_ptr2char(p.offset(len as isize));
+            if pcc.idx(i) < 0x80 || !IS_COMPOSING!(p, p.offset(len as isize), pcc.idx(i)) {
                 break;
             }
             len += len_cc;
-            i += 1
-        }
+        });
     }
+
     if i < MAX_MCO {
         // last composing char must be 0
         *pcc.offset(i as isize) = 0
     }
+
     return c;
 }
 // / Get the length of a UTF-8 byte sequence representing a single codepoint

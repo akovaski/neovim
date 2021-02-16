@@ -1147,16 +1147,17 @@ unsafe fn utf_safe_read_char_adv(s: *mut *const u8, n: *mut size_t) -> i32 {
     /* byte sequence is incomplete or illegal */
     return -1;
 }
+
 /*
  * Get character at **pp and advance *pp to the next character.
  * Note: composing characters are skipped!
  */
 #[no_mangle]
 pub unsafe extern "C" fn mb_ptr2char_adv(pp: *mut *const u8) -> i32 {
-    let c: i32;
-    c = utf_ptr2char(*pp);
-    *pp = (*pp).offset(Some(Some(mb_ptr2len).expect("non-null function pointer"))
-        .expect("non-null function pointer")(*pp) as isize);
+    let pp = pp.as_mut().unwrap();
+
+    let c: i32 = utf_ptr2char(*pp);
+    (*pp).mut_offset(mb_ptr2len(*pp));
     return c;
 }
 /*

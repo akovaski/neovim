@@ -1160,15 +1160,17 @@ pub unsafe extern "C" fn mb_ptr2char_adv(pp: *mut *const u8) -> i32 {
     (*pp).mut_offset(mb_ptr2len(*pp));
     return c;
 }
+
 /*
  * Get character at **pp and advance *pp to the next character.
  * Note: composing characters are returned as separate characters.
  */
 #[no_mangle]
 pub unsafe extern "C" fn mb_cptr2char_adv(pp: *mut *const u8) -> i32 {
-    let c: i32;
-    c = utf_ptr2char(*pp);
-    *pp = (*pp).offset(utf_ptr2len(*pp) as isize);
+    let pp = pp.as_mut().unwrap();
+
+    let c: i32 = utf_ptr2char(*pp);
+    (*pp).mut_offset(utf_ptr2len(*pp));
     return c;
 }
 /*

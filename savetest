@@ -1,0 +1,2 @@
+test/functional/eval/execute_spec.lua
+test/functional/legacy/031_close_commands_spec.lua
